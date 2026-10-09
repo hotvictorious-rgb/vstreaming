@@ -208,26 +208,44 @@
 
         function getMobileAudioContext() {
             if (!mobileAudioCtx) {
-                mobileAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) mobileAudioCtx = new AudioCtx();
             }
-            if (mobileAudioCtx.state === 'suspended') {
+            if (mobileAudioCtx && mobileAudioCtx.state === 'suspended') {
                 mobileAudioCtx.resume().catch(() => {});
             }
             return mobileAudioCtx;
         }
 
+        function ensureIntercomAudioElement() {
+            let el = document.getElementById('intercom-audio');
+            if (!el) {
+                el = document.createElement('audio');
+                el.id = 'intercom-audio';
+                el.autoplay = true;
+                el.playsInline = true;
+                el.style.display = 'none';
+                document.body.appendChild(el);
+            }
+            return el;
+        }
+
         // Global User Interaction Unlock (Bypasses all mobile autoplay restrictions)
-        ['touchstart', 'touchend', 'click', 'keydown'].forEach(evt => {
-            document.addEventListener(evt, () => {
-                const ctx = getMobileAudioContext();
-                const audioEl = document.getElementById('intercom-audio');
-                if (audioEl) {
-                    audioEl.muted = false;
-                    if (audioEl.paused && audioEl.srcObject) {
-                        audioEl.play().catch(() => {});
-                    }
+        const unlockMobileIntercomAudio = () => {
+            const ctx = getMobileAudioContext();
+            if (ctx && ctx.state === 'suspended') {
+                ctx.resume().catch(() => {});
+            }
+            const audioEl = ensureIntercomAudioElement();
+            if (audioEl) {
+                audioEl.muted = false;
+                if (audioEl.paused && audioEl.srcObject) {
+                    audioEl.play().catch(() => {});
                 }
-            }, { passive: true });
+            }
+        };
+        ['touchstart', 'touchend', 'click', 'keydown'].forEach(evt => {
+            document.addEventListener(evt, unlockMobileIntercomAudio, { passive: true });
         });
 
         // Intercom Audio Controls
@@ -548,6 +566,10 @@
                             banner.className = (data.target == camId) ? 'intercom-banner private' : 'intercom-banner';
                             banner.style.display = 'flex';
                         }
+                        const audioEl = ensureIntercomAudioElement();
+                        if (audioEl && audioEl.paused && audioEl.srcObject) {
+                            audioEl.play().catch(() => {});
+                        }
                     } else {
                         if (banner) banner.style.display = 'none';
                     }
@@ -639,17 +661,22 @@
             intercomPc.ontrack = (event) => {
                 console.log('[Intercom] Incoming Director voice track connected:', event.track);
                 const stream = event.streams[0] || new MediaStream([event.track]);
-                const audioEl = document.getElementById('intercom-audio');
-                if (audioEl) {
-                    audioEl.srcObject = stream;
-                    audioEl.volume = 1.0;
-                    audioEl.muted = false;
-                    audioEl.play().catch(e => console.warn('[Intercom] play error:', e));
+                const audioEl = ensureIntercomAudioElement();
+                audioEl.srcObject = stream;
+                audioEl.volume = 1.0;
+                audioEl.muted = false;
+                const p = audioEl.play();
+                if (p !== undefined) {
+                    p.catch(e => {
+                        console.warn('[Intercom] Autoplay waiting for user touch:', e);
+                    });
                 }
                 try {
                     const ctx = getMobileAudioContext();
-                    const src = ctx.createMediaStreamSource(stream);
-                    src.connect(ctx.destination);
+                    if (ctx) {
+                        intercomAudioSource = ctx.createMediaStreamSource(stream);
+                        intercomAudioSource.connect(ctx.destination);
+                    }
                 } catch (e) {}
             };
 
@@ -896,5 +923,7 @@
         // Start immediately
         startCamera();
     </script>
+    <!-- Dedicated Intercom Talkback Audio Output (Director Voice -> Mobile Headset/Speaker) -->
+    <audio id="intercom-audio" autoplay playsinline style="display: none;"></audio>
 </body>
 </html>

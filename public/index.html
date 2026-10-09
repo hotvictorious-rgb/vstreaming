@@ -111,6 +111,9 @@
                 <div id="intercom-vu-container" style="width: 50px; height: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; overflow: hidden; display: flex; align-items: center;" title="Live Director Microphone Audio Level">
                     <div id="intercom-vu-bar" style="width: 0%; height: 100%; background: #10b981; transition: width 0.05s ease;"></div>
                 </div>
+                <select id="sel-intercom-mic" onchange="changeIntercomMic(this.value)" style="background: #150d28; color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; font-size: 11px; padding: 5px 6px; cursor: pointer; max-width: 155px; text-overflow: ellipsis;" title="Choose which physical microphone device to use for Intercom (Headset / USB / Built-in). Never broadcasts to OBS stream!">
+                    <option value="">🎙️ Select Mic...</option>
+                </select>
                 <button id="btn-master-talk" class="btn" onclick="toggleMasterTalk()" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; font-weight: 700; font-size: 12px; padding: 6px 14px; border-radius: 6px; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 6px; transition: all 0.15s ease;" title="Click to Talk / Click to Stop (or Hold [T] on keyboard)"><span>🎙️</span> <span id="lbl-master-talk">TALK ALL (Click or Hold T)</span></button>
                 <button onclick="testIntercomBroadcastPing()" class="btn" style="background: rgba(139, 92, 246, 0.2); border: 1px solid #8b5cf6; color: #c4b5fd; font-size: 11px; font-weight: 700; padding: 5px 8px; border-radius: 6px; cursor: pointer;" title="Send a test audio chime to all camera earbuds">🔔 Ping Crew</button>
                 <select id="sel-intercom-target" onchange="setIntercomTarget(this.value)" style="background: #150d28; color: #e2e8f0; border: 1px solid rgba(124, 58, 237, 0.5); border-radius: 6px; font-size: 11px; padding: 5px 6px; cursor: pointer;" title="Choose who hears you when pressing [T]">
@@ -531,6 +534,7 @@
                 if (serverInfo.isEmergencyCut) {
                     updateEmergencyCutUI(true);
                 }
+                populateMicrophoneList();
                 initWebSocket();
             } catch (e) {
                 console.error('Failed to load server info', e);
@@ -706,6 +710,140 @@
         // Decoupled 100% from video - microphone audio will never freeze camera feeds!
         // =====================================================================
 
+        // Populate Available Physical Microphone Inputs
+        async function populateMicrophoneList() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const audioInputs = devices.filter(d => d.kind === 'audioinput');
+                const select = document.getElementById('sel-intercom-mic');
+                if (!select) return;
+
+                const savedMicId = localStorage.getItem('vstreaming_intercom_mic_id') || '';
+                select.innerHTML = '';
+
+                if (audioInputs.length === 0) {
+                    select.innerHTML = '<option value="">🎙️ Default Mic</option>';
+                    return;
+                }
+
+                // If currently using a specific track, find its deviceId
+                let currentDeviceId = savedMicId;
+                if (directorAudioTrack && directorAudioTrack.getSettings) {
+                    const settings = directorAudioTrack.getSettings();
+                    if (settings.deviceId) currentDeviceId = settings.deviceId;
+                }
+
+                audioInputs.forEach((device, index) => {
+                    const opt = document.createElement('option');
+                    opt.value = device.deviceId;
+                    opt.text = device.label || `Microphone ${index + 1}`;
+                    if (currentDeviceId && device.deviceId === currentDeviceId) {
+                        opt.selected = true;
+                    }
+                    select.appendChild(opt);
+                });
+            } catch (e) {
+                console.warn('Error enumerating audio devices:', e);
+            }
+        }
+
+        // Live Switch Intercom Microphone (Seamless on-the-fly replacement)
+        async function changeIntercomMic(deviceId) {
+            try {
+                if (deviceId) {
+                    localStorage.setItem('vstreaming_intercom_mic_id', deviceId);
+                } else {
+                    localStorage.removeItem('vstreaming_intercom_mic_id');
+                }
+
+                if (!directorMicStream) {
+                    await initIntercomMic(true);
+                    return;
+                }
+
+                // Request new audio stream for the selected physical microphone
+                const audioConstraints = {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                };
+                if (deviceId) {
+                    audioConstraints.deviceId = { exact: deviceId };
+                }
+
+                const newStream = await navigator.mediaDevices.getUserMedia({
+                    audio: audioConstraints,
+                    video: false
+                });
+
+                const newTrack = newStream.getAudioTracks()[0];
+                newTrack.enabled = isSpeaking; // Keep current talk state
+
+                // Seamlessly replace the audio track on all active camera WebRTC peer connections!
+                for (const camId in intercomPeers) {
+                    const pc = intercomPeers[camId];
+                    if (pc) {
+                        const senders = pc.getSenders();
+                        const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
+                        if (audioSender) {
+                            try {
+                                await audioSender.replaceTrack(newTrack);
+                            } catch (e) {
+                                console.warn(`replaceTrack error for Cam ${camId}:`, e);
+                            }
+                        }
+                    }
+                }
+
+                // Stop old track & replace references
+                if (directorAudioTrack) {
+                    try { directorAudioTrack.stop(); } catch (e) {}
+                }
+                directorMicStream = newStream;
+                directorAudioTrack = newTrack;
+
+                // Reconnect VU Meter
+                setupDirectorVuMeter(directorMicStream);
+
+                const select = document.getElementById('sel-intercom-mic');
+                const label = select && select.selectedOptions[0] ? select.selectedOptions[0].text : 'Selected Mic';
+                showToast(`🎙️ Intercom Microphone set to: ${label}`);
+            } catch (err) {
+                console.error('Failed to switch microphone:', err);
+                showToast(`⚠️ Failed to switch microphone: ${err.message}`);
+            }
+        }
+
+        // Reusable Director VU Meter Setup
+        function setupDirectorVuMeter(stream) {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx || !stream) return;
+                const ctx = new AudioCtx();
+                const src = ctx.createMediaStreamSource(stream);
+                const analyser = ctx.createAnalyser();
+                analyser.fftSize = 64;
+                src.connect(analyser);
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                const vuBar = document.getElementById('intercom-vu-bar');
+                if (vuBar) {
+                    const checkVol = () => {
+                        analyser.getByteFrequencyData(dataArray);
+                        let sum = 0;
+                        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                        const avg = sum / dataArray.length;
+                        const pct = Math.min(100, Math.round((avg / 128) * 100));
+                        vuBar.style.width = `${pct}%`;
+                        requestAnimationFrame(checkVol);
+                    };
+                    requestAnimationFrame(checkVol);
+                }
+            } catch (e) {
+                console.warn('VU meter setup warning:', e);
+            }
+        }
+
         // Initialize Director Microphone & Live VU Meter
         async function initIntercomMic(showToastPrompt = true) {
             try {
@@ -714,61 +852,54 @@
                     return false;
                 }
 
-                if (directorMicStream) {
+                if (directorMicStream && directorAudioTrack && directorAudioTrack.readyState === 'live') {
                     if (showToastPrompt) showToast('🎙️ Microphone is already active and ready!');
                     return true;
                 }
 
-                directorMicStream = await navigator.mediaDevices.getUserMedia({
-                    audio: {
-                        echoCancellation: true,
-                        noiseSuppression: true,
-                        autoGainControl: true
-                    },
-                    video: false
-                });
+                const savedMicId = localStorage.getItem('vstreaming_intercom_mic_id');
+                const audioConstraints = {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                };
+                if (savedMicId) {
+                    audioConstraints.deviceId = { exact: savedMicId };
+                }
+
+                try {
+                    directorMicStream = await navigator.mediaDevices.getUserMedia({
+                        audio: audioConstraints,
+                        video: false
+                    });
+                } catch (fallbackErr) {
+                    // Fallback to default microphone if saved device is disconnected
+                    console.warn('Saved mic failed, falling back to default:', fallbackErr);
+                    directorMicStream = await navigator.mediaDevices.getUserMedia({
+                        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+                        video: false
+                    });
+                }
 
                 directorAudioTrack = directorMicStream.getAudioTracks()[0];
-                directorAudioTrack.enabled = false; // Kept MUTED by default until Talk is clicked/held!
+                directorAudioTrack.enabled = false; // Kept MUTED by default until Talk is clicked or [T] held!
 
-                // Setup Live Director VU Meter
-                try {
-                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                    if (AudioCtx) {
-                        const ctx = new AudioCtx();
-                        const src = ctx.createMediaStreamSource(directorMicStream);
-                        const analyser = ctx.createAnalyser();
-                        analyser.fftSize = 64;
-                        src.connect(analyser);
-                        const dataArray = new Uint8Array(analyser.frequencyBinCount);
-                        const vuBar = document.getElementById('intercom-vu-bar');
-                        if (vuBar) {
-                            const checkVol = () => {
-                                analyser.getByteFrequencyData(dataArray);
-                                let sum = 0;
-                                for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
-                                const avg = sum / dataArray.length;
-                                const pct = Math.min(100, Math.round((avg / 128) * 100));
-                                vuBar.style.width = `${pct}%`;
-                                requestAnimationFrame(checkVol);
-                            };
-                            requestAnimationFrame(checkVol);
-                        }
-                    }
-                } catch (e) {
-                    console.warn('VU meter initialization error:', e);
-                }
+                // Setup VU meter
+                setupDirectorVuMeter(directorMicStream);
 
                 const dot = document.getElementById('dot-intercom');
                 const lbl = document.getElementById('lbl-intercom');
                 if (dot) dot.className = 'badge-dot active';
                 if (lbl) lbl.innerText = '🎙️ Mic Active';
 
+                // Populate microphone selector with human-friendly labels now that permission is granted
+                await populateMicrophoneList();
+
                 // Connect audio channels to any currently connected camera phones
                 connectIntercomToAllCameras();
 
                 if (showToastPrompt) {
-                    showToast('✅ Director Microphone Active & Ready for Intercom!\nClick [TALK ALL] or hold [T] on your keyboard to speak to operators.');
+                    showToast('✅ Director Intercom Mic Active!\nClick [TALK ALL] or hold [T] on your keyboard to speak to operators.\nOBS Broadcast is 100% isolated and will NEVER hear this microphone.');
                 }
                 return true;
             } catch (err) {
@@ -810,7 +941,10 @@
             };
 
             try {
-                const offer = await pc.createOffer();
+                const offer = await pc.createOffer({
+                    offerToReceiveAudio: false,
+                    offerToReceiveVideo: false
+                });
                 await pc.setLocalDescription(offer);
 
                 if (ws && ws.readyState === WebSocket.OPEN) {
