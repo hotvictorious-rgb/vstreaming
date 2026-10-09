@@ -480,6 +480,18 @@ function setupWebSocket(wss) {
                     ws.receiverIds.add(data.receiverId);
                 }
 
+                // Intercom Audio Test Ping: Play test chime on all camera phones
+                if (data.type === 'intercom_ping') {
+                    [wssHttp, wssHttps].forEach(wss => {
+                        wss.clients.forEach(client => {
+                            if (client.readyState === WebSocket.OPEN && client.role === 'broadcaster') {
+                                client.send(JSON.stringify({ type: 'intercom_ping' }));
+                            }
+                        });
+                    });
+                    return;
+                }
+
                 // Intercom Talkback: Director speaking to all or specific camera phone
                 if (data.type === 'intercom_active') {
                     [wssHttp, wssHttps].forEach(wss => {

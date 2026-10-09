@@ -52,6 +52,37 @@
             font-size: 11px;
             color: #64748b;
         }
+
+        /* Intercom Talk Buttons & Active Talking Pulse */
+        .btn-talk-cam {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-talk-cam:hover {
+            background: rgba(16, 185, 129, 0.3);
+            border-color: #10b981;
+        }
+        .btn-talk-cam.talking, #btn-master-talk.talking {
+            background: #ef4444 !important;
+            border-color: #f87171 !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 16px rgba(239, 68, 68, 0.7);
+            animation: pulse-talking 1s infinite alternate;
+        }
+        @keyframes pulse-talking {
+            from { box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+            to { box-shadow: 0 0 20px rgba(239, 68, 68, 1); }
+        }
     </style>
 </head>
 <body>
@@ -476,7 +507,16 @@
         const directorSessionId = 'dir_' + Math.random().toString(36).substring(2, 8);
         let serverInfo = null;
         let ws = null;
-        const peerConnections = {}; // Map of WebRTC connections for each camera preview
+        const peerConnections = {}; // Map of WebRTC video connections for each camera preview
+        const directorCandidateQueues = {}; // Video ICE candidate queues
+
+        // Dedicated Out-Of-Band Intercom Audio State
+        let directorMicStream = null;
+        let directorAudioTrack = null;
+        let isSpeaking = false;
+        let activeIntercomTarget = 'all';
+        const intercomPeers = {}; // Map of camId -> RTCPeerConnection for audio talkback
+        const intercomCandidateQueues = {}; // Audio ICE candidate queues
 
         // Fetch Server Info & URLs
         async function loadInfo() {
@@ -593,9 +633,7 @@
             }
         }
 
-        const directorCandidateQueues = {};
-
-                async function handleOffer(camId, receiverId, sdp) {
+        async function handleOffer(camId, receiverId, sdp) {
             if (peerConnections[camId]) {
                 try { peerConnections[camId].close(); } catch (e) {}
             }
@@ -660,6 +698,305 @@
                 receiverId,
                 sdp: pc.localDescription
             }));
+        }
+
+
+        // =====================================================================
+        // DIRECTOR INTERCOM TALKBACK SYSTEM (Dedicated Out-Of-Band WebRTC Engine)
+        // Decoupled 100% from video - microphone audio will never freeze camera feeds!
+        // =====================================================================
+
+        // Initialize Director Microphone & Live VU Meter
+        async function initIntercomMic(showToastPrompt = true) {
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    showToast('⚠️ Microphone access is not supported on this browser context. Please use http://localhost:3000 or HTTPS.');
+                    return false;
+                }
+
+                if (directorMicStream) {
+                    if (showToastPrompt) showToast('🎙️ Microphone is already active and ready!');
+                    return true;
+                }
+
+                directorMicStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    },
+                    video: false
+                });
+
+                directorAudioTrack = directorMicStream.getAudioTracks()[0];
+                directorAudioTrack.enabled = false; // Kept MUTED by default until Talk is clicked/held!
+
+                // Setup Live Director VU Meter
+                try {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) {
+                        const ctx = new AudioCtx();
+                        const src = ctx.createMediaStreamSource(directorMicStream);
+                        const analyser = ctx.createAnalyser();
+                        analyser.fftSize = 64;
+                        src.connect(analyser);
+                        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                        const vuBar = document.getElementById('intercom-vu-bar');
+                        if (vuBar) {
+                            const checkVol = () => {
+                                analyser.getByteFrequencyData(dataArray);
+                                let sum = 0;
+                                for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                                const avg = sum / dataArray.length;
+                                const pct = Math.min(100, Math.round((avg / 128) * 100));
+                                vuBar.style.width = `${pct}%`;
+                                requestAnimationFrame(checkVol);
+                            };
+                            requestAnimationFrame(checkVol);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('VU meter initialization error:', e);
+                }
+
+                const dot = document.getElementById('dot-intercom');
+                const lbl = document.getElementById('lbl-intercom');
+                if (dot) dot.className = 'badge-dot active';
+                if (lbl) lbl.innerText = '🎙️ Mic Active';
+
+                // Connect audio channels to any currently connected camera phones
+                connectIntercomToAllCameras();
+
+                if (showToastPrompt) {
+                    showToast('✅ Director Microphone Active & Ready for Intercom!\nClick [TALK ALL] or hold [T] on your keyboard to speak to operators.');
+                }
+                return true;
+            } catch (err) {
+                console.error('Error enabling director mic:', err);
+                showToast(`⚠️ Microphone access failed: ${err.message || 'Permission denied'}.\nPlease allow microphone access in browser address bar.`);
+                return false;
+            }
+        }
+
+        // Establish Dedicated Out-of-Band Intercom Audio WebRTC Channel to a Camera Phone
+        async function connectIntercomToCamera(camId) {
+            if (!directorAudioTrack) return;
+            const targetId = parseInt(camId, 10);
+            if (intercomPeers[targetId]) {
+                try { intercomPeers[targetId].close(); } catch (e) {}
+            }
+
+            intercomCandidateQueues[targetId] = [];
+            const pc = new RTCPeerConnection({
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' }
+                ]
+            });
+            intercomPeers[targetId] = pc;
+
+            // Attach ONLY Director's audio track
+            pc.addTrack(directorAudioTrack, directorMicStream);
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate && ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        type: 'intercom_ice',
+                        camId: targetId,
+                        candidate: event.candidate,
+                        directorId: directorSessionId
+                    }));
+                }
+            };
+
+            try {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        type: 'intercom_offer',
+                        camId: targetId,
+                        sdp: pc.localDescription,
+                        directorId: directorSessionId
+                    }));
+                }
+            } catch (err) {
+                console.error(`Failed to create intercom offer for Camera ${targetId}:`, err);
+            }
+        }
+
+        // Connect Intercom Audio to All Currently Online Cameras
+        function connectIntercomToAllCameras() {
+            if (!serverInfo || !serverInfo.cameras) return;
+            for (let id = 1; id <= 6; id++) {
+                if (serverInfo.cameras[id] && serverInfo.cameras[id].connected) {
+                    connectIntercomToCamera(id);
+                }
+            }
+        }
+
+        // Receive SDP Answer from Camera Phone for Intercom Audio Channel
+        async function handleIntercomAnswer(camId, sdp) {
+            const targetId = parseInt(camId, 10);
+            const pc = intercomPeers[targetId];
+            if (pc) {
+                try {
+                    await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+                    if (intercomCandidateQueues[targetId]) {
+                        while (intercomCandidateQueues[targetId].length > 0) {
+                            const cand = intercomCandidateQueues[targetId].shift();
+                            try { await pc.addIceCandidate(cand); } catch (e) {}
+                        }
+                    }
+                } catch (e) {
+                    console.error(`Error applying intercom answer for Camera ${targetId}:`, e);
+                }
+            }
+        }
+
+        // Receive ICE Candidates from Camera Phone for Intercom Audio Channel
+        async function handleIntercomIce(camId, candidate) {
+            const targetId = parseInt(camId, 10);
+            const pc = intercomPeers[targetId];
+            if (pc && pc.remoteDescription && pc.remoteDescription.type) {
+                try { await pc.addIceCandidate(new RTCIceCandidate(candidate)); } catch (e) {}
+            } else {
+                if (!intercomCandidateQueues[targetId]) intercomCandidateQueues[targetId] = [];
+                intercomCandidateQueues[targetId].push(new RTCIceCandidate(candidate));
+            }
+        }
+
+        // Toggle Click Mode for Master Talk Button (Click to Talk / Click to Stop)
+        async function toggleMasterTalk() {
+            if (isSpeaking) {
+                stopSpeaking();
+            } else {
+                const sel = document.getElementById('sel-intercom-target');
+                const target = sel ? sel.value : 'all';
+                await startSpeaking(target);
+            }
+        }
+
+        // Toggle Click Mode for Individual Camera Card Button (Click to Talk / Click to Stop)
+        async function toggleCamTalk(targetCamId) {
+            if (isSpeaking && activeIntercomTarget == targetCamId) {
+                stopSpeaking();
+            } else {
+                await startSpeaking(targetCamId);
+            }
+        }
+
+        // Start Speaking (Unmutes audio track and notifies phone HUDs)
+        async function startSpeaking(target = 'all') {
+            if (!directorAudioTrack) {
+                const ready = await initIntercomMic(false);
+                if (!ready) return;
+            }
+
+            isSpeaking = true;
+            activeIntercomTarget = target;
+
+            // Ensure intercom audio connections exist to target camera(s)
+            for (let id = 1; id <= 6; id++) {
+                if (target === 'all' || target == id) {
+                    if (!intercomPeers[id] || intercomPeers[id].connectionState === 'closed' || intercomPeers[id].connectionState === 'failed') {
+                        connectIntercomToCamera(id);
+                    }
+                }
+            }
+
+            // Unmute Director Microphone Audio Track
+            if (directorAudioTrack) {
+                directorAudioTrack.enabled = true;
+            }
+
+            // Update Master Button UI
+            const masterBtn = document.getElementById('btn-master-talk');
+            if (masterBtn) {
+                masterBtn.classList.add('talking');
+                masterBtn.innerHTML = (target === 'all')
+                    ? '<span>🔴</span> <span id="lbl-master-talk">STOP TALKING (All Live)</span>'
+                    : `<span>🔒</span> <span id="lbl-master-talk">STOP (Cam ${target} Live)</span>`;
+            }
+
+            // Update Individual Camera Buttons UI
+            for (let id = 1; id <= 6; id++) {
+                const camBtn = document.getElementById(`btn-talk-cam-${id}`);
+                if (camBtn) {
+                    if (target == id) {
+                        camBtn.classList.add('talking');
+                        camBtn.innerText = '🔴 Stop';
+                    } else if (target === 'all') {
+                        camBtn.classList.add('talking');
+                        camBtn.innerText = '🔴 Live (All)';
+                    } else {
+                        camBtn.classList.remove('talking');
+                        camBtn.innerText = '🎙️ Talk';
+                    }
+                }
+            }
+
+            // Notify Phone Operator HUD via WebSocket
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'intercom_active',
+                    speaking: true,
+                    target: target
+                }));
+            }
+        }
+
+        // Stop Speaking (Mutes audio track and clears talking UI states)
+        function stopSpeaking() {
+            if (!isSpeaking) return;
+            isSpeaking = false;
+
+            // Mute Director Microphone Audio Track
+            if (directorAudioTrack) {
+                directorAudioTrack.enabled = false;
+            }
+
+            // Reset Master Button UI
+            const masterBtn = document.getElementById('btn-master-talk');
+            if (masterBtn) {
+                masterBtn.classList.remove('talking');
+                masterBtn.innerHTML = '<span>🎙️</span> <span id="lbl-master-talk">TALK ALL (Click or Hold T)</span>';
+            }
+
+            // Reset Individual Camera Buttons UI
+            for (let id = 1; id <= 6; id++) {
+                const camBtn = document.getElementById(`btn-talk-cam-${id}`);
+                if (camBtn) {
+                    camBtn.classList.remove('talking');
+                    camBtn.innerText = '🎙️ Talk';
+                }
+            }
+
+            // Clear Talking State on Phone HUD via WebSocket
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'intercom_active',
+                    speaking: false,
+                    target: activeIntercomTarget
+                }));
+            }
+        }
+
+        // Target Selector Change Handler
+        function setIntercomTarget(val) {
+            activeIntercomTarget = val;
+            if (isSpeaking) {
+                startSpeaking(val);
+            }
+        }
+
+        // Test Broadcast Audio Ping (Plays test chime on all phones)
+        function testIntercomBroadcastPing() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'intercom_ping' }));
+                showToast('🔔 Sent Audio Test Ping chime to all camera phone earbuds!');
+            }
         }
 
 
@@ -758,6 +1095,9 @@
                     statusEl.innerText = '\u{1F7E2} Connected & Streaming';
                     statusEl.className = 'cam-status online';
                     requestCameraFeed(id);
+                    if (typeof directorAudioTrack !== 'undefined' && directorAudioTrack) {
+                        connectIntercomToCamera(id);
+                    }
                     if (btn && cam.tally !== 'PROGRAM') {
                         btn.disabled = false;
                         btn.innerText = '\u{26A1} CUT LIVE';
@@ -900,6 +1240,15 @@
                 const sel = document.getElementById('sel-intercom-target');
                 const target = sel ? sel.value : 'all';
                 startSpeaking(target);
+            }
+        });
+
+        // Director Keyboard Keyup: Release [T] to Stop Speaking (Push-to-Talk)
+        document.addEventListener('keyup', (e) => {
+            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+            if (e.code === 'KeyT') {
+                e.preventDefault();
+                stopSpeaking();
             }
         });
 
