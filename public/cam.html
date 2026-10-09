@@ -165,6 +165,7 @@
             <!-- Right Top: Flash, Dimmer & Battery (Lens hidden) -->
             <div class="hud-cluster hud-right">
                 <div class="intercom-pill" id="intercom-pill" title="Intercom Volume">
+                    <button id="btn-intercom-test" onclick="testIntercomSound()" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #34d399; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 6px; cursor: pointer;" title="Tap to test and unlock intercom sound">🔔 Test</button>
                     <button id="btn-intercom-mute" onclick="toggleIntercomMute()" style="background: none; border: none; color: #10b981; font-size: 14px; cursor: pointer; padding: 0;" title="Mute/Unmute Director Voice">🔊</button>
                     <input type="range" id="intercom-volume" min="0" max="1" step="0.05" value="1" oninput="setIntercomVolume(this.value)" style="width: 45px; height: 4px; accent-color: #10b981; cursor: pointer;" title="Director Voice Volume">
                 </div>
@@ -201,7 +202,69 @@
     </div>
 
     <script>
+        // Intercom Audio Engine & WebAudio Hardware Unlock
+        let mobileAudioCtx = null;
+        let intercomAudioSource = null;
+
+        function getMobileAudioContext() {
+            if (!mobileAudioCtx) {
+                mobileAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (mobileAudioCtx.state === 'suspended') {
+                mobileAudioCtx.resume().catch(() => {});
+            }
+            return mobileAudioCtx;
+        }
+
+        // Global User Interaction Unlock (Bypasses all mobile autoplay restrictions)
+        ['touchstart', 'touchend', 'click', 'keydown'].forEach(evt => {
+            document.addEventListener(evt, () => {
+                const ctx = getMobileAudioContext();
+                const audioEl = document.getElementById('intercom-audio');
+                if (audioEl) {
+                    audioEl.muted = false;
+                    if (audioEl.paused && audioEl.srcObject) {
+                        audioEl.play().catch(() => {});
+                    }
+                }
+            }, { passive: true });
+        });
+
         // Intercom Audio Controls
+        
+        // Test Intercom Sound & Hardware Unlock Chime
+        function testIntercomSound() {
+            try {
+                const ctx = getMobileAudioContext();
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, now); // D5
+                osc.frequency.setValueAtTime(880.00, now + 0.12); // A5
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.36);
+
+                const audioEl = document.getElementById('intercom-audio');
+                if (audioEl) {
+                    audioEl.muted = false;
+                    if (audioEl.srcObject && audioEl.paused) audioEl.play().catch(() => {});
+                }
+
+                const btn = document.getElementById('btn-intercom-test');
+                if (btn) {
+                    btn.innerText = '✅ Heard?';
+                    setTimeout(() => { btn.innerText = '🔔 Test'; }, 2000);
+                }
+            } catch (e) {
+                alert('Audio test error: ' + e.message);
+            }
+        }
+
         function toggleIntercomMute() {
             const audioEl = document.getElementById('intercom-audio');
             const btn = document.getElementById('btn-intercom-mute');
@@ -536,13 +599,34 @@
                 }
             }
 
-            // Route incoming Director voice audio to hidden audio element
+            // Route incoming Director voice audio to hidden audio element & Web Audio hardware
             pc.ontrack = (event) => {
                 if (event.track.kind === 'audio') {
+                    console.log('[Intercom] Incoming Director audio track received:', event.track);
+                    const stream = event.streams[0] || new MediaStream([event.track]);
                     const audioEl = document.getElementById('intercom-audio');
                     if (audioEl) {
-                        audioEl.srcObject = event.streams[0] || new MediaStream([event.track]);
-                        audioEl.play().catch(e => console.log('[Intercom audio autoplay]:', e));
+                        audioEl.srcObject = stream;
+                        audioEl.volume = 1.0;
+                        audioEl.muted = false;
+                        audioEl.play().then(() => {
+                            console.log('[Intercom] Audio element playback started successfully');
+                        }).catch(e => {
+                            console.warn('[Intercom] Audio play error (will retry on touch):', e);
+                        });
+                    }
+
+                    // Direct WebAudio route for bulletproof hardware output
+                    try {
+                        const ctx = getMobileAudioContext();
+                        if (intercomAudioSource) {
+                            try { intercomAudioSource.disconnect(); } catch (e) {}
+                        }
+                        intercomAudioSource = ctx.createMediaStreamSource(stream);
+                        intercomAudioSource.connect(ctx.destination);
+                        console.log('[Intercom] Connected audio stream directly to Web Audio destination');
+                    } catch (e) {
+                        console.warn('[Intercom] WebAudio hardware link:', e);
                     }
                 }
             };

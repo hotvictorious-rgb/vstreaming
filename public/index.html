@@ -77,9 +77,11 @@
                     <span class="badge-dot" id="dot-intercom"></span>
                     <span id="lbl-intercom">🎙️ Intercom: Click to Enable Mic</span>
                 </div>
-                <button id="btn-master-talk" class="btn" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; font-weight: 700; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; user-select: none; transition: all 0.15s ease;" onmousedown="startSpeaking('all')" onmouseup="stopSpeaking()" onmouseleave="stopSpeaking()" ontouchstart="startSpeaking('all'); event.preventDefault();" ontouchend="stopSpeaking()" title="Hold to speak to all cameras (or hold [T] on keyboard)">
-                    🎙️ TALK ALL (Hold T)
-                </button>
+                <div id="intercom-vu-container" style="width: 50px; height: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; overflow: hidden; display: flex; align-items: center;" title="Live Director Microphone Audio Level">
+                    <div id="intercom-vu-bar" style="width: 0%; height: 100%; background: #10b981; transition: width 0.05s ease;"></div>
+                </div>
+                <button id="btn-master-talk" class="btn" onclick="toggleMasterTalk()" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; font-weight: 700; font-size: 12px; padding: 6px 14px; border-radius: 6px; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 6px; transition: all 0.15s ease;" title="Click to Talk / Click to Stop (or Hold [T] on keyboard)"><span>🎙️</span> <span id="lbl-master-talk">TALK ALL (Click or Hold T)</span></button>
+                <button onclick="testIntercomBroadcastPing()" class="btn" style="background: rgba(139, 92, 246, 0.2); border: 1px solid #8b5cf6; color: #c4b5fd; font-size: 11px; font-weight: 700; padding: 5px 8px; border-radius: 6px; cursor: pointer;" title="Send a test audio chime to all camera earbuds">🔔 Ping Crew</button>
                 <select id="sel-intercom-target" onchange="setIntercomTarget(this.value)" style="background: #150d28; color: #e2e8f0; border: 1px solid rgba(124, 58, 237, 0.5); border-radius: 6px; font-size: 11px; padding: 5px 6px; cursor: pointer;" title="Choose who hears you when pressing [T]">
                     <option value="all">📢 All Cameras</option>
                     <option value="1">🔒 Cam 1 (Pastor)</option>
@@ -131,7 +133,7 @@
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(1)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(1)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(1)">📋 OBS Link</button>
-                        <button class="btn btn-talk-cam" id="btn-talk-cam-1" onmousedown="startSpeaking(1)" onmouseup="stopSpeaking()" onmouseleave="stopSpeaking()" ontouchstart="startSpeaking(1); event.preventDefault();" ontouchend="stopSpeaking()" title="Hold to speak privately to Camera 1 operator">🎙️ Talk</button>
+                        <button class="btn btn-talk-cam" id="btn-talk-cam-1" class="btn btn-talk-cam" onclick="toggleCamTalk(1)" title="Click to Talk / Click to Stop privately with Camera 1">🎙️ Talk</button>
                     </div>
                 </div>
             </div>
@@ -158,7 +160,7 @@
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(2)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(2)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(2)">📋 OBS Link</button>
-                        <button class="btn btn-talk-cam" id="btn-talk-cam-2" onmousedown="startSpeaking(2)" onmouseup="stopSpeaking()" onmouseleave="stopSpeaking()" ontouchstart="startSpeaking(2); event.preventDefault();" ontouchend="stopSpeaking()" title="Hold to speak privately to Camera 2 operator">🎙️ Talk</button>
+                        <button class="btn btn-talk-cam" id="btn-talk-cam-2" class="btn btn-talk-cam" onclick="toggleCamTalk(2)" title="Click to Talk / Click to Stop privately with Camera 2">🎙️ Talk</button>
                     </div>
                 </div>
             </div>
@@ -185,7 +187,7 @@
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(3)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(3)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(3)">📋 OBS Link</button>
-                        <button class="btn btn-talk-cam" id="btn-talk-cam-3" onmousedown="startSpeaking(3)" onmouseup="stopSpeaking()" onmouseleave="stopSpeaking()" ontouchstart="startSpeaking(3); event.preventDefault();" ontouchend="stopSpeaking()" title="Hold to speak privately to Camera 3 operator">🎙️ Talk</button>
+                        <button class="btn btn-talk-cam" id="btn-talk-cam-3" class="btn btn-talk-cam" onclick="toggleCamTalk(3)" title="Click to Talk / Click to Stop privately with Camera 3">🎙️ Talk</button>
                     </div>
                 </div>
             </div>
@@ -212,7 +214,7 @@
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(4)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(4)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(4)">📋 OBS Link</button>
-                        <button class="btn btn-talk-cam" id="btn-talk-cam-4" onmousedown="startSpeaking(4)" onmouseup="stopSpeaking()" onmouseleave="stopSpeaking()" ontouchstart="startSpeaking(4); event.preventDefault();" ontouchend="stopSpeaking()" title="Hold to speak privately to Camera 4 operator">🎙️ Talk</button>
+                        <button class="btn btn-talk-cam" id="btn-talk-cam-4" class="btn btn-talk-cam" onclick="toggleCamTalk(4)" title="Click to Talk / Click to Stop privately with Camera 4">🎙️ Talk</button>
                     </div>
                 </div>
             </div>
@@ -239,7 +241,7 @@
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(5)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(5)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(5)">📋 OBS Link</button>
-                        <button class="btn btn-talk-cam" id="btn-talk-cam-5" onmousedown="startSpeaking(5)" onmouseup="stopSpeaking()" onmouseleave="stopSpeaking()" ontouchstart="startSpeaking(5); event.preventDefault();" ontouchend="stopSpeaking()" title="Hold to speak privately to Camera 5 operator">🎙️ Talk</button>
+                        <button class="btn btn-talk-cam" id="btn-talk-cam-5" class="btn btn-talk-cam" onclick="toggleCamTalk(5)" title="Click to Talk / Click to Stop privately with Camera 5">🎙️ Talk</button>
                     </div>
                 </div>
             </div>
@@ -266,7 +268,7 @@
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(6)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(6)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(6)">📋 OBS Link</button>
-                        <button class="btn btn-talk-cam" id="btn-talk-cam-6" onmousedown="startSpeaking(6)" onmouseup="stopSpeaking()" onmouseleave="stopSpeaking()" ontouchstart="startSpeaking(6); event.preventDefault();" ontouchend="stopSpeaking()" title="Hold to speak privately to Camera 6 operator">🎙️ Talk</button>
+                        <button class="btn btn-talk-cam" id="btn-talk-cam-6" class="btn btn-talk-cam" onclick="toggleCamTalk(6)" title="Click to Talk / Click to Stop privately with Camera 6">🎙️ Talk</button>
                     </div>
                 </div>
             </div>
@@ -586,7 +588,7 @@
 
         const directorCandidateQueues = {};
 
-        async function handleOffer(camId, receiverId, sdp) {
+                async function handleOffer(camId, receiverId, sdp) {
             if (peerConnections[camId]) {
                 try { peerConnections[camId].close(); } catch (e) {}
             }
@@ -600,21 +602,10 @@
             });
             peerConnections[camId] = pc;
 
-            // Intercom: Create audio transceiver to send Director voice down to this camera
-            try {
-                const audioTransceiver = pc.addTransceiver('audio', { direction: 'sendonly' });
-                if (directorAudioTrack) {
-                    audioTransceiver.sender.replaceTrack(directorAudioTrack);
-                }
-            } catch (e) {
-                console.warn('[Intercom] audio transceiver error:', e);
-            }
-
             pc.ontrack = (event) => {
                 const videoEl = document.getElementById(`preview-${camId}`);
                 const placeholder = document.getElementById(`placeholder-${camId}`);
                 
-                // Immediately hide placeholder when video track arrives
                 if (placeholder) {
                     placeholder.classList.add('hidden');
                 }
@@ -625,7 +616,6 @@
                     videoEl.autoplay = true;
                     videoEl.srcObject = event.streams[0];
                     videoEl.play().catch(e => {
-                        console.warn('[Autoplay retry on user gesture]:', e);
                         const unlock = () => { videoEl.play(); document.removeEventListener('click', unlock); };
                         document.addEventListener('click', unlock, { once: true });
                     });
@@ -643,8 +633,34 @@
                 }
             };
 
+            // 1. Set Remote Description FIRST so incoming m-lines are matched properly
             await pc.setRemoteDescription(new RTCSessionDescription(sdp));
 
+            // 2. Ensure silent base track is alive and ready
+            const silent = ensureSilentAudioTrack();
+
+            // 3. Find the audio transceiver created by remote offer and configure for sendonly
+            const transceivers = pc.getTransceivers();
+            let audioTransceiver = transceivers.find(t => 
+                (t.receiver && t.receiver.track && t.receiver.track.kind === 'audio') ||
+                (t.sender && t.sender.track && t.sender.track.kind === 'audio')
+            );
+
+            if (audioTransceiver) {
+                audioTransceiver.direction = 'sendonly';
+                const trackToSend = (isSpeaking && (activeIntercomTarget === 'all' || activeIntercomTarget == camId))
+                    ? (directorAudioTrack || silent)
+                    : silent;
+                if (trackToSend) {
+                    try {
+                        await audioTransceiver.sender.replaceTrack(trackToSend);
+                    } catch (e) {
+                        console.warn('[Intercom] replaceTrack error:', e);
+                    }
+                }
+            }
+
+            // 4. Process queued ICE candidates
             if (directorCandidateQueues[camId]) {
                 while (directorCandidateQueues[camId].length > 0) {
                     const cand = directorCandidateQueues[camId].shift();
@@ -652,6 +668,7 @@
                 }
             }
 
+            // 5. Create Answer with active Opus audio m-line
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
 
@@ -662,7 +679,6 @@
                 sdp: pc.localDescription
             }));
         }
-
 
         // Copy OBS Browser Source URL with clipboard and fallback
         function copyObsUrl(camId) {
