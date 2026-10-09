@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBS Video Feed</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background: transparent;
+            overflow: hidden;
+        }
+        body, html {
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            position: relative;
+        }
+        /* Fallback Flier Layer - Permanently Anchored Base (Rock-Solid, ZERO Blinking) */
+        #flier-slate {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0d081a;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+            opacity: 1; /* Always 100% visible, never toggles opacity, never blinks */
+            pointer-events: none;
+        }
+        /* Live Video Stream Layer - Floats directly on top of Flier Slate */
+        #obs-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.2s ease-out;
+        }
+        #obs-video.instant-cut {
+            transition: none !important;
+        }
+        #obs-video.live {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Permanent Church Flier Slate (Base Layer) -->
+    <div id="flier-slate"></div>
+
+    <!-- Live Video Stream Layer (Overlays Flier when Active & Authorized by Tally) -->
+    <video id="obs-video" autoplay playsinline muted></video>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const idParam = urlParams.get('id') || '1';
+        const isProgramMode = (idParam === 'program' || idParam === 'live');
+        let camId = isProgramMode ? 'program' : parseInt(idParam, 10);
+        let currentProgramCamId = null; // Master Program starts safely on Church Flier
+        let activeTallyState = 'OFF_AIR'; // Strict Broadcast Gate: Only 'PROGRAM' is permitted on air
+        const receiverId = (isProgramMode ? 'obs_program_' : `obs_${camId}_`) + Math.random().toString(36).substring(2, 7);
+
+        let ws = null;
+        let pc = null;
+        let candidateQueue = [];
+        let isEmergency = false;
+        let isStreamActive = false;
+        let muteTimeout = null;
+
+        const videoEl = document.getElementById('obs-video');
+        const flierSlate = document.getElementById('flier-slate');
+
+        // Robust RTC Configuration with STUN for LAN/Wi-Fi mDNS discovery
+        const rtcConfig = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' }
+            ]
+        };
+
+        // Fetch Initial Church Flier Slate
+        async function loadFlier() {
+            try {
+                const res = await fetch('/api/flier-status');
+                const data = await res.json();
+                if (data.url) {
+                    flierSlate.style.backgroundImage = `url("${data.url}")`;
+                }
+                if (data.isEmergencyCut) {
+                    setEmergency(true, true);
+                }
+            } catch (e) {
+                flierSlate.style.backgroundImage = 'url("/assets/default_flier.svg")';
+            }
+        }
+        loadFlier();
+
+        // Reveal the permanent flier by hiding the top video layer
+        function fallbackToFlier(immediate = false) {
+            isStreamActive = false;
+            if (immediate) {
+                videoEl.classList.add('instant-cut');
+                videoEl.classList.remove('live');
+                setTimeout(() => {
+                    videoEl.classList.remove('instant-cut');
+                }, 50);
+            } else {
+                videoEl.classList.remove('live');
+            }
+        }
+
+        // Restore video layer over the flier ONLY IF authorized by Tally
+        function restoreLiveVideo() {
+            if (isEmergency) return;
+            // STRICT BROADCAST GATE: Never reveal video if camera is in STANDBY or OFF_AIR!
+            if (activeTallyState !== 'PROGRAM') {
+                console.log(`[OBS Receiver] Video decoded but Camera is in ${activeTallyState} -> Refusing live video, showing flier`);
+                fallbackToFlier(true);
+                return;
+            }
+            if (isProgramMode && !currentProgramCamId) {
+                fallbackToFlier(true);
+                return;
+            }
+            isStreamActive = true;
+            videoEl.classList.add('live');
+        }
+
+        function setEmergency(active, immediate = true) {
+            isEmergency = active;
+            if (active) {
+                fallbackToFlier(immediate);
+            } else if (isStreamActive && activeTallyState === 'PROGRAM') {
+                restoreLiveVideo();
+            }
+        }
+
+        function initWebSocket() {
+            const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${proto}//${window.location.host}`);
+
+            ws.onopen = async () => {
+                console.log(`[OBS Receiver] Connected as ${isProgramMode ? 'Master Program Switcher' : 'Receiver for Cam ' + camId}`);
+                ws.send(JSON.stringify({
+                    type: 'register',
+                    role: isProgramMode ? 'program_receiver' : 'receiver',
+                    camId: isProgramMode ? 'program' : camId,
+                    receiverId
+                }));
+
+                // Check initial authoritative Tally state from server
+                try {
+                    const res = await fetch('/api/info');
+                    const info = await res.json();
+                    if (isProgramMode) {
+                        if (info.currentProgramCamId && info.cameras[info.currentProgramCamId] && info.cameras[info.currentProgramCamId].tally === 'PROGRAM') {
+                            currentProgramCamId = info.currentProgramCamId;
+                            activeTallyState = 'PROGRAM';
+                            requestStream(currentProgramCamId);
+                        } else {
+                            currentProgramCamId = null;
+                            activeTallyState = 'OFF_AIR';
+                            fallbackToFlier(true);
+                        }
+                    } else {
+                        if (info.cameras[camId] && info.cameras[camId].tally === 'PROGRAM') {
+                            activeTallyState = 'PROGRAM';
+                            requestStream(camId);
+                        } else {
+                            activeTallyState = info.cameras[camId]?.tally || 'OFF_AIR';
+                            fallbackToFlier(true);
+                        }
+                    }
+                } catch (e) {
+                    fallbackToFlier(true);
+                }
+            };
+
+            ws.onmessage = async (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+
+                    // Flier Image Updated
+                    if (data.type === 'flier_updated') {
+                        flierSlate.style.backgroundImage = `url("${data.url}")`;
+                    }
+
+                    // Emergency Panic Cut (Instant Hard Cut to Flier)
+                    if (data.type === 'emergency_cut') {
+                        if (data.url) flierSlate.style.backgroundImage = `url("${data.url}")`;
+                        setEmergency(data.active, true);
+                        if (!data.active && isProgramMode && currentProgramCamId && activeTallyState === 'PROGRAM') {
+                            requestStream(currentProgramCamId);
+                        }
+                    }
+
+                    // Master Program Cut Event (Director explicitly pressed CUT LIVE)
+                    if (data.type === 'program_cut' && isProgramMode) {
+                        if (!data.camId) {
+                            currentProgramCamId = null;
+                            activeTallyState = 'OFF_AIR';
+                            if (pc) { try { pc.close(); } catch (e) {} pc = null; }
+                            videoEl.srcObject = null;
+                            fallbackToFlier(true);
+                            return;
+                        }
+                        currentProgramCamId = parseInt(data.camId, 10);
+                        activeTallyState = 'PROGRAM'; // Authoritative CUT LIVE command!
+                        console.log(`[Master Program OBS] Cut Live to Camera ${currentProgramCamId}`);
+                        requestStream(currentProgramCamId);
+                    }
+
+                    // Direct Tally Update from Director
+                    if (data.type === 'tally_update') {
+                        const targetCam = isProgramMode ? currentProgramCamId : camId;
+                        if (parseInt(data.camId, 10) === targetCam) {
+                            activeTallyState = data.state;
+                            if (activeTallyState === 'PROGRAM') {
+                                console.log(`[OBS Receiver] Camera ${data.camId} cut to PROGRAM!`);
+                                if (videoEl.videoWidth > 0 && !isEmergency) {
+                                    restoreLiveVideo();
+                                } else {
+                                    requestStream(data.camId);
+                                }
+                            } else {
+                                console.log(`[OBS Receiver] Camera ${data.camId} demoted to ${data.state} -> Revealing Church Flier`);
+                                if (pc) { try { pc.close(); } catch (e) {} pc = null; }
+                                videoEl.srcObject = null;
+                                fallbackToFlier(true);
+                            }
+                        }
+                    }
+
+                    // Broadcaster Came Online
+                    if (data.type === 'broadcaster_online') {
+                        const onlineId = parseInt(data.camId, 10);
+                        if (!isProgramMode && onlineId === camId && activeTallyState === 'PROGRAM') {
+                            requestStream(camId);
+                        }
+                    }
+
+                    // Broadcaster Suspended or Went Offline
+                    if (data.type === 'broadcaster_offline' || data.type === 'broadcaster_suspended') {
+                        const targetId = parseInt(data.camId, 10);
+                        if ((!isProgramMode && targetId === camId) || (isProgramMode && targetId === currentProgramCamId)) {
+                            console.warn(`[OBS Receiver] Camera ${targetId} suspended/offline -> Revealing static flier slate`);
+                            activeTallyState = 'OFF_AIR';
+                            if (isProgramMode) currentProgramCamId = null;
+                            if (pc) { try { pc.close(); } catch (e) {} pc = null; }
+                            videoEl.srcObject = null;
+                            fallbackToFlier(true);
+                        }
+                    }
+
+                    // WebRTC Signaling: Offer
+                    if (data.type === 'offer' && (data.receiverId === receiverId || !data.receiverId)) {
+                        console.log(`[OBS Receiver] Received Offer from Phone Broadcaster`);
+                        await handleOffer(data.sdp);
+                    }
+
+                    // WebRTC Signaling: ICE Candidate
+                    if (data.type === 'ice-candidate' && (data.receiverId === receiverId || !data.receiverId)) {
+                        await queueOrAddCandidate(data.candidate);
+                    }
+
+                } catch (e) {
+                    console.error('[OBS WS Message Error]', e);
+                }
+            };
+
+            ws.onclose = () => {
+                fallbackToFlier(true);
+                setTimeout(initWebSocket, 2000);
+            };
+        }
+
+        function requestStream(targetCam) {
+            const targetId = targetCam || (isProgramMode ? currentProgramCamId : camId);
+            if (!targetId || activeTallyState !== 'PROGRAM') {
+                fallbackToFlier(true);
+                return;
+            }
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'receiver_ready',
+                    camId: targetId,
+                    receiverId
+                }));
+            }
+        }
+
+        // WebRTC Offer Handler
+        async function handleOffer(sdp) {
+            // Guard: Never negotiate peer connection if receiver is not authorized for PROGRAM
+            if (activeTallyState !== 'PROGRAM' || (isProgramMode && !currentProgramCamId)) {
+                console.warn('[OBS Receiver] Offer rejected: Receiver is not cut to PROGRAM');
+                fallbackToFlier(true);
+                return;
+            }
+
+            if (pc) {
+                try { pc.close(); } catch (e) {}
+            }
+
+            candidateQueue = [];
+            pc = new RTCPeerConnection(rtcConfig);
+
+            videoEl.muted = true;
+
+            videoEl.onplaying = () => {
+                clearTimeout(muteTimeout);
+                console.log(`[OBS Receiver] Video playback active, checking Tally authorization: ${activeTallyState}`);
+                if (!isEmergency && activeTallyState === 'PROGRAM' && (!isProgramMode || currentProgramCamId)) {
+                    restoreLiveVideo();
+                } else {
+                    fallbackToFlier(true);
+                }
+            };
+
+            videoEl.onloadeddata = () => {
+                videoEl.muted = true;
+                videoEl.play().catch(e => console.warn(e));
+            };
+
+            pc.ontrack = (event) => {
+                console.log('[OBS Receiver] Video Track received!');
+                videoEl.srcObject = event.streams[0];
+                videoEl.muted = true;
+                videoEl.play().catch(e => console.warn('Play interrupted:', e));
+
+                event.streams[0].getVideoTracks().forEach(track => {
+                    track.onended = () => {
+                        console.log('[OBS Track Ended]');
+                        fallbackToFlier(true);
+                    };
+
+                    // Clean signal loss debounce: reveals flier if track pauses
+                    track.onmute = () => {
+                        clearTimeout(muteTimeout);
+                        muteTimeout = setTimeout(() => {
+                            if (track.readyState === 'ended' || track.muted) {
+                                console.warn('[OBS] Track muted -> Revealing static flier slate');
+                                fallbackToFlier(false);
+                            }
+                        }, 600);
+                    };
+
+                    track.onunmute = () => {
+                        clearTimeout(muteTimeout);
+                        if (!isEmergency && activeTallyState === 'PROGRAM' && (!isProgramMode || currentProgramCamId)) {
+                            restoreLiveVideo();
+                        } else {
+                            fallbackToFlier(true);
+                        }
+                    };
+                });
+            };
+
+            pc.oniceconnectionstatechange = () => {
+                console.log(`[OBS ICE State] ${pc.iceConnectionState}`);
+                if (['disconnected', 'failed', 'closed'].includes(pc.iceConnectionState)) {
+                    fallbackToFlier(true);
+                } else if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+                    if (!isEmergency && videoEl.videoWidth > 0 && activeTallyState === 'PROGRAM' && (!isProgramMode || currentProgramCamId)) {
+                        restoreLiveVideo();
+                    }
+                }
+            };
+
+            const activeCam = isProgramMode ? currentProgramCamId : camId;
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate && ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        type: 'ice-candidate',
+                        camId: activeCam,
+                        receiverId,
+                        candidate: event.candidate
+                    }));
+                }
+            };
+
+            // Set Remote Description (Phone SDP)
+            await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+
+            // Flush Queued ICE Candidates that arrived early
+            while (candidateQueue.length > 0) {
+                const cand = candidateQueue.shift();
+                try {
+                    await pc.addIceCandidate(cand);
+                } catch (err) {
+                    console.warn('Candidate add error:', err);
+                }
+            }
+
+            // Create and Send Answer
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+
+            ws.send(JSON.stringify({
+                type: 'answer',
+                camId: activeCam,
+                receiverId,
+                sdp: pc.localDescription
+            }));
+        }
+
+        async function queueOrAddCandidate(candidate) {
+            if (!candidate) return;
+            const iceCandidate = new RTCIceCandidate(candidate);
+            if (pc && pc.remoteDescription && pc.remoteDescription.type) {
+                try {
+                    await pc.addIceCandidate(iceCandidate);
+                } catch (e) {
+                    console.warn('Add Candidate Error:', e);
+                }
+            } else {
+                candidateQueue.push(iceCandidate);
+            }
+        }
+
+        initWebSocket();
+    </script>
+</body>
+</html>

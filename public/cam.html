@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Victorious Broadcaster - Camera</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Force hardware-accelerated presentation */
+        body, html {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Floating Camera Shutter (Ergonomic thumb trigger) */
+        .shutter-container {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 40;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            pointer-events: auto;
+        }
+
+        .shutter-btn {
+            width: 74px;
+            height: 74px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.25);
+            border: 3.5px solid #ffffff;
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7), 0 0 15px rgba(16, 185, 129, 0.5);
+            transition: transform 0.1s ease;
+            outline: none;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .shutter-btn:active {
+            transform: scale(0.9);
+            border-color: #34d399;
+        }
+
+        .shutter-inner {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: 2px solid #34d399;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            color: #fff;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.3);
+        }
+
+        .shutter-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #34d399;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+            letter-spacing: 1px;
+        }
+
+        /* Camera Zoom Controls */
+        .zoom-pill {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(15, 10, 30, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            padding: 4px 6px;
+            margin-bottom: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            pointer-events: auto;
+        }
+
+        .zoom-btn {
+            background: transparent;
+            border: none;
+            color: #cbd5e1;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 5px 8px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            outline: none;
+            min-width: 26px;
+            text-align: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .zoom-btn:active {
+            transform: scale(0.9);
+        }
+
+        .zoom-btn.active {
+            background: linear-gradient(135deg, var(--primary-gold), #d97706);
+            color: #000;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+        }
+
+        @media (max-width: 600px) and (orientation: portrait) {
+            .shutter-container {
+                right: auto;
+                left: 50%;
+                top: auto;
+                bottom: 84px;
+                transform: translateX(-50%);
+            }
+        }
+    </style>
+</head>
+<body class="mobile-cam-body">
+    <!-- Camera Viewport -->
+    <video id="local-video" class="video-fullscreen" autoplay playsinline muted></video>
+
+    <!-- Full-Screen Tally Light Border -->
+    <div id="tally-border" class="tally-border"></div>
+
+    <!-- Floating Camera Shutter & Ergonomic Zoom Controls -->
+    <div class="shutter-container" id="shutter-container">
+        <!-- Quick Zoom Presets -->
+        <div class="zoom-pill" id="zoom-controls">
+            <button class="zoom-btn" onclick="zoomDelta(-0.5)" title="Zoom Out">−</button>
+            <button class="zoom-btn active" id="btn-zoom-1" onclick="setZoom(1)">1x</button>
+            <button class="zoom-btn" id="btn-zoom-2" onclick="setZoom(2)">2x</button>
+            <button class="zoom-btn" id="btn-zoom-3" onclick="setZoom(3)">3x</button>
+            <button class="zoom-btn" onclick="zoomDelta(0.5)" title="Zoom In">+</button>
+        </div>
+
+        <button class="shutter-btn" id="btn-shutter" onclick="snapPhoto()" aria-label="Snap Photo">
+            <div class="shutter-inner">📸</div>
+        </button>
+        <span class="shutter-label">SNAP</span>
+    </div>
+
+    <!-- Mobile HUD Controls (Organized across Top-Left & Top-Right; Bottom 100% Clear) -->
+    <div class="mobile-hud">
+        <div class="hud-top">
+            <!-- Left Top: Tally, Handoff & Camera Name -->
+            <div class="hud-cluster hud-left">
+                <div id="tally-badge" class="tally-badge-large">⚪ STANDBY</div>
+                <button id="btn-handoff" class="hud-btn btn-handoff" onclick="handoffToFlier()" title="Cleanly handoff live stream to Church Flier slate">🕊️ Handoff</button>
+                <div class="hud-btn" id="lbl-cam-name">Camera 1</div>
+            </div>
+
+            <!-- Right Top: Flash, Dimmer & Battery (Lens hidden) -->
+            <div class="hud-cluster hud-right">
+                <button class="hud-btn" id="btn-torch" onclick="toggleTorch()" title="Toggle Flashlight">🔦 Flash</button>
+                <button class="hud-btn" id="btn-flip" style="display: none;" onclick="flipCamera()" title="Switch Front/Back Lens">🔄 Lens</button>
+                <button class="hud-btn" id="btn-dimmer" style="background: rgba(245, 158, 11, 0.25); border-color: var(--primary-gold);" onclick="toggleBlackout()" title="Dims screen to save battery during service">🌙 Dimmer</button>
+                <div class="hud-btn" id="lbl-battery">🔋 --%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blackout Screen ("Church Mode" Battery Saver & Touch Lock) -->
+    <div id="blackout-screen" class="blackout-screen" onclick="toggleBlackout()">
+        <div style="font-size: 48px;" id="dim-tally-dot">⚪</div>
+        <p style="color: #666; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;">Church Mode Active (Streaming 1080p)</p>
+        <button id="dim-handoff" class="hud-btn btn-handoff" style="font-size: 15px; padding: 12px 24px; margin-top: 8px;" onclick="event.stopPropagation(); handoffToFlier()" title="Cleanly handoff live stream to Church Flier slate">🕊️ Handoff</button>
+        <p style="color: #444; font-size: 12px; margin-top: 10px;">Tap anywhere to brighten screen</p>
+    </div>
+
+    <!-- Channel Conflict Screen (When 2 phones try to use the same Camera ID) -->
+    <div id="conflict-screen" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0b0717; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; color: #fff;">
+        <div style="font-size: 54px; margin-bottom: 12px;">⚠️</div>
+        <h2 style="color: #f59e0b; font-size: 22px; margin-bottom: 8px;">Camera Channel In Use!</h2>
+        <p id="conflict-msg" style="color: #94a3b8; font-size: 14px; max-width: 400px; line-height: 1.5; margin-bottom: 24px;">This camera is already being used by another phone in church.</p>
+        <p style="color: #e2e8f0; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">Tap an available camera below to switch:</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 360px;">
+            <button onclick="switchCameraChannel(1)" style="padding: 12px; background: #1e1338; border: 1px solid #7c3aed; color: #fff; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Cam 1 • Pastor</button>
+            <button onclick="switchCameraChannel(2)" style="padding: 12px; background: #1e1338; border: 1px solid #7c3aed; color: #fff; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Cam 2 • Choir</button>
+            <button onclick="switchCameraChannel(3)" style="padding: 12px; background: #1e1338; border: 1px solid #7c3aed; color: #fff; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Cam 3 • Wide</button>
+            <button onclick="switchCameraChannel(4)" style="padding: 12px; background: #1e1338; border: 1px solid #7c3aed; color: #fff; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Cam 4 • Roaming 1</button>
+            <button onclick="switchCameraChannel(5)" style="padding: 12px; background: #1e1338; border: 1px solid #7c3aed; color: #fff; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Cam 5 • Roaming 2</button>
+            <button onclick="switchCameraChannel(6)" style="padding: 12px; background: #1e1338; border: 1px solid #7c3aed; color: #fff; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Cam 6 • Overflow</button>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        let camId = parseInt(urlParams.get('id') || '1', 10);
+        document.getElementById('lbl-cam-name').innerText = `Camera ${camId}`;
+
+        let localStream = null;
+        let ws = null;
+        let peerConnections = {}; // Map of peer connections for receivers (OBS, Director)
+        let candidateQueues = {}; // Queues for early ICE candidates
+        let currentFacingMode = 'environment'; // 'environment' = back camera, 'user' = front
+        let isTorchOn = false;
+        let wakeLock = null;
+        let currentTally = 'STANDBY';
+
+        const videoEl = document.getElementById('local-video');
+        const tallyBorder = document.getElementById('tally-border');
+        const tallyBadge = document.getElementById('tally-badge');
+        const dimTallyDot = document.getElementById('dim-tally-dot');
+        const blackoutScreen = document.getElementById('blackout-screen');
+        const conflictScreen = document.getElementById('conflict-screen');
+
+        const rtcConfig = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+
+        function switchCameraChannel(newId) {
+            window.location.search = `?id=${newId}`;
+        }
+
+        // Request Screen WakeLock so phone never sleeps during service
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('[Broadcaster] Screen WakeLock active');
+                }
+            } catch (err) {
+                console.warn('[Broadcaster] WakeLock notice:', err.message);
+            }
+        }
+        requestWakeLock();
+
+        // High-Speed OS Lifecycle Hook: Instant failover when operator locks phone or minimizes app
+        let isCameraSuspended = false;
+
+        function handleCameraSuspension() {
+            if (isCameraSuspended) return;
+            isCameraSuspended = true;
+            console.warn('[Broadcaster] Screen locked or app minimized - notifying hub');
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                try {
+                    ws.send(JSON.stringify({
+                        type: 'camera_suspended',
+                        camId
+                    }));
+                } catch (e) {}
+            }
+        }
+
+        async function handleCameraResumption() {
+            if (!isCameraSuspended) return;
+            isCameraSuspended = false;
+            console.log('[Broadcaster] Screen unlocked or app foregrounded - restoring camera & WakeLock');
+            await requestWakeLock();
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                try {
+                    ws.send(JSON.stringify({
+                        type: 'camera_resumed',
+                        camId
+                    }));
+                } catch (e) {}
+            }
+            if (localStream) {
+                const track = localStream.getVideoTracks()[0];
+                if (!track || track.readyState === 'ended') {
+                    console.warn('[Broadcaster] Camera track ended while phone slept, re-acquiring stream...');
+                    startCamera();
+                } else if (!track.enabled) {
+                    track.enabled = true;
+                }
+            }
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                handleCameraSuspension();
+            } else if (document.visibilityState === 'visible') {
+                handleCameraResumption();
+            }
+        });
+
+        window.addEventListener('pagehide', handleCameraSuspension);
+        window.addEventListener('beforeunload', handleCameraSuspension);
+        if ('onfreeze' in window) {
+            window.addEventListener('freeze', handleCameraSuspension);
+            window.addEventListener('resume', handleCameraResumption);
+        }
+
+        // Camera Zoom Management (Optical Sensor & Digital Scaling)
+        let currentZoom = 1;
+        let minZoom = 1;
+        let maxZoom = 4;
+        let zoomStep = 0.5;
+        let hasHardwareZoom = false;
+
+        function initZoomCapabilities() {
+            if (!localStream) return;
+            const track = localStream.getVideoTracks()[0];
+            if (!track) return;
+            try {
+                const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+                if ('zoom' in capabilities) {
+                    hasHardwareZoom = true;
+                    minZoom = capabilities.zoom.min || 1;
+                    maxZoom = capabilities.zoom.max || 5;
+                    zoomStep = capabilities.zoom.step || 0.1;
+                    const settings = track.getSettings ? track.getSettings() : {};
+                    currentZoom = settings.zoom || 1;
+                    console.log(`[Zoom] Hardware optical/sensor zoom available: min=${minZoom}, max=${maxZoom}`);
+                } else {
+                    hasHardwareZoom = false;
+                    minZoom = 1;
+                    maxZoom = 4;
+                    currentZoom = 1;
+                }
+            } catch (e) {
+                hasHardwareZoom = false;
+            }
+            updateZoomUI();
+        }
+
+        async function setZoom(level) {
+            currentZoom = Math.max(minZoom, Math.min(maxZoom, level));
+            const track = localStream ? localStream.getVideoTracks()[0] : null;
+
+            if (hasHardwareZoom && track) {
+                try {
+                    await track.applyConstraints({
+                        advanced: [{ zoom: currentZoom }]
+                    });
+                } catch (e) {
+                    applyDigitalZoom(currentZoom);
+                }
+            } else {
+                applyDigitalZoom(currentZoom);
+            }
+            updateZoomUI();
+        }
+
+        function applyDigitalZoom(level) {
+            videoEl.style.transform = level > 1 ? `scale(${level})` : 'none';
+            videoEl.style.transformOrigin = 'center center';
+        }
+
+        function zoomDelta(delta) {
+            const next = Math.round((currentZoom + delta) * 10) / 10;
+            setZoom(next);
+        }
+
+        function updateZoomUI() {
+            ['btn-zoom-1', 'btn-zoom-2', 'btn-zoom-3'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.classList.remove('active');
+            });
+
+            if (Math.abs(currentZoom - 1) < 0.25) {
+                const b = document.getElementById('btn-zoom-1');
+                if (b) b.classList.add('active');
+            } else if (Math.abs(currentZoom - 2) < 0.25) {
+                const b = document.getElementById('btn-zoom-2');
+                if (b) b.classList.add('active');
+            } else if (Math.abs(currentZoom - 3) < 0.25) {
+                const b = document.getElementById('btn-zoom-3');
+                if (b) b.classList.add('active');
+            }
+        }
+
+        // Start Camera (1080p Landscape)
+        async function startCamera() {
+            if (localStream) {
+                localStream.getTracks().forEach(t => t.stop());
+            }
+
+            const isLandscape = window.innerWidth > window.innerHeight;
+            const constraints = {
+                audio: false, // PC mixer feeds audio to OBS directly
+                video: {
+                    facingMode: currentFacingMode,
+                    aspectRatio: { ideal: 1.7777777778 },
+                    width: { ideal: isLandscape ? 1920 : 1080, min: 1280 },
+                    height: { ideal: isLandscape ? 1080 : 1920, min: 720 },
+                    frameRate: { ideal: 30, min: 24 }
+                }
+            };
+
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoEl.srcObject = localStream;
+                initZoomCapabilities();
+                initWebSocket();
+            } catch (e) {
+                alert('Could not start camera: ' + e.message + '\n\nMake sure camera permissions are allowed in your browser.');
+            }
+        }
+
+        // Connect WebSocket Signaling to Local Hub
+        function initWebSocket() {
+            const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${proto}//${window.location.host}`);
+
+            ws.onopen = () => {
+                ws.send(JSON.stringify({ type: 'register', role: 'broadcaster', camId }));
+                sendTelemetry();
+            };
+
+            ws.onmessage = async (event) => {
+                const data = JSON.parse(event.data);
+
+                // Channel Conflict Alert (2 phones on same camera)
+                if (data.type === 'channel_busy') {
+                    document.getElementById('conflict-msg').innerText = data.message || `Camera ${data.camId} is already active on another phone.`;
+                    conflictScreen.style.display = 'flex';
+                    return;
+                }
+
+                // Tally Light Message from Hub / OBS
+                if (data.type === 'tally') {
+                    updateTally(data.state);
+                }
+
+                // WebRTC Signaling from OBS receiver
+                if (data.type === 'receiver_ready') {
+                    console.log(`[Broadcaster] Receiver ready: ${data.receiverId}, creating offer...`);
+                    await createPeerConnection(data.receiverId);
+                } else if (data.type === 'answer') {
+                    const pc = peerConnections[data.receiverId];
+                    if (pc) {
+                        await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                        // Flush any queued candidates
+                        if (candidateQueues[data.receiverId]) {
+                            while (candidateQueues[data.receiverId].length > 0) {
+                                const cand = candidateQueues[data.receiverId].shift();
+                                try { await pc.addIceCandidate(cand); } catch (e) {}
+                            }
+                        }
+                    }
+                } else if (data.type === 'ice-candidate') {
+                    const pc = peerConnections[data.receiverId];
+                    if (pc && pc.remoteDescription && pc.remoteDescription.type) {
+                        try {
+                            await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+                        } catch (e) {}
+                    } else if (data.receiverId) {
+                        if (!candidateQueues[data.receiverId]) candidateQueues[data.receiverId] = [];
+                        candidateQueues[data.receiverId].push(new RTCIceCandidate(data.candidate));
+                    }
+                }
+            };
+
+            ws.onclose = () => {
+                setTimeout(initWebSocket, 2000);
+            };
+        }
+
+        // WebRTC: Create Offer for an OBS / Director Receiver
+        async function createPeerConnection(receiverId) {
+            if (peerConnections[receiverId]) {
+                try { peerConnections[receiverId].close(); } catch (e) {}
+            }
+
+            candidateQueues[receiverId] = [];
+            const pc = new RTCPeerConnection(rtcConfig);
+            peerConnections[receiverId] = pc;
+
+            // Add local camera tracks
+            if (localStream) {
+                localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+            }
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate && ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        type: 'ice-candidate',
+                        camId,
+                        receiverId,
+                        candidate: event.candidate
+                    }));
+                }
+            };
+
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+
+            ws.send(JSON.stringify({
+                type: 'offer',
+                camId,
+                receiverId,
+                sdp: pc.localDescription
+            }));
+        }
+
+        // Update Tally Lights (Red = Live, Green = Preview)
+        function updateTally(state) {
+            currentTally = state;
+            tallyBorder.className = `tally-border ${state.toLowerCase()}`;
+            tallyBadge.className = `tally-badge-large ${state.toLowerCase()}`;
+
+            const btnHandoff = document.getElementById('btn-handoff');
+            const dimHandoff = document.getElementById('dim-handoff');
+
+            if (state === 'PROGRAM') {
+                tallyBadge.innerText = '🔴 LIVE ON AIR';
+                dimTallyDot.innerText = '🔴';
+                if (btnHandoff) {
+                    btnHandoff.className = 'hud-btn btn-handoff live';
+                    btnHandoff.title = 'Cleanly handoff live stream to Church Flier slate';
+                }
+                if (dimHandoff) {
+                    dimHandoff.className = 'hud-btn btn-handoff live';
+                    dimHandoff.style.display = 'inline-flex';
+                }
+                // Vibrate phone briefly on transition to Live
+                if ('vibrate' in navigator) navigator.vibrate([150, 50, 150]);
+            } else if (state === 'PREVIEW' || state === 'STANDBY') {
+                tallyBadge.innerText = '🟢 STANDBY';
+                dimTallyDot.innerText = '🟢';
+                if (btnHandoff) {
+                    btnHandoff.className = 'hud-btn btn-handoff';
+                    btnHandoff.title = 'Camera is in Standby (Tap when live to handoff)';
+                }
+                if (dimHandoff) {
+                    dimHandoff.className = 'hud-btn btn-handoff';
+                    dimHandoff.style.display = 'none';
+                }
+            } else {
+                tallyBadge.innerText = '⚪ OFF AIR';
+                dimTallyDot.innerText = '⚪';
+                if (btnHandoff) {
+                    btnHandoff.className = 'hud-btn btn-handoff';
+                    btnHandoff.title = 'Camera is Off Air';
+                }
+                if (dimHandoff) {
+                    dimHandoff.className = 'hud-btn btn-handoff';
+                    dimHandoff.style.display = 'none';
+                }
+            }
+        }
+
+        // Clean Operator Handoff to Church Flier Slate
+        function handoffToFlier() {
+            if (currentTally !== 'PROGRAM') {
+                showHudToast('ℹ️ Camera is in Standby (Not live on air)');
+                return;
+            }
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                console.log(`[Cameraman Handoff] Voluntary return to Church Flier for Cam ${camId}`);
+                ws.send(JSON.stringify({
+                    type: 'cameraman_handoff',
+                    camId
+                }));
+            }
+            if ('vibrate' in navigator) navigator.vibrate([120, 60, 120]);
+            updateTally('STANDBY');
+            showHudToast('🕊️ Handed off to Church Flier');
+        }
+
+        // Battery & Telemetry Reporter
+        async function sendTelemetry() {
+            try {
+                let batteryPct = null;
+                let isCharging = null;
+                if ('getBattery' in navigator) {
+                    const b = await navigator.getBattery();
+                    batteryPct = Math.round(b.level * 100);
+                    isCharging = b.charging;
+                    document.getElementById('lbl-battery').innerText = `${isCharging ? '⚡' : '🔋'} ${batteryPct}%`;
+                }
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        type: 'telemetry',
+                        camId,
+                        battery: batteryPct,
+                        charging: isCharging
+                    }));
+                }
+            } catch (e) {}
+            setTimeout(sendTelemetry, 10000);
+        }
+
+        // Flip Front / Back Camera
+        function flipCamera() {
+            currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+            startCamera();
+        }
+
+        // Toggle LED Flashlight / Torch
+        async function toggleTorch() {
+            if (!localStream) return;
+            const track = localStream.getVideoTracks()[0];
+            try {
+                isTorchOn = !isTorchOn;
+                await track.applyConstraints({
+                    advanced: [{ torch: isTorchOn }]
+                });
+                document.getElementById('btn-torch').style.color = isTorchOn ? 'var(--primary-gold)' : '#fff';
+            } catch (e) {
+                alert('Torch/Flashlight not supported on this camera lens.');
+            }
+        }
+
+        // Toggle "Church Mode" Blackout Screen (Saves battery, locks touches)
+        function toggleBlackout() {
+            const isDim = blackoutScreen.classList.toggle('active');
+            document.body.classList.toggle('dimmed', isDim);
+        }
+
+        // Instant High-Resolution Church Service Photo Snap
+        let isSnapping = false;
+        async function snapPhoto() {
+            if (isSnapping || !localStream) return;
+            isSnapping = true;
+            const btnShutter = document.getElementById('btn-shutter');
+            if (btnShutter) {
+                btnShutter.style.opacity = '0.6';
+                btnShutter.style.transform = 'scale(0.92)';
+            }
+
+            // Flash effect on phone screen
+            const flash = document.createElement('div');
+            flash.style.position = 'fixed';
+            flash.style.top = '0';
+            flash.style.left = '0';
+            flash.style.width = '100vw';
+            flash.style.height = '100vh';
+            flash.style.background = '#fff';
+            flash.style.zIndex = '99999';
+            flash.style.opacity = '0.9';
+            flash.style.transition = 'opacity 0.25s ease-out';
+            flash.style.pointerEvents = 'none';
+            document.body.appendChild(flash);
+            setTimeout(() => {
+                flash.style.opacity = '0';
+                setTimeout(() => flash.remove(), 250);
+            }, 60);
+
+            // Shutter haptic feedback
+            if ('vibrate' in navigator) navigator.vibrate([100]);
+
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = videoEl.videoWidth || 1920;
+                canvas.height = videoEl.videoHeight || 1080;
+                const ctx = canvas.getContext('2d');
+                if (!hasHardwareZoom && currentZoom > 1) {
+                    const sw = (videoEl.videoWidth || 1920) / currentZoom;
+                    const sh = (videoEl.videoHeight || 1080) / currentZoom;
+                    const sx = ((videoEl.videoWidth || 1920) - sw) / 2;
+                    const sy = ((videoEl.videoHeight || 1080) - sh) / 2;
+                    ctx.drawImage(videoEl, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+                } else {
+                    ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+                }
+
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+                const formData = new FormData();
+                formData.append('photo', blob, `Church_Photo_Cam${camId}.jpg`);
+                formData.append('camId', camId);
+
+                const res = await fetch(`/api/upload-photo?camId=${camId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showHudToast('📸 Photo Saved to Laptop!');
+                }
+            } catch (err) {
+                console.warn('Photo upload error:', err);
+                showHudToast('⚠️ Error saving photo');
+            } finally {
+                isSnapping = false;
+                if (btnShutter) {
+                    btnShutter.style.opacity = '1';
+                    btnShutter.style.transform = 'scale(1)';
+                }
+            }
+        }
+
+        function showHudToast(msg) {
+            const toast = document.createElement('div');
+            toast.style.position = 'fixed';
+            toast.style.bottom = '80px';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
+            toast.style.background = 'rgba(16, 185, 129, 0.9)';
+            toast.style.color = '#fff';
+            toast.style.padding = '8px 18px';
+            toast.style.borderRadius = '20px';
+            toast.style.fontSize = '14px';
+            toast.style.fontWeight = '700';
+            toast.style.boxShadow = '0 4px 15px rgba(0,0,0,0.5)';
+            toast.style.zIndex = '9999';
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+
+        // Start immediately
+        startCamera();
+    </script>
+</body>
+</html>

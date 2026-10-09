@@ -1,0 +1,1090 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Victorious Streaming Hub - Director Command Center</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .placeholder-box {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #110924 0%, #080512 100%);
+            color: var(--text-muted);
+            z-index: 2;
+            transition: opacity 0.3s ease;
+        }
+        .placeholder-box.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .placeholder-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px dashed var(--primary-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            animation: pulseGlow 2s infinite;
+        }
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(245, 158, 11, 0); }
+            50% { transform: scale(1.05); box-shadow: 0 0 15px var(--primary-gold-glow); }
+        }
+        .placeholder-text {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .placeholder-hint {
+            font-size: 11px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <header class="hub-header">
+        <div class="brand-container">
+            <div class="brand-logo">👑</div>
+            <div>
+                <h1 class="brand-title">Victorious Streaming Hub</h1>
+                <p class="brand-subtitle">Professional Church Multi-Camera Broadcast Studio</p>
+            </div>
+        </div>
+        <div class="system-status">
+            <div class="master-obs-pill" onclick="copyMasterObsUrl()" title="Click to copy Master OBS Program link">
+                <span>📺 Master OBS Link</span>
+                <span style="font-size: 11px; background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 10px;">📋 Copy</span>
+            </div>
+            <button class="btn-snap-director" onclick="openPhotosModal()" style="padding: 6px 14px; font-size: 13px;">📸 Photos (<span id="lbl-photos-count">0</span>)
+            </button>
+            <button class="btn-emergency-cut" id="btn-emergency-cut" onclick="toggleEmergencyCut()"><span>🚨</span><span id="lbl-emergency-text">EMERGENCY CUT TO FLIER</span></button>
+            <div class="badge">
+                <span class="badge-dot active" id="dot-hub"></span>
+                <span>Hub Local: <strong id="lbl-ip">Loading...</strong></span>
+            </div>
+            <div class="badge">
+                <span class="badge-dot" id="dot-obs"></span>
+                <span id="lbl-obs">OBS Studio WebSocket</span>
+            </div>
+                    <button class="btn-exit-studio" onclick="exitStudio()" title="Stop Broadcast & Exit Studio" style="background: rgba(220, 38, 38, 0.25); border: 1px solid #ef4444; color: #fca5a5; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;">⏹ Exit Studio</button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container">
+        <div class="section-title"><span>🎛</span><h2>Sanctuary Multiview Control & Live Cameras</h2>
+        </div>
+
+        <!-- 4-Camera Grid -->
+        <div class="multiview-grid" id="camera-grid">
+            <!-- Cam 1 -->
+            <div class="cam-card" id="card-1">
+                <div class="video-preview-wrapper" onclick="setTally(1, 'PROGRAM')" style="cursor: pointer;" title="Click to Cut Live!">
+                    <video id="preview-1" autoplay playsinline muted></video>
+                    <div class="placeholder-box" id="placeholder-1">
+                        <div class="placeholder-icon">📷</div>
+                        <div class="placeholder-text">Camera 1 Offline</div>
+                        <div class="placeholder-hint">Scan QR code below to connect phone</div>
+                    </div>
+                    <div class="video-overlay-tally" id="overlay-tally-1">OFF AIR</div>
+                    <div class="video-overlay-battery" id="overlay-battery-1">🔋 --%</div>
+                </div>
+                <div class="cam-info">
+                    <div class="cam-name-row">
+                        <span class="cam-name">Camera  • Pastor / Pulpit</span>
+                        <span class="cam-status" id="status-1">⚪ Offline</span>
+                    </div>
+                    <div class="cam-actions">
+                        <button class="btn btn-tally-live" id="btn-live-1" onclick="setTally(1, 'PROGRAM')">⚡ CUT LIVE</button>
+                        <button class="btn btn-snap-director" onclick="snapDirectorPhoto(1)">📸 Snap Photo</button>
+                        <button class="btn btn-primary" onclick="openQrModal(1)">📲 Connect</button>
+                        <button class="btn btn-secondary" onclick="copyObsUrl(1)">📋 OBS Link</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cam 2 -->
+            <div class="cam-card" id="card-2">
+                <div class="video-preview-wrapper" onclick="setTally(2, 'PROGRAM')" style="cursor: pointer;" title="Click to Cut Live!">
+                    <video id="preview-2" autoplay playsinline muted></video>
+                    <div class="placeholder-box" id="placeholder-2">
+                        <div class="placeholder-icon">📷</div>
+                        <div class="placeholder-text">Camera 2 Offline</div>
+                        <div class="placeholder-hint">Scan QR code below to connect phone</div>
+                    </div>
+                    <div class="video-overlay-tally" id="overlay-tally-2">OFF AIR</div>
+                    <div class="video-overlay-battery" id="overlay-battery-2">🔋 --%</div>
+                </div>
+                <div class="cam-info">
+                    <div class="cam-name-row">
+                        <span class="cam-name">Camera 2 • Choir / Altar</span>
+                        <span class="cam-status" id="status-2">⚪ Offline</span>
+                    </div>
+                    <div class="cam-actions">
+                        <button class="btn btn-tally-live" id="btn-live-2" onclick="setTally(2, 'PROGRAM')">⚡ CUT LIVE</button>
+                        <button class="btn btn-snap-director" onclick="snapDirectorPhoto(2)">📸 Snap Photo</button>
+                        <button class="btn btn-primary" onclick="openQrModal(2)">📲 Connect</button>
+                        <button class="btn btn-secondary" onclick="copyObsUrl(2)">📋 OBS Link</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cam 3 -->
+            <div class="cam-card" id="card-3">
+                <div class="video-preview-wrapper" onclick="setTally(3, 'PROGRAM')" style="cursor: pointer;" title="Click to Cut Live!">
+                    <video id="preview-3" autoplay playsinline muted></video>
+                    <div class="placeholder-box" id="placeholder-3">
+                        <div class="placeholder-icon">📷</div>
+                        <div class="placeholder-text">Camera 3 Offline</div>
+                        <div class="placeholder-hint">Scan QR code below to connect phone</div>
+                    </div>
+                    <div class="video-overlay-tally" id="overlay-tally-3">OFF AIR</div>
+                    <div class="video-overlay-battery" id="overlay-battery-3">🔋 --%</div>
+                </div>
+                <div class="cam-info">
+                    <div class="cam-name-row">
+                        <span class="cam-name">Camera 3 • Congregation / Wide</span>
+                        <span class="cam-status" id="status-3">⚪ Offline</span>
+                    </div>
+                    <div class="cam-actions">
+                        <button class="btn btn-tally-live" id="btn-live-3" onclick="setTally(3, 'PROGRAM')">⚡ CUT LIVE</button>
+                        <button class="btn btn-snap-director" onclick="snapDirectorPhoto(3)">📸 Snap Photo</button>
+                        <button class="btn btn-primary" onclick="openQrModal(3)">📲 Connect</button>
+                        <button class="btn btn-secondary" onclick="copyObsUrl(3)">📋 OBS Link</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cam 4 -->
+            <div class="cam-card" id="card-4">
+                <div class="video-preview-wrapper" onclick="setTally(4, 'PROGRAM')" style="cursor: pointer;" title="Click to Cut Live!">
+                    <video id="preview-4" autoplay playsinline muted></video>
+                    <div class="placeholder-box" id="placeholder-4">
+                        <div class="placeholder-icon">📷</div>
+                        <div class="placeholder-text">Camera 4 Offline</div>
+                        <div class="placeholder-hint">Scan QR code below to connect phone</div>
+                    </div>
+                    <div class="video-overlay-tally" id="overlay-tally-4">OFF AIR</div>
+                    <div class="video-overlay-battery" id="overlay-battery-4">🔋 --%</div>
+                </div>
+                <div class="cam-info">
+                    <div class="cam-name-row">
+                        <span class="cam-name">Camera 4 • Mobile / Roaming 1</span>
+                        <span class="cam-status" id="status-4">⚪ Offline</span>
+                    </div>
+                    <div class="cam-actions">
+                        <button class="btn btn-tally-live" id="btn-live-4" onclick="setTally(4, 'PROGRAM')">⚡ CUT LIVE</button>
+                        <button class="btn btn-snap-director" onclick="snapDirectorPhoto(4)">📸 Snap Photo</button>
+                        <button class="btn btn-primary" onclick="openQrModal(4)">📲 Connect</button>
+                        <button class="btn btn-secondary" onclick="copyObsUrl(4)">📋 OBS Link</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cam 5 -->
+            <div class="cam-card" id="card-5">
+                <div class="video-preview-wrapper" onclick="setTally(5, 'PROGRAM')" style="cursor: pointer;" title="Click to Cut Live!">
+                    <video id="preview-5" autoplay playsinline muted></video>
+                    <div class="placeholder-box" id="placeholder-5">
+                        <div class="placeholder-icon">📷</div>
+                        <div class="placeholder-text">Camera 5 Offline</div>
+                        <div class="placeholder-hint">Scan QR code below to connect phone</div>
+                    </div>
+                    <div class="video-overlay-tally" id="overlay-tally-5">OFF AIR</div>
+                    <div class="video-overlay-battery" id="overlay-battery-5">🔋 --%</div>
+                </div>
+                <div class="cam-info">
+                    <div class="cam-name-row">
+                        <span class="cam-name">Camera 5 • Mobile / Roaming 2</span>
+                        <span class="cam-status" id="status-5">⚪ Offline</span>
+                    </div>
+                    <div class="cam-actions">
+                        <button class="btn btn-tally-live" id="btn-live-5" onclick="setTally(5, 'PROGRAM')">⚡ CUT LIVE</button>
+                        <button class="btn btn-snap-director" onclick="snapDirectorPhoto(5)">📸 Snap Photo</button>
+                        <button class="btn btn-primary" onclick="openQrModal(5)">📲 Connect</button>
+                        <button class="btn btn-secondary" onclick="copyObsUrl(5)">📋 OBS Link</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cam 6 -->
+            <div class="cam-card" id="card-6">
+                <div class="video-preview-wrapper" onclick="setTally(6, 'PROGRAM')" style="cursor: pointer;" title="Click to Cut Live!">
+                    <video id="preview-6" autoplay playsinline muted></video>
+                    <div class="placeholder-box" id="placeholder-6">
+                        <div class="placeholder-icon">📷</div>
+                        <div class="placeholder-text">Camera 6 Offline</div>
+                        <div class="placeholder-hint">Scan QR code below to connect phone</div>
+                    </div>
+                    <div class="video-overlay-tally" id="overlay-tally-6">OFF AIR</div>
+                    <div class="video-overlay-battery" id="overlay-battery-6">🔋 --%</div>
+                </div>
+                <div class="cam-info">
+                    <div class="cam-name-row">
+                        <span class="cam-name">Camera 6 • Guest / Overflow</span>
+                        <span class="cam-status" id="status-6">⚪ Offline</span>
+                    </div>
+                    <div class="cam-actions">
+                        <button class="btn btn-tally-live" id="btn-live-6" onclick="setTally(6, 'PROGRAM')">⚡ CUT LIVE</button>
+                        <button class="btn btn-snap-director" onclick="snapDirectorPhoto(6)">📸 Snap Photo</button>
+                        <button class="btn btn-primary" onclick="openQrModal(6)">📲 Connect</button>
+                        <button class="btn btn-secondary" onclick="copyObsUrl(6)">📋 OBS Link</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sunday Church Flier & Automated Failover Slate Card -->
+        <div class="flier-manager-card">
+            <div class="flier-manager-header">
+                <div class="flier-manager-title">
+                    <span style="font-size: 26px;">🎨</span>
+                    <div>
+                        <h3>Sunday Church Flier & Automated Failover Slate</h3>
+                        <p>This graphic automatically crossfades onto live stream if any camera drops or when Emergency Cut is triggered.</p>
+                    </div>
+                </div>
+                <div class="flier-actions">
+                    <input type="file" id="flier-file-input" accept="image/*" style="display: none;" onchange="uploadFlier(this)">
+                    <button class="btn btn-primary" onclick="document.getElementById('flier-file-input').click()"><span>📤</span> Upload Sunday Flier</button>
+                </div>
+            </div>
+
+            <div class="flier-preview-container">
+                <img id="dashboard-flier-preview" src="/assets/default_flier.svg" alt="Active Flier Slate" class="flier-preview-img">
+                <div class="flier-preview-overlay">
+                    <span class="flier-status-pill">Active Live Stream Fallback</span>
+                    <span style="font-size: 12px; color: #cbd5e1;">Click "Upload Sunday Flier" to change this image for each service</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation Component -->
+        <div class="tabs-container">
+            <div class="tabs-nav">
+                <button class="tab-btn active" id="tab-btn-guide" onclick="switchTab('guide')">
+                    <span>📋</span>
+                    <span>Step-by-Step Operator Guide</span>
+                </button>
+                <button class="tab-btn" id="tab-btn-obs" onclick="switchTab('obs')">
+                    <span>📺</span>
+                    <span>OBS Browser Source Links (1-Click Copy)</span>
+                </button>
+                <button class="tab-btn" id="tab-btn-about" onclick="switchTab('about')">
+                    <span>ℹ️</span>
+                    <span>About & Executive Leadership</span>
+                </button>
+            </div>
+
+            <!-- Panel 1: Step-by-Step Operator Guide -->
+            <div class="tab-panel active" id="panel-guide">
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h4 class="step-title">Start the Hub</h4>
+                        <p class="step-desc">Double-click the <strong>"Victorious Streaming Hub"</strong> icon on your Desktop. The local server starts and opens this Director Command Center.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h4 class="step-title">Connect Mobile Phones</h4>
+                        <p class="step-desc">Click <strong>"📲 Connect Phone"</strong> on any camera slot (Cam 1–6). Have your church volunteers scan the QR code using their phone's camera.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h4 class="step-title">Add to OBS Studio</h4>
+                        <p class="step-desc">Click <strong>"📋 Copy OBS Link"</strong> on that camera. Inside OBS, click <strong>+ → Browser Source</strong>, paste the link, and set width <strong>1920</strong> by height <strong>1080</strong>.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">4</div>
+                        <h4 class="step-title">Live Broadcast & Tally</h4>
+                        <p class="step-desc">Switch scenes in OBS or use the <strong>"🔴 CUT LIVE"</strong> buttons above. The phone screen pulses <strong>RED</strong> on air and <strong>GREEN</strong> on standby!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 2: OBS Browser Source Links (Direct 1-Click Copy) -->
+            <div class="tab-panel" id="panel-obs">
+                <div style="background: rgba(19, 11, 41, 0.7); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 12px; padding: 24px;">
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: var(--primary-gold); font-size: 18px; margin-bottom: 6px;">OBS Studio Browser Source URLs</h3>
+                        <p style="color: var(--text-muted); font-size: 13px;">Inside OBS Studio: Add Source (+) → <strong>Browser</strong> → Paste the corresponding URL below → Set Width: <strong>1920</strong>, Height: <strong>1080</strong>.</p>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+                        <div style="background: #0d081c; padding: 14px; border-radius: 8px; border: 1px solid #2d1b54;">
+                            <div style="font-weight: 600; font-size: 13px; color: #f59e0b; margin-bottom: 6px;">Camera  • Pastor / Pulpit</div>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" readonly id="obs-input-1" value="http://localhost:3000/obs.html?id=1" style="flex: 1; background: #160c2b; border: 1px solid #4a2882; color: #cbd5e1; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-family: monospace;">
+                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="copyObsUrl(1)">Copy</button>
+                            </div>
+                        </div>
+                        <div style="background: #0d081c; padding: 14px; border-radius: 8px; border: 1px solid #2d1b54;">
+                            <div style="font-weight: 600; font-size: 13px; color: #f59e0b; margin-bottom: 6px;">Camera 2 • Choir / Altar</div>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" readonly id="obs-input-2" value="http://localhost:3000/obs.html?id=2" style="flex: 1; background: #160c2b; border: 1px solid #4a2882; color: #cbd5e1; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-family: monospace;">
+                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="copyObsUrl(2)">Copy</button>
+                            </div>
+                        </div>
+                        <div style="background: #0d081c; padding: 14px; border-radius: 8px; border: 1px solid #2d1b54;">
+                            <div style="font-weight: 600; font-size: 13px; color: #f59e0b; margin-bottom: 6px;">Camera 3 • Congregation / Wide</div>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" readonly id="obs-input-3" value="http://localhost:3000/obs.html?id=3" style="flex: 1; background: #160c2b; border: 1px solid #4a2882; color: #cbd5e1; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-family: monospace;">
+                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="copyObsUrl(3)">Copy</button>
+                            </div>
+                        </div>
+                        <div style="background: #0d081c; padding: 14px; border-radius: 8px; border: 1px solid #2d1b54;">
+                            <div style="font-weight: 600; font-size: 13px; color: #f59e0b; margin-bottom: 6px;">Camera 4 • Mobile / Roaming 1</div>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" readonly id="obs-input-4" value="http://localhost:3000/obs.html?id=4" style="flex: 1; background: #160c2b; border: 1px solid #4a2882; color: #cbd5e1; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-family: monospace;">
+                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="copyObsUrl(4)">Copy</button>
+                            </div>
+                        </div>
+                        <div style="background: #0d081c; padding: 14px; border-radius: 8px; border: 1px solid #2d1b54;">
+                            <div style="font-weight: 600; font-size: 13px; color: #f59e0b; margin-bottom: 6px;">Camera 5 • Mobile / Roaming 2</div>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" readonly id="obs-input-5" value="http://localhost:3000/obs.html?id=5" style="flex: 1; background: #160c2b; border: 1px solid #4a2882; color: #cbd5e1; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-family: monospace;">
+                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="copyObsUrl(5)">Copy</button>
+                            </div>
+                        </div>
+                        <div style="background: #0d081c; padding: 14px; border-radius: 8px; border: 1px solid #2d1b54;">
+                            <div style="font-weight: 600; font-size: 13px; color: #f59e0b; margin-bottom: 6px;">Camera 6 • Guest / Overflow</div>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" readonly id="obs-input-6" value="http://localhost:3000/obs.html?id=6" style="flex: 1; background: #160c2b; border: 1px solid #4a2882; color: #cbd5e1; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-family: monospace;">
+                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="copyObsUrl(6)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 3: About & Executive Leadership -->
+            <div class="tab-panel" id="panel-about">
+                <div class="executive-card">
+                    <div class="executive-header">
+                        <div class="executive-avatar">👑</div>
+                        <div class="executive-info">
+                            <h3>Victory Saviour Edet</h3>
+                            <div class="executive-title">Author & Lead Architect</div>
+                            <div class="executive-company">CEO, VICTORIOUS MARKET</div>
+                        </div>
+                    </div>
+
+                    <div class="executive-body">
+                        <div class="detail-badge">
+                            <h4>Platform Architecture</h4>
+                            <p>Victorious Streaming Hub v1.0 • Enterprise Church Multi-Camera Broadcast Edition. Ultra-low latency WebRTC video transport, automated OBS Studio integration, and smart Tally telemetry.</p>
+                        </div>
+
+                        <div class="detail-badge">
+                            <h4>The Vision</h4>
+                            <p>"Empowering churches, ministries, and media teams with state-of-the-art, broadcast-grade multi-camera technology without expensive hardware or proprietary licenses."</p>
+                        </div>
+
+                        <div class="detail-badge">
+                            <h4>Executive Ownership</h4>
+                            <p>Architected & Developed under the leadership of <strong>Victory Saviour Edet</strong>, Chief Executive Officer, <strong>VICTORIOUS MARKET</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- QR Code Modal -->
+    <div class="modal-backdrop" id="qr-modal" onclick="closeQrModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 id="modal-title" style="color: var(--primary-gold); font-size: 18px;">Connect Camera</h3>
+            <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px;">Scan with phone camera or open the link below on the phone:</p>
+            <img class="qr-image" id="modal-qr-img" src="" alt="QR Code">
+            <div class="qr-link-box" id="modal-link-box">https://...</div>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="btn btn-primary" onclick="copyModalLink()">📋 Copy Phone Link</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('qr-modal').classList.remove('open')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =====================================================================
+        // CLOSE GUARD & AUTO-SHUTDOWN CONTROLLER
+        // Prevents accidental closure on top-right 'X' button during live service
+        // =====================================================================
+        let isIntentionallyClosing = false;
+
+        window.addEventListener('beforeunload', (e) => {
+            if (!isIntentionallyClosing) {
+                e.preventDefault();
+                e.returnValue = 'Live church broadcast in progress. Are you sure you want to exit?';
+                return e.returnValue;
+            }
+        });
+
+        // Unload handler (auto-shutdown removed to preserve server on refresh)
+
+                async function exitStudio() {
+            if (confirm("Are you sure you want to stop Victorious Streaming Hub?\n\nThis will disconnect all mobile camera feeds and shut down the broadcast studio engine.")) {
+                isIntentionallyClosing = true;
+                try {
+                    await fetch('/api/shutdown', { method: 'POST' });
+                } catch (e) {}
+                window.close();
+            }
+        }
+
+        const directorSessionId = 'dir_' + Math.random().toString(36).substring(2, 8);
+        let serverInfo = null;
+        let ws = null;
+        const peerConnections = {}; // Map of WebRTC connections for each camera preview
+
+        // Fetch Server Info & URLs
+        async function loadInfo() {
+            try {
+                const res = await fetch('/api/info');
+                serverInfo = await res.json();
+                document.getElementById('lbl-ip').innerText = `${serverInfo.localIp}:${serverInfo.httpPort}`;
+                updateCameraStates(serverInfo.cameras);
+                if (serverInfo.flierUrl) {
+                    document.getElementById('dashboard-flier-preview').src = serverInfo.flierUrl;
+                }
+                if (serverInfo.isEmergencyCut) {
+                    updateEmergencyCutUI(true);
+                }
+                initWebSocket();
+            } catch (e) {
+                console.error('Failed to load server info', e);
+            }
+        }
+
+        // Initialize WebSocket for Live Telemetry, Tally & WebRTC
+        function initWebSocket() {
+            const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${proto}//${window.location.host}`);
+
+            ws.onopen = () => {
+                ws.send(JSON.stringify({ type: 'register', role: 'director' }));
+                document.getElementById('dot-hub').className = 'badge-dot active';
+                // Request video feed for any currently connected cameras
+                for (let i = 1; i <= 6; i++) {
+                    requestCameraFeed(i);
+                }
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'camera_update') {
+                    if (serverInfo) serverInfo.cameras = data.cameras;
+                    updateCameraStates(data.cameras);
+                    if (data.notification) {
+                        showToast(data.notification);
+                    }
+                }
+                if (data.type === 'tally_update') {
+                    if (serverInfo && serverInfo.cameras && serverInfo.cameras[data.camId]) {
+                        serverInfo.cameras[data.camId].tally = data.state;
+                    }
+                    updateTallyBadge(data.camId, data.state);
+                }
+                if (data.type === 'emergency_cut') {
+                    if (serverInfo) serverInfo.isEmergencyCut = data.active;
+                    updateEmergencyCutUI(data.active);
+                }
+                if (data.type === 'telemetry_update') {
+                    updateTelemetry(data.camId, data.battery, data.charging);
+                }
+                if (data.type === 'obs_status') {
+                    const dot = document.getElementById('dot-obs');
+                    dot.className = data.connected ? 'badge-dot active' : 'badge-dot inactive';
+                    document.getElementById('lbl-obs').innerText = data.connected ? 'OBS Connected (Live Tally Active)' : 'OBS WebSocket (Port 4455)';
+                }
+                if (data.type === 'photo_captured') {
+                    showToast(`\u{1F4F8} Camera ${data.camId} snapped a high-res photo!\nSaved to laptop: photos/`);
+                    loadPhotosCount();
+                    const modal = document.getElementById('photos-modal');
+                    if (modal && modal.classList.contains('open')) {
+                        refreshPhotosGallery();
+                    }
+                }
+                if (data.type === 'photo_deleted') {
+                    loadPhotosCount();
+                    const modal = document.getElementById('photos-modal');
+                    if (modal && modal.classList.contains('open')) {
+                        refreshPhotosGallery();
+                    }
+                }
+
+                // WebRTC Signaling from phone broadcaster
+                if (data.type === 'offer' && data.receiverId && data.receiverId === `director_${data.camId}_${directorSessionId}`) {
+                    handleOffer(data.camId, data.receiverId, data.sdp);
+                } else if (data.type === 'ice-candidate' && data.receiverId && data.receiverId === `director_${data.camId}_${directorSessionId}`) {
+                    const pc = peerConnections[data.camId];
+                    const cand = new RTCIceCandidate(data.candidate);
+                    if (pc && pc.remoteDescription && pc.remoteDescription.type) {
+                        try { pc.addIceCandidate(cand); } catch (e) {}
+                    } else {
+                        if (!directorCandidateQueues[data.camId]) directorCandidateQueues[data.camId] = [];
+                        directorCandidateQueues[data.camId].push(cand);
+                    }
+                }
+            };
+
+            ws.onclose = () => {
+                document.getElementById('dot-hub').className = 'badge-dot inactive';
+                setTimeout(initWebSocket, 3000);
+            };
+        }
+
+        function requestCameraFeed(camId) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const receiverId = `director_${camId}_${directorSessionId}`;
+                ws.send(JSON.stringify({
+                    type: 'receiver_ready',
+                    camId: parseInt(camId, 10),
+                    receiverId
+                }));
+            }
+        }
+
+        const directorCandidateQueues = {};
+
+        async function handleOffer(camId, receiverId, sdp) {
+            if (peerConnections[camId]) {
+                try { peerConnections[camId].close(); } catch (e) {}
+            }
+
+            directorCandidateQueues[camId] = [];
+            const pc = new RTCPeerConnection({
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' }
+                ]
+            });
+            peerConnections[camId] = pc;
+
+            pc.ontrack = (event) => {
+                const videoEl = document.getElementById(`preview-${camId}`);
+                const placeholder = document.getElementById(`placeholder-${camId}`);
+                
+                // Immediately hide placeholder when video track arrives
+                if (placeholder) {
+                    placeholder.classList.add('hidden');
+                }
+
+                if (videoEl) {
+                    videoEl.muted = true;
+                    videoEl.playsInline = true;
+                    videoEl.autoplay = true;
+                    videoEl.srcObject = event.streams[0];
+                    videoEl.play().catch(e => {
+                        console.warn('[Autoplay retry on user gesture]:', e);
+                        const unlock = () => { videoEl.play(); document.removeEventListener('click', unlock); };
+                        document.addEventListener('click', unlock, { once: true });
+                    });
+                }
+            };
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate && ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        type: 'ice-candidate',
+                        camId: parseInt(camId, 10),
+                        receiverId,
+                        candidate: event.candidate
+                    }));
+                }
+            };
+
+            await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+
+            if (directorCandidateQueues[camId]) {
+                while (directorCandidateQueues[camId].length > 0) {
+                    const cand = directorCandidateQueues[camId].shift();
+                    try { await pc.addIceCandidate(cand); } catch (e) {}
+                }
+            }
+
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+
+            ws.send(JSON.stringify({
+                type: 'answer',
+                camId: parseInt(camId, 10),
+                receiverId,
+                sdp: pc.localDescription
+            }));
+        }
+
+
+        // Copy OBS Browser Source URL with clipboard and fallback
+        function copyObsUrl(camId) {
+            const port = serverInfo ? serverInfo.httpPort : 3000;
+            const url = `http://localhost:${port}/obs.html?id=${camId}`;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast(`\u{2705} Copied OBS Link for Camera ${camId}!\n\n${url}\n\nPaste into OBS Studio (Add Source + → Browser).`);
+                }).catch(() => {
+                    prompt(`Copy this OBS Browser Source Link for Camera ${camId}:`, url);
+                });
+            } else {
+                prompt(`Copy this OBS Browser Source Link for Camera ${camId}:`, url);
+            }
+        }
+
+        // Toast Notification System
+        function showToast(message) {
+            let toast = document.getElementById('hub-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'hub-toast';
+                toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; background: #1b1035; color: #f59e0b; border: 1px solid #7c3aed; padding: 14px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 99999; max-width: 420px; white-space: pre-line; transition: opacity 0.3s;';
+                document.body.appendChild(toast);
+            }
+            toast.innerText = message;
+            toast.style.opacity = '1';
+            toast.style.display = 'block';
+            clearTimeout(toast.timeoutId);
+            toast.timeoutId = setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => { toast.style.display = 'none'; }, 300);
+            }, 4000);
+        }
+
+        // Copy Master Program OBS URL
+        function copyMasterObsUrl() {
+            const port = serverInfo ? serverInfo.httpPort : 3000;
+            const url = `http://localhost:${port}/obs.html?id=program`;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast(`\u{2705} Copied Master Program Link!\n\n${url}\n\nAdd this ONE link to your OBS scene. It will automatically switch whenever you click [⚡ CUT LIVE]!`);
+                }).catch(() => {
+                    prompt('Copy this Master Program Link for OBS Studio:', url);
+                });
+            } else {
+                prompt('Copy this Master Program Link for OBS Studio:', url);
+            }
+        }
+
+        // Snap High-Resolution Photo from Director Preview
+        async function snapDirectorPhoto(camId) {
+            const videoEl = document.getElementById(`preview-${camId}`);
+            if (!videoEl || !videoEl.videoWidth) {
+                showToast(`Camera ${camId} is not streaming video yet.`);
+                return;
+            }
+            showToast(`\u{1F4F8} Snapping high-res photo from Camera ${camId}...`);
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = videoEl.videoWidth;
+                canvas.height = videoEl.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+
+                const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
+                const formData = new FormData();
+                formData.append('photo', blob, `Church_Photo_Cam${camId}.jpg`);
+                formData.append('camId', camId);
+
+                const res = await fetch(`/api/upload-photo?camId=${camId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`\u{2705} Photo saved to laptop!\n\n${data.filename}\nSaved in folder: Vstreaming/photos/`);
+                    loadPhotosCount();
+                }
+            } catch (e) {
+                showToast(`\u{274C} Error saving photo: ${e.message}`);
+            }
+        }
+
+        function updateCameraStates(cameras) {
+            for (let id in cameras) {
+                const cam = cameras[id];
+                const statusEl = document.getElementById(`status-${id}`);
+                const placeholder = document.getElementById(`placeholder-${id}`);
+                const videoEl = document.getElementById(`preview-${id}`);
+                const btn = document.getElementById(`btn-live-${id}`);
+
+                if (cam.connected) {
+                    statusEl.innerText = '\u{1F7E2} Connected & Streaming';
+                    statusEl.className = 'cam-status online';
+                    requestCameraFeed(id);
+                    if (btn && cam.tally !== 'PROGRAM') {
+                        btn.disabled = false;
+                        btn.innerText = '\u{26A1} CUT LIVE';
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
+                        btn.style.background = '';
+                        btn.style.borderColor = '';
+                        btn.style.color = '';
+                        btn.style.boxShadow = '';
+                        btn.title = `Cut Camera ${id} live to OBS broadcast`;
+                    }
+                } else {
+                    statusEl.innerText = '\u{26AA} Offline';
+                    statusEl.className = 'cam-status';
+                    if (placeholder) placeholder.classList.remove('hidden');
+                    if (videoEl) videoEl.srcObject = null;
+                    if (btn && cam.tally !== 'PROGRAM') {
+                        btn.disabled = true;
+                        btn.innerText = '\u{1F50C} OFFLINE';
+                        btn.style.opacity = '0.4';
+                        btn.style.cursor = 'not-allowed';
+                        btn.style.background = 'rgba(255, 255, 255, 0.05)';
+                        btn.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                        btn.style.color = '#64748b';
+                        btn.style.boxShadow = 'none';
+                        btn.title = `Camera ${id} is offline - connect phone to cut live`;
+                    }
+                }
+                updateTallyBadge(id, cam.tally, cam.connected);
+                if (cam.battery !== null) {
+                    updateTelemetry(id, cam.battery, cam.charging);
+                }
+                if (cam.transform) {
+                    applyDirectorTransform(id, cam.transform);
+                }
+            }
+        }
+
+        function updateTallyBadge(id, state, isConnected) {
+            const badge = document.getElementById(`overlay-tally-${id}`);
+            const card = document.getElementById(`card-${id}`);
+            const btn = document.getElementById(`btn-live-${id}`);
+            if (!badge || !card) return;
+
+            // Authoritative connection check: offline cameras MUST stay offline!
+            const connected = (typeof isConnected === 'boolean')
+                ? isConnected
+                : (serverInfo && serverInfo.cameras && serverInfo.cameras[id] ? !!serverInfo.cameras[id].connected : false);
+
+            badge.className = `video-overlay-tally ${state.toLowerCase()}`;
+            card.className = `cam-card ${state.toLowerCase()}`;
+            
+            if (state === 'PROGRAM' && connected) {
+                badge.innerText = '\u{1F534} ON AIR';
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = '\u{1F534} LIVE ON AIR';
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'default';
+                    btn.style.background = '#ef4444';
+                    btn.style.borderColor = '#dc2626';
+                    btn.style.color = '#ffffff';
+                    btn.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.6)';
+                    btn.title = 'Camera is currently LIVE ON AIR';
+                }
+            } else {
+                badge.innerText = connected ? 'STANDBY' : 'OFF AIR';
+                if (btn) {
+                    if (!connected) {
+                        btn.disabled = true;
+                        btn.innerText = '\u{1F50C} OFFLINE';
+                        btn.style.opacity = '0.4';
+                        btn.style.cursor = 'not-allowed';
+                        btn.style.background = 'rgba(255, 255, 255, 0.05)';
+                        btn.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                        btn.style.color = '#64748b';
+                        btn.style.boxShadow = 'none';
+                        btn.title = `Camera ${id} is offline - connect phone to cut live`;
+                    } else {
+                        btn.disabled = false;
+                        btn.innerText = '\u{26A1} CUT LIVE';
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
+                        btn.style.background = '';
+                        btn.style.borderColor = '';
+                        btn.style.color = '';
+                        btn.style.boxShadow = '';
+                        btn.title = `Cut Camera ${id} live to OBS broadcast`;
+                    }
+                }
+            }
+        }
+
+        function updateTelemetry(id, battery, charging) {
+            const el = document.getElementById(`overlay-battery-${id}`);
+            if (battery !== null) {
+                el.innerText = `${charging ? '\u{26A1}' : '\u{1F50B}'} ${battery}%`;
+            }
+        }
+
+        // Send manual Tally command with offline guard & Emergency auto-clear
+        function setTally(camId, state) {
+            if (state === 'PROGRAM') {
+                if (serverInfo && serverInfo.cameras && serverInfo.cameras[camId] && !serverInfo.cameras[camId].connected) {
+                    showToast(`\u{26A0}\u{FE0F} Camera ${camId} is offline!\nConnect the phone first before cutting live.`);
+                    return;
+                }
+                // Auto-clear Emergency UI state if cutting live
+                if (serverInfo && serverInfo.isEmergencyCut) {
+                    serverInfo.isEmergencyCut = false;
+                    updateEmergencyCutUI(false);
+                }
+            }
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'set_tally', camId, state }));
+            }
+        }
+
+        // Director Keyboard Hotkeys (1-6 to Cut Live, Space for Emergency Cut, Esc to close modals)
+        document.addEventListener('keydown', (e) => {
+            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+            const modal = document.getElementById('photos-modal');
+            const qrModal = document.getElementById('qr-modal');
+            if ((modal && modal.classList.contains('open')) || (qrModal && qrModal.classList.contains('open'))) {
+                if (e.key === 'Escape') {
+                    if (modal) modal.classList.remove('open');
+                    if (qrModal) qrModal.classList.remove('open');
+                }
+                return;
+            }
+
+            const num = parseInt(e.key, 10);
+            if (num >= 1 && num <= 6) {
+                setTally(num, 'PROGRAM');
+            } else if (e.code === 'Space') {
+                e.preventDefault();
+                toggleEmergencyCut();
+            }
+        });
+
+        // Open QR Modal
+        function openQrModal(camId) {
+            if (!serverInfo) return;
+            const camData = serverInfo.urls[camId];
+            document.getElementById('modal-title').innerText = `Connect Camera ${camId} (${serverInfo.cameras[camId].name})`;
+            document.getElementById('modal-qr-img').src = camData.qrCode;
+            document.getElementById('modal-link-box').innerText = camData.camUrl;
+            document.getElementById('qr-modal').classList.add('open');
+        }
+
+        function closeQrModal(e) {
+            document.getElementById('qr-modal').classList.remove('open');
+        }
+
+        function copyModalLink() {
+            const text = document.getElementById('modal-link-box').innerText;
+            navigator.clipboard.writeText(text);
+            alert('Phone link copied! You can send it via WhatsApp or open it on the phone.');
+        }
+
+        // Flier Upload Handler
+        async function uploadFlier(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('flier', file);
+
+            try {
+                const res = await fetch('/api/upload-flier', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('dashboard-flier-preview').src = data.url;
+                    alert('Church Flier Uploaded Successfully!\n\nThis flier is now active across all camera fallback slates and emergency cuts in OBS.');
+                }
+            } catch (err) {
+                alert('Failed to upload flier: ' + err.message);
+            }
+        }
+
+        // Toggle Emergency Cut
+        let isEmergencyCutActive = false;
+        async function toggleEmergencyCut() {
+            isEmergencyCutActive = !isEmergencyCutActive;
+            try {
+                const res = await fetch('/api/emergency-cut', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ active: isEmergencyCutActive })
+                });
+                const data = await res.json();
+                updateEmergencyCutUI(data.isEmergencyCut);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function updateEmergencyCutUI(active) {
+            isEmergencyCutActive = active;
+            const btn = document.getElementById('btn-emergency-cut');
+            const lbl = document.getElementById('lbl-emergency-text');
+            if (active) {
+                btn.classList.add('active');
+                lbl.innerText = 'RESTORE LIVE CAMERAS';
+            } else {
+                btn.classList.remove('active');
+                lbl.innerText = 'EMERGENCY CUT TO FLIER';
+            }
+        }
+
+        // Switch between Operator Guide and About tabs
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+            document.getElementById(`tab-btn-${tabId}`).classList.add('active');
+            document.getElementById(`panel-${tabId}`).classList.add('active');
+        }
+
+        // Church Service Photos Gallery Handlers
+        async function loadPhotosCount() {
+            try {
+                const res = await fetch('/api/photos');
+                const data = await res.json();
+                const photos = Array.isArray(data) ? data : (data.photos || []);
+                const lbl = document.getElementById('lbl-photos-count');
+                if (lbl) lbl.innerText = photos.length;
+            } catch (e) {
+                console.warn('Could not load photos count', e);
+            }
+        }
+
+        async function openPhotosModal() {
+            const modal = document.getElementById('photos-modal');
+            if (modal) modal.classList.add('open');
+            await refreshPhotosGallery();
+        }
+
+        function closePhotosModal() {
+            const modal = document.getElementById('photos-modal');
+            if (modal) modal.classList.remove('open');
+        }
+
+        async function refreshPhotosGallery() {
+            const grid = document.getElementById('photos-grid');
+            const emptyState = document.getElementById('photos-empty');
+            if (!grid) return;
+            grid.innerHTML = '<div style="color: #94a3b8; font-size: 13px; padding: 20px 0;">Loading photos...</div>';
+            if (emptyState) emptyState.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/photos');
+                const data = await res.json();
+                const photos = Array.isArray(data) ? data : (data.photos || []);
+                const lbl = document.getElementById('lbl-photos-count');
+                if (lbl) lbl.innerText = photos.length;
+
+                if (!photos || photos.length === 0) {
+                    grid.innerHTML = '';
+                    if (emptyState) emptyState.style.display = 'block';
+                    return;
+                }
+
+                if (emptyState) emptyState.style.display = 'none';
+                grid.innerHTML = photos.map(p => `
+                    <div class="photo-card" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;">
+                        <div style="position: relative; width: 100%; height: 145px; background: #000; overflow: hidden; cursor: pointer;" onclick="viewPhotoFull('${p.url}')">
+                            <img src="${p.url}" alt="${p.filename}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <span style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.75); color: #34d399; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(52,211,153,0.3);">${p.cameraName || 'Camera ' + p.camId}</span>
+                        </div>
+                        <div style="padding: 10px; display: flex; flex-direction: column; gap: 6px; flex: 1; justify-content: space-between;">
+                            <div>
+                                <div style="font-size: 12px; color: #e2e8f0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${p.filename}">${p.filename}</div>
+                                <div style="font-size: 11px; color: #64748b;">${new Date(p.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})} • ${(p.size / 1024).toFixed(0)} KB</div>
+                            </div>
+                            <div style="display: flex; gap: 6px; margin-top: 4px;">
+                                <a href="${p.url}" target="_blank" class="btn btn-secondary" style="flex: 1; padding: 6px 8px; font-size: 11px; text-decoration: none; text-align: center;">👁️ View</a>
+                                <button onclick="deletePhoto('${p.filename}')" class="btn" style="flex: 1; padding: 6px 8px; font-size: 11px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; border-radius: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#ef4444';this.style.color='#fff'" onmouseout="this.style.background='rgba(239, 68, 68, 0.15)';this.style.color='#f87171'">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                grid.innerHTML = `<div style="color: #ef4444; font-size: 13px;">Error loading gallery: ${err.message}</div>`;
+            }
+        }
+
+        function viewPhotoFull(url) {
+            window.open(url, '_blank');
+        }
+
+        async function deletePhoto(filename) {
+            if (!confirm(`Are you sure you want to delete this photo?\n\n${filename}\n\nThis will remove it from the laptop.`)) {
+                return;
+            }
+            try {
+                const res = await fetch(`/api/photos/${encodeURIComponent(filename)}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`\u{1F5D1}\u{FE0F} Photo deleted: ${filename}`);
+                    await refreshPhotosGallery();
+                    await loadPhotosCount();
+                } else {
+                    alert('Failed to delete photo: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                alert('Error deleting photo: ' + err.message);
+            }
+        }
+
+        loadInfo();
+        loadPhotosCount();
+                async function exitStudio() {
+            if (confirm("Are you sure you want to stop Victorious Streaming Hub?\n\nThis will disconnect all mobile camera feeds and shut down the broadcast studio engine.")) {
+                isIntentionallyClosing = true;
+                try {
+                    await fetch('/api/shutdown', { method: 'POST' });
+                } catch (e) {}
+                window.close();
+            }
+        }
+    </script>
+
+    <!-- Photos Gallery Modal -->
+    <div class="modal-backdrop" id="photos-modal" onclick="closePhotosModal(event)">
+        <div class="modal-content" style="max-width: 820px; width: 92%; max-height: 88vh; overflow-y: auto; text-align: left;" onclick="event.stopPropagation()">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 24px;">📸</span>
+                    <div>
+                        <h3 style="color: var(--primary-gold); margin: 0; font-size: 18px;">Church Service Photos Gallery</h3>
+                        <p style="color: #94a3b8; font-size: 12px; margin: 2px 0 0 0;">High-resolution photos snapped by operators during live broadcast</p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button class="btn btn-secondary" onclick="refreshPhotosGallery()" style="padding: 6px 12px; font-size: 12px;">&#128260; Refresh</button>
+                    <button class="btn btn-secondary" onclick="closePhotosModal()" style="padding: 6px 12px; font-size: 14px;">&times;</button>
+                </div>
+            </div>
+            
+            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: #a7f3d0; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    📁 Laptop Storage Folder: <code style="color: #34d399; font-weight: 700;">Vstreaming/photos/</code>
+                </div>
+                <span style="font-size: 11px; color: #6ee7b7;">Full 1080p Resolution</span>
+            </div>
+
+            <div id="photos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px;">
+            </div>
+
+            <div id="photos-empty" style="text-align: center; color: #64748b; padding: 50px 20px; display: none;">
+                <div style="font-size: 42px; margin-bottom: 8px; opacity: 0.6;">📸</div>
+                <p style="font-size: 14px; font-weight: 600; color: #94a3b8; margin-bottom: 4px;">No photos snapped yet</p>
+                <p style="font-size: 12px;">Tap the <strong style="color: #34d399;">📸 Snap Photo</strong> button on any operator's phone to capture moments during service!</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
