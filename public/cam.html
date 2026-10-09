@@ -164,6 +164,10 @@
 
             <!-- Right Top: Flash, Dimmer & Battery (Lens hidden) -->
             <div class="hud-cluster hud-right">
+                <div class="intercom-pill" id="intercom-pill" title="Intercom Volume">
+                    <button id="btn-intercom-mute" onclick="toggleIntercomMute()" style="background: none; border: none; color: #10b981; font-size: 14px; cursor: pointer; padding: 0;" title="Mute/Unmute Director Voice">🔊</button>
+                    <input type="range" id="intercom-volume" min="0" max="1" step="0.05" value="1" oninput="setIntercomVolume(this.value)" style="width: 45px; height: 4px; accent-color: #10b981; cursor: pointer;" title="Director Voice Volume">
+                </div>
                 <button class="hud-btn" id="btn-torch" onclick="toggleTorch()" title="Toggle Flashlight">🔦 Flash</button>
                 <button class="hud-btn" id="btn-flip" style="display: none;" onclick="flipCamera()" title="Switch Front/Back Lens">🔄 Lens</button>
                 <button class="hud-btn" id="btn-dimmer" style="background: rgba(245, 158, 11, 0.25); border-color: var(--primary-gold);" onclick="toggleBlackout()" title="Dims screen to save battery during service">🌙 Dimmer</button>
@@ -197,6 +201,32 @@
     </div>
 
     <script>
+        // Intercom Audio Controls
+        function toggleIntercomMute() {
+            const audioEl = document.getElementById('intercom-audio');
+            const btn = document.getElementById('btn-intercom-mute');
+            if (!audioEl) return;
+            audioEl.muted = !audioEl.muted;
+            if (btn) btn.innerText = audioEl.muted ? '🔇' : '🔊';
+        }
+
+        function setIntercomVolume(val) {
+            const audioEl = document.getElementById('intercom-audio');
+            if (!audioEl) return;
+            audioEl.volume = parseFloat(val);
+            if (audioEl.muted && parseFloat(val) > 0) {
+                audioEl.muted = false;
+                const btn = document.getElementById('btn-intercom-mute');
+                if (btn) btn.innerText = '🔊';
+            }
+        }
+
+        // Unblock audio autoplay on first touch
+        document.addEventListener('touchstart', () => {
+            const a = document.getElementById('intercom-audio');
+            if (a && a.srcObject && a.paused) a.play().catch(() => {});
+        }, { once: true });
+
         const urlParams = new URLSearchParams(window.location.search);
         let camId = parseInt(urlParams.get('id') || '1', 10);
         document.getElementById('lbl-cam-name').innerText = `Camera ${camId}`;
@@ -429,6 +459,25 @@
                     updateTally(data.state);
                 }
 
+                // Intercom visual alert banner from Director
+                if (data.type === 'intercom_active') {
+                    const banner = document.getElementById('intercom-banner');
+                    const textEl = document.getElementById('intercom-banner-text');
+                    if (data.speaking && (data.target === 'all' || data.target == camId)) {
+                        if (textEl) {
+                            textEl.innerText = (data.target == camId)
+                                ? '🔒 DIRECTOR SPEAKING PRIVATELY TO YOU'
+                                : '🎙️ DIRECTOR SPEAKING (ALL CREW)';
+                        }
+                        if (banner) {
+                            banner.className = (data.target == camId) ? 'intercom-banner private' : 'intercom-banner';
+                            banner.style.display = 'flex';
+                        }
+                    } else {
+                        if (banner) banner.style.display = 'none';
+                    }
+                }
+
                 // WebRTC Signaling from OBS receiver
                 if (data.type === 'receiver_ready') {
                     console.log(`[Broadcaster] Receiver ready: ${data.receiverId}, creating offer...`);
@@ -477,6 +526,26 @@
             if (localStream) {
                 localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
             }
+
+            // Director Intercom: enable receiving Director voice track if connected to Director
+            if (receiverId && receiverId.startsWith('director')) {
+                try {
+                    pc.addTransceiver('audio', { direction: 'recvonly' });
+                } catch (e) {
+                    console.warn('[Intercom] Transceiver setup:', e);
+                }
+            }
+
+            // Route incoming Director voice audio to hidden audio element
+            pc.ontrack = (event) => {
+                if (event.track.kind === 'audio') {
+                    const audioEl = document.getElementById('intercom-audio');
+                    if (audioEl) {
+                        audioEl.srcObject = event.streams[0] || new MediaStream([event.track]);
+                        audioEl.play().catch(e => console.log('[Intercom audio autoplay]:', e));
+                    }
+                }
+            };
 
             pc.onicecandidate = (event) => {
                 if (event.candidate && ws && ws.readyState === WebSocket.OPEN) {

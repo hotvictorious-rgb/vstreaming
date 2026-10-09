@@ -480,6 +480,20 @@ function setupWebSocket(wss) {
                     ws.receiverIds.add(data.receiverId);
                 }
 
+                // Intercom Talkback: Director speaking to all or specific camera phone
+                if (data.type === 'intercom_active') {
+                    [wssHttp, wssHttps].forEach(wss => {
+                        wss.clients.forEach(client => {
+                            if (client.readyState === WebSocket.OPEN && client.role === 'broadcaster') {
+                                if (data.target === 'all' || client.camId === parseInt(data.target, 10)) {
+                                    client.send(JSON.stringify(data));
+                                }
+                            }
+                        });
+                    });
+                    return;
+                }
+
                 // WebRTC Signaling: Forward receiver_ready, offer, answer, ice-candidate
                 if (['receiver_ready', 'offer', 'answer', 'ice-candidate'].includes(data.type)) {
                     let targetCamId = parseInt(data.camId || ws.camId, 10);

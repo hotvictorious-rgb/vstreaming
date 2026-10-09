@@ -20,6 +20,12 @@ Built with complete independence and zero cloud dependencies, the entire ecosyst
 - **🚨 Live Tally Lights & Telemetry:**
   - Real-time **RED ON AIR** and **GREEN STANDBY** tally lights displayed on phone screens so camera operators always know when they are live.
   - Live battery percentage (🔋 52%) and charging indicators (⚡ Charging) streamed back to the Director Command Center.
+- **🎙️ Integrated Director-to-Crew Intercom Talkback:**
+  - Real-time voice talkback from Director's laptop straight into camera operators' Bluetooth earbuds (or phone loudspeakers) with zero latency.
+  - **Push-To-Talk Keyboard Control:** Press and hold **`[T]`** to speak to all cameras; release to instantly mute. (The **`[Spacebar]`** remains dedicated to instant **Emergency Cut to Flier**).
+  - **Point-to-Point Private Calling:** Speak to all cameras simultaneously (Partyline) or click **`[🎙️ Talk]`** on an individual camera card to talk privately without distracting other operators.
+  - **On-Screen Audio & Visual Cues:** Volume slider and quick mute on mobile screens, plus flashing visual banners (`🎙️ Director Speaking...`) so operators stay alerted even in loud praise and worship.
+  - **100% Broadcast Safe:** The intercom channel is completely decoupled from OBS Studio (`obs.html`); talkback audio never leaks into the YouTube or Facebook livestream.
 - **📸 High-Resolution Remote Photo Capture:** Snap uncompressed, high-definition service photos directly from any connected mobile camera without interrupting the video feed.
 - **🎛 OBS Studio WebSocket 5.x Integration:**
   - Automated Program / Preview camera switching.
