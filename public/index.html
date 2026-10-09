@@ -554,6 +554,13 @@
                     }
                 }
 
+                // Dedicated Intercom Signaling from phone
+                if (data.type === 'intercom_answer' && data.directorId === directorSessionId) {
+                    handleIntercomAnswer(data.camId, data.sdp);
+                } else if (data.type === 'intercom_ice' && data.directorId === directorSessionId) {
+                    handleIntercomIce(data.camId, data.candidate);
+                }
+
                 // WebRTC Signaling from phone broadcaster
                 if (data.type === 'offer' && data.receiverId && data.receiverId === `director_${data.camId}_${directorSessionId}`) {
                     handleOffer(data.camId, data.receiverId, data.sdp);
@@ -603,22 +610,24 @@
             peerConnections[camId] = pc;
 
             pc.ontrack = (event) => {
-                const videoEl = document.getElementById(`preview-${camId}`);
-                const placeholder = document.getElementById(`placeholder-${camId}`);
-                
-                if (placeholder) {
-                    placeholder.classList.add('hidden');
-                }
+                if (event.track.kind === 'video') {
+                    const videoEl = document.getElementById(`preview-${camId}`);
+                    const placeholder = document.getElementById(`placeholder-${camId}`);
+                    
+                    if (placeholder) {
+                        placeholder.classList.add('hidden');
+                    }
 
-                if (videoEl) {
-                    videoEl.muted = true;
-                    videoEl.playsInline = true;
-                    videoEl.autoplay = true;
-                    videoEl.srcObject = event.streams[0];
-                    videoEl.play().catch(e => {
-                        const unlock = () => { videoEl.play(); document.removeEventListener('click', unlock); };
-                        document.addEventListener('click', unlock, { once: true });
-                    });
+                    if (videoEl) {
+                        videoEl.muted = true;
+                        videoEl.playsInline = true;
+                        videoEl.autoplay = true;
+                        videoEl.srcObject = event.streams[0] || new MediaStream([event.track]);
+                        videoEl.play().catch(e => {
+                            const unlock = () => { videoEl.play(); document.removeEventListener('click', unlock); };
+                            document.addEventListener('click', unlock, { once: true });
+                        });
+                    }
                 }
             };
 
@@ -633,34 +642,8 @@
                 }
             };
 
-            // 1. Set Remote Description FIRST so incoming m-lines are matched properly
             await pc.setRemoteDescription(new RTCSessionDescription(sdp));
 
-            // 2. Ensure silent base track is alive and ready
-            const silent = ensureSilentAudioTrack();
-
-            // 3. Find the audio transceiver created by remote offer and configure for sendonly
-            const transceivers = pc.getTransceivers();
-            let audioTransceiver = transceivers.find(t => 
-                (t.receiver && t.receiver.track && t.receiver.track.kind === 'audio') ||
-                (t.sender && t.sender.track && t.sender.track.kind === 'audio')
-            );
-
-            if (audioTransceiver) {
-                audioTransceiver.direction = 'sendonly';
-                const trackToSend = (isSpeaking && (activeIntercomTarget === 'all' || activeIntercomTarget == camId))
-                    ? (directorAudioTrack || silent)
-                    : silent;
-                if (trackToSend) {
-                    try {
-                        await audioTransceiver.sender.replaceTrack(trackToSend);
-                    } catch (e) {
-                        console.warn('[Intercom] replaceTrack error:', e);
-                    }
-                }
-            }
-
-            // 4. Process queued ICE candidates
             if (directorCandidateQueues[camId]) {
                 while (directorCandidateQueues[camId].length > 0) {
                     const cand = directorCandidateQueues[camId].shift();
@@ -668,7 +651,6 @@
                 }
             }
 
-            // 5. Create Answer with active Opus audio m-line
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
 
@@ -679,6 +661,7 @@
                 sdp: pc.localDescription
             }));
         }
+
 
         // Copy OBS Browser Source URL with clipboard and fallback
         function copyObsUrl(camId) {

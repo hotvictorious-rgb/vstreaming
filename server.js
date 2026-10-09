@@ -495,7 +495,7 @@ function setupWebSocket(wss) {
                 }
 
                 // WebRTC Signaling: Forward receiver_ready, offer, answer, ice-candidate
-                if (['receiver_ready', 'offer', 'answer', 'ice-candidate'].includes(data.type)) {
+                if (['receiver_ready', 'offer', 'answer', 'ice-candidate', 'intercom_offer', 'intercom_answer', 'intercom_ice'].includes(data.type)) {
                     let targetCamId = parseInt(data.camId || ws.camId, 10);
                     if (isNaN(targetCamId) || data.camId === 'program') {
                         targetCamId = currentProgramCamId;
@@ -505,7 +505,9 @@ function setupWebSocket(wss) {
                             if (client !== ws && client.readyState === WebSocket.OPEN) {
                                 if (ws.role === 'broadcaster') {
                                     // Broadcaster sending to specific receiver (OBS or specific Director session)
-                                    if (data.receiverId) {
+                                    if (data.directorId && client.role === 'director') {
+                                        client.send(JSON.stringify(data));
+                                    } else if (data.receiverId) {
                                         const matchesDirect = (client.receiverId === data.receiverId);
                                         const matchesSet = (client.receiverIds && client.receiverIds.has(data.receiverId));
                                         if (matchesDirect || matchesSet) {

@@ -518,6 +518,18 @@
                 }
 
                 // Tally Light Message from Hub / OBS
+                if (data.type === 'intercom_offer' && data.camId === camId) {
+                    handleIntercomOffer(data.sdp, data.directorId);
+                } else if (data.type === 'intercom_ice' && data.camId === camId) {
+                    if (intercomPc && intercomPc.remoteDescription && intercomPc.remoteDescription.type) {
+                        try { await intercomPc.addIceCandidate(new RTCIceCandidate(data.candidate)); } catch (e) {}
+                    } else {
+                        intercomCandidates.push(new RTCIceCandidate(data.candidate));
+                    }
+                } else if (data.type === 'intercom_ping') {
+                    testIntercomSound();
+                }
+
                 if (data.type === 'tally') {
                     updateTally(data.state);
                 }
@@ -585,51 +597,10 @@
             const pc = new RTCPeerConnection(rtcConfig);
             peerConnections[receiverId] = pc;
 
-            // Add local camera tracks
+            // Add ONLY local camera video tracks (Pure, rock-solid 1080p video)
             if (localStream) {
                 localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
             }
-
-            // Director Intercom: enable receiving Director voice track if connected to Director
-            if (receiverId && receiverId.startsWith('director')) {
-                try {
-                    pc.addTransceiver('audio', { direction: 'recvonly' });
-                } catch (e) {
-                    console.warn('[Intercom] Transceiver setup:', e);
-                }
-            }
-
-            // Route incoming Director voice audio to hidden audio element & Web Audio hardware
-            pc.ontrack = (event) => {
-                if (event.track.kind === 'audio') {
-                    console.log('[Intercom] Incoming Director audio track received:', event.track);
-                    const stream = event.streams[0] || new MediaStream([event.track]);
-                    const audioEl = document.getElementById('intercom-audio');
-                    if (audioEl) {
-                        audioEl.srcObject = stream;
-                        audioEl.volume = 1.0;
-                        audioEl.muted = false;
-                        audioEl.play().then(() => {
-                            console.log('[Intercom] Audio element playback started successfully');
-                        }).catch(e => {
-                            console.warn('[Intercom] Audio play error (will retry on touch):', e);
-                        });
-                    }
-
-                    // Direct WebAudio route for bulletproof hardware output
-                    try {
-                        const ctx = getMobileAudioContext();
-                        if (intercomAudioSource) {
-                            try { intercomAudioSource.disconnect(); } catch (e) {}
-                        }
-                        intercomAudioSource = ctx.createMediaStreamSource(stream);
-                        intercomAudioSource.connect(ctx.destination);
-                        console.log('[Intercom] Connected audio stream directly to Web Audio destination');
-                    } catch (e) {
-                        console.warn('[Intercom] WebAudio hardware link:', e);
-                    }
-                }
-            };
 
             pc.onicecandidate = (event) => {
                 if (event.candidate && ws && ws.readyState === WebSocket.OPEN) {
@@ -650,6 +621,65 @@
                 camId,
                 receiverId,
                 sdp: pc.localDescription
+            }));
+        }
+
+        // Dedicated Out-Of-Band Intercom Audio Receiver (Director -> Phone Earbuds)
+        let intercomPc = null;
+        let intercomCandidates = [];
+
+        async function handleIntercomOffer(sdp, fromDirectorId) {
+            console.log('[Intercom] Received talkback audio offer from Director:', fromDirectorId);
+            if (intercomPc) {
+                try { intercomPc.close(); } catch (e) {}
+            }
+            intercomCandidates = [];
+            intercomPc = new RTCPeerConnection(rtcConfig);
+
+            intercomPc.ontrack = (event) => {
+                console.log('[Intercom] Incoming Director voice track connected:', event.track);
+                const stream = event.streams[0] || new MediaStream([event.track]);
+                const audioEl = document.getElementById('intercom-audio');
+                if (audioEl) {
+                    audioEl.srcObject = stream;
+                    audioEl.volume = 1.0;
+                    audioEl.muted = false;
+                    audioEl.play().catch(e => console.warn('[Intercom] play error:', e));
+                }
+                try {
+                    const ctx = getMobileAudioContext();
+                    const src = ctx.createMediaStreamSource(stream);
+                    src.connect(ctx.destination);
+                } catch (e) {}
+            };
+
+            intercomPc.onicecandidate = (event) => {
+                if (event.candidate && ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        type: 'intercom_ice',
+                        camId,
+                        candidate: event.candidate,
+                        directorId: fromDirectorId
+                    }));
+                }
+            };
+
+            await intercomPc.setRemoteDescription(new RTCSessionDescription(sdp));
+            if (intercomCandidates.length > 0) {
+                while (intercomCandidates.length > 0) {
+                    const cand = intercomCandidates.shift();
+                    try { await intercomPc.addIceCandidate(cand); } catch (e) {}
+                }
+            }
+
+            const answer = await intercomPc.createAnswer();
+            await intercomPc.setLocalDescription(answer);
+
+            ws.send(JSON.stringify({
+                type: 'intercom_answer',
+                camId,
+                sdp: intercomPc.localDescription,
+                directorId: fromDirectorId
             }));
         }
 
