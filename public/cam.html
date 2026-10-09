@@ -671,13 +671,6 @@
                         console.warn('[Intercom] Autoplay waiting for user touch:', e);
                     });
                 }
-                try {
-                    const ctx = getMobileAudioContext();
-                    if (ctx) {
-                        intercomAudioSource = ctx.createMediaStreamSource(stream);
-                        intercomAudioSource.connect(ctx.destination);
-                    }
-                } catch (e) {}
             };
 
             intercomPc.onicecandidate = (event) => {
