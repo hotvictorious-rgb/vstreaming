@@ -250,6 +250,68 @@
 
         // Intercom Audio Controls
         
+        // Director "GET READY TO STREAM" Alert (Triple Chime + Spoken Voice Announcement + Flashing Banner)
+        function playReadyToStreamAlert(spokenText = 'Get ready to stream!', target = 'all') {
+            // 1. Triple Ascending Attention Chime (C5 -> E5 -> G5)
+            try {
+                const ctx = getMobileAudioContext();
+                if (ctx) {
+                    if (ctx.state === 'suspended') ctx.resume();
+                    const now = ctx.currentTime;
+                    const playTone = (freq, startOffset, duration) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + startOffset);
+                        gain.gain.setValueAtTime(0.35, now + startOffset);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + startOffset + duration);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + startOffset);
+                        osc.stop(now + startOffset + duration + 0.05);
+                    };
+                    playTone(523.25, 0, 0.16);     // C5
+                    playTone(659.25, 0.16, 0.16);  // E5
+                    playTone(783.99, 0.32, 0.35);  // G5
+                }
+            } catch (e) {}
+
+            // 2. Clear Spoken Earbud Announcement ("Camera 1, get ready to stream!" or "Get ready to stream!")
+            try {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(spokenText);
+                    utterance.rate = 1.05;
+                    utterance.pitch = 1.05;
+                    utterance.volume = 1.0;
+                    window.speechSynthesis.speak(utterance);
+                }
+            } catch (e) {}
+
+            // 3. High-Visibility Screen Alert Banner (Customized for Private vs All Crew)
+            const banner = document.getElementById('intercom-banner');
+            const textEl = document.getElementById('intercom-banner-text');
+            if (banner && textEl) {
+                textEl.innerText = (target === 'all')
+                    ? '🎬 ALL CREW: GET READY TO STREAM - GOING LIVE SOON!'
+                    : `🔒 CAMERA ${camId}: GET READY TO STREAM - STANDBY LIVE!`;
+                banner.className = (target === 'all') ? 'intercom-banner' : 'intercom-banner private';
+                banner.style.display = 'flex';
+                banner.style.background = (target === 'all')
+                    ? 'linear-gradient(90deg, #f59e0b, #ef4444)'
+                    : 'linear-gradient(90deg, #7c3aed, #ec4899)';
+                banner.style.boxShadow = '0 0 25px rgba(245, 158, 11, 0.9)';
+                setTimeout(() => {
+                    if (banner && textEl.innerText.includes('GET READY TO STREAM')) {
+                        banner.style.display = 'none';
+                        banner.style.background = '';
+                        banner.style.boxShadow = '';
+                    }
+                }, 6000);
+            }
+            showHudToast((target === 'all') ? '🎬 GET READY TO STREAM!' : `🔒 CAM ${camId} GET READY!`);
+        }
+
         // Test Intercom Sound & Hardware Unlock Chime
         function testIntercomSound() {
             try {
@@ -545,7 +607,7 @@
                         intercomCandidates.push(new RTCIceCandidate(data.candidate));
                     }
                 } else if (data.type === 'intercom_ping') {
-                    testIntercomSound();
+                    playReadyToStreamAlert(data.message || 'Get ready to stream!', data.target || 'all');
                 }
 
                 if (data.type === 'tally') {

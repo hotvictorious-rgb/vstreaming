@@ -480,12 +480,15 @@ function setupWebSocket(wss) {
                     ws.receiverIds.add(data.receiverId);
                 }
 
-                // Intercom Audio Test Ping: Play test chime on all camera phones
+                // Intercom Audio Alerts & Crew Pings (Targeted / Isolated to specific Camera or All)
                 if (data.type === 'intercom_ping') {
+                    const target = data.target || 'all';
                     [wssHttp, wssHttps].forEach(wss => {
                         wss.clients.forEach(client => {
                             if (client.readyState === WebSocket.OPEN && client.role === 'broadcaster') {
-                                client.send(JSON.stringify({ type: 'intercom_ping' }));
+                                if (target === 'all' || client.camId === parseInt(target, 10)) {
+                                    client.send(JSON.stringify(data));
+                                }
                             }
                         });
                     });
