@@ -294,6 +294,13 @@
                     <span id="lbl-overlay-status">OFF AIR</span>
                 </div>
                 <button onclick="event.stopPropagation(); clearGraphicFromAir();" class="btn" style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; cursor: pointer;" title="Instant Hard Clear from OBS Screen">✕ Clear Screen</button>
+                
+                <!-- Layout Mode Selector -->
+                <div onclick="event.stopPropagation();" style="display: flex; gap: 4px; align-items: center; background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                    <button type="button" class="preset-pill active-pill" id="btn-layout-lower-third" onclick="setGraphicLayout('lower-third')" style="padding: 2px 7px; font-size: 10px;" title="Standard Lower Third (Bottom-Left)">🪟 Lower-Third</button>
+                    <button type="button" class="preset-pill" id="btn-layout-center-slate" onclick="setGraphicLayout('center-slate')" style="padding: 2px 7px; font-size: 10px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: #94a3b8;" title="Centered Scripture / Hymn Slate">📜 Center Slate</button>
+                    <button type="button" class="preset-pill" id="btn-layout-ticker" onclick="setGraphicLayout('ticker')" style="padding: 2px 7px; font-size: 10px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: #94a3b8;" title="Full-Width Bottom Ticker / Banner">📢 Ticker</button>
+                </div>
                 <span id="icon-drawer-chevron" style="color: #fbbf24; font-size: 12px; transition: transform 0.2s;">▼ Expand</span>
             </div>
         </div>
@@ -346,6 +353,20 @@
                             <button class="preset-pill" onclick="loadScriptureDirect('ISAIAH 40:31')">Isa 40:31</button>
                             <button class="preset-pill" onclick="loadScriptureDirect('HEBREWS 11:1')">Heb 11:1</button>
                             <button class="preset-pill" onclick="loadScriptureDirect('2 CORINTHIANS 5:17')">2 Cor 5:17</button>
+                        </div>
+
+                        
+                        <!-- 66-Book Bible Cascade Navigator -->
+                        <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 8px 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span style="font-size: 11px; color: #fbbf24; font-weight: 700;">📖 66-BOOK BIBLE NAVIGATOR:</span>
+                                <span style="font-size: 10px; color: #94a3b8;">Pick Book → Chapter → Verse</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 6px;">
+                                <select id="sel-bible-book" onchange="onBibleBookChange()" style="background: #070314; border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; font-size: 12px; font-weight: 700; padding: 6px 8px; border-radius: 6px; cursor: pointer;"></select>
+                                <select id="sel-bible-chapter" onchange="onBibleChapterChange()" style="background: #070314; border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; font-size: 12px; font-weight: 700; padding: 6px 8px; border-radius: 6px; cursor: pointer;"></select>
+                                <select id="sel-bible-verse" onchange="onBibleVerseChange()" style="background: #070314; border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; font-size: 12px; font-weight: 700; padding: 6px 8px; border-radius: 6px; cursor: pointer;"></select>
+                            </div>
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 8px;">
@@ -1151,6 +1172,47 @@
             updateLiveGraphicPreview();
         }
 
+        let currentGraphicLayout = 'lower-third';
+
+        function setGraphicLayout(layout) {
+            currentGraphicLayout = layout;
+            ['lower-third', 'center-slate', 'ticker'].forEach(l => {
+                const btn = document.getElementById('btn-layout-' + l);
+                if (btn) {
+                    if (l === layout) {
+                        btn.className = 'preset-pill active-pill';
+                        btn.style.background = '#7c3aed';
+                        btn.style.borderColor = '#a78bfa';
+                        btn.style.color = '#fff';
+                    } else {
+                        btn.className = 'preset-pill';
+                        btn.style.background = 'rgba(255,255,255,0.05)';
+                        btn.style.borderColor = 'rgba(255,255,255,0.15)';
+                        btn.style.color = '#94a3b8';
+                    }
+                }
+            });
+
+            // Update Preview Box styling to reflect layout mode
+            const pBox = document.getElementById('director-preview-box');
+            if (pBox) {
+                if (layout === 'center-slate') {
+                    pBox.style.textAlign = 'center';
+                    pBox.style.alignItems = 'center';
+                } else if (layout === 'ticker') {
+                    pBox.style.textAlign = 'left';
+                    pBox.style.alignItems = 'flex-start';
+                } else {
+                    pBox.style.textAlign = 'left';
+                    pBox.style.alignItems = 'flex-start';
+                }
+            }
+
+            if (isGraphicOnAir) {
+                takeGraphicLive();
+            }
+        }
+
         function getActiveGraphicData() {
             const tab = currentActiveGraphicsTab;
             if (tab === 'speaker') {
@@ -1160,7 +1222,8 @@
                     badgeTitle: 'SPEAKER',
                     badgeTag: 'LIVE',
                     mainText: document.getElementById('input-speaker-name').value.trim(),
-                    subText: document.getElementById('input-speaker-title').value.trim()
+                    subText: document.getElementById('input-speaker-title').value.trim(),
+                    layout: currentGraphicLayout
                 };
             } else if (tab === 'scripture') {
                 const ver = document.getElementById('sel-scripture-version').value;
@@ -1171,7 +1234,8 @@
                     badgeTitle: ref || 'HOLY BIBLE',
                     badgeTag: ver,
                     mainText: document.getElementById('input-scripture-text').value.trim(),
-                    subText: ''
+                    subText: '',
+                    layout: currentGraphicLayout
                 };
             } else if (tab === 'hymn') {
                 const part = document.getElementById('sel-hymn-part').value;
@@ -1182,7 +1246,8 @@
                     badgeTitle: title || 'HYMN',
                     badgeTag: part,
                     mainText: document.getElementById('input-hymn-text').value.trim(),
-                    subText: ''
+                    subText: '',
+                    layout: currentGraphicLayout
                 };
             } else if (tab === 'giving') {
                 const bank = document.getElementById('input-giving-bank').value.trim();
@@ -1195,7 +1260,8 @@
                     badgeTitle: 'TITHES & ONLINE GIVING',
                     badgeTag: 'OFFERING',
                     mainText: bank + ': ' + acct + ' (' + name + ')',
-                    subText: ussd
+                    subText: ussd,
+                    layout: currentGraphicLayout
                 };
             }
             return null;
@@ -1584,6 +1650,105 @@
             if (selPart) {
                 selectHymnStanza(selPart.value);
             }
+        }
+
+
+        
+        // =====================================================================
+        // UNIVERSAL 66-BOOK BIBLE NAVIGATOR CONTROLLER
+        // =====================================================================
+        function initBibleNavigator() {
+            const selBook = document.getElementById('sel-bible-book');
+            if (!selBook || !window.BIBLE_BOOKS_CATALOG) return;
+
+            let html = '<optgroup label="Old Testament (39 Books)">';
+            window.BIBLE_BOOKS_CATALOG.filter(b => b.testament === 'OT').forEach(b => {
+                html += '<option value="' + b.name + '">' + b.name + ' (' + b.chapters + ' ch)</option>';
+            });
+            html += '</optgroup><optgroup label="New Testament (27 Books)">';
+            window.BIBLE_BOOKS_CATALOG.filter(b => b.testament === 'NT').forEach(b => {
+                html += '<option value="' + b.name + '">' + b.name + ' (' + b.chapters + ' ch)</option>';
+            });
+            html += '</optgroup>';
+            selBook.innerHTML = html;
+
+            selBook.value = 'Romans';
+            onBibleBookChange();
+        }
+
+        function onBibleBookChange() {
+            const selBook = document.getElementById('sel-bible-book');
+            const selChap = document.getElementById('sel-bible-chapter');
+            if (!selBook || !selChap || !window.BIBLE_BOOKS_CATALOG) return;
+
+            const book = window.BIBLE_BOOKS_CATALOG.find(b => b.name === selBook.value);
+            if (!book) return;
+
+            let html = '';
+            for (let i = 1; i <= book.chapters; i++) {
+                html += '<option value="' + i + '">Ch ' + i + '</option>';
+            }
+            selChap.innerHTML = html;
+
+            if (book.name === 'Romans') selChap.value = '8';
+            else selChap.value = '1';
+
+            onBibleChapterChange();
+        }
+
+        function onBibleChapterChange() {
+            const selChap = document.getElementById('sel-bible-chapter');
+            const selVerse = document.getElementById('sel-bible-verse');
+            if (!selChap || !selVerse) return;
+
+            let html = '';
+            // Standard verse count bounds (1 to 40)
+            for (let i = 1; i <= 40; i++) {
+                html += '<option value="' + i + '">v ' + i + '</option>';
+            }
+            selVerse.innerHTML = html;
+
+            const selBook = document.getElementById('sel-bible-book');
+            if (selBook && selBook.value === 'Romans' && selChap.value === '8') {
+                selVerse.value = '28';
+            } else {
+                selVerse.value = '1';
+            }
+
+            onBibleVerseChange();
+        }
+
+        function onBibleVerseChange() {
+            const selBook = document.getElementById('sel-bible-book');
+            const selChap = document.getElementById('sel-bible-chapter');
+            const selVerse = document.getElementById('sel-bible-verse');
+            if (!selBook || !selChap || !selVerse) return;
+
+            const ref = (selBook.value + ' ' + selChap.value + ':' + selVerse.value).toUpperCase();
+            document.getElementById('input-scripture-ref').value = ref;
+
+            // If in database, load exact translated verse text
+            if (window.CHURCH_SCRIPTURE_LIBRARY && window.CHURCH_SCRIPTURE_LIBRARY[ref]) {
+                const item = window.CHURCH_SCRIPTURE_LIBRARY[ref];
+                const selVer = document.getElementById('sel-scripture-version');
+                const curVer = selVer ? selVer.value : 'KJV';
+                document.getElementById('input-scripture-text').value = item.versions[curVer] || item.versions['KJV'] || '';
+            }
+
+            updateLiveGraphicPreview();
+        }
+
+        // =====================================================================
+        // MASTER BROADCAST HOTKEYS MODAL CONTROLLER
+        // =====================================================================
+        function openHotkeysModal() {
+            const modal = document.getElementById('hotkeys-modal');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function closeHotkeysModal() {
+            const modal = document.getElementById('hotkeys-modal');
+            if (modal) modal.style.display = 'none';
         }
 
 
@@ -2280,18 +2445,61 @@
             }
         }
 
-        // Director Keyboard Hotkeys (1-6 to Cut Live, Space for Emergency Cut, Esc to close modals)
+        // Director Keyboard Hotkeys (Master Studio Control Suite)
         document.addEventListener('keydown', (e) => {
-            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-            const modal = document.getElementById('photos-modal');
-            const qrModal = document.getElementById('qr-modal');
-            if ((modal && modal.classList.contains('open')) || (qrModal && qrModal.classList.contains('open'))) {
-                if (e.key === 'Escape') {
-                    if (modal) modal.classList.remove('open');
-                    if (qrModal) qrModal.classList.remove('open');
-                }
+            // Global Hotkeys (available even while typing in inputs)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                takeGraphicLive();
                 return;
             }
+            if (e.altKey && (e.key === 'l' || e.key === 'L')) {
+                e.preventDefault();
+                takeGraphicLive();
+                return;
+            }
+            if (e.altKey && (e.key === 'c' || e.key === 'C')) {
+                e.preventDefault();
+                clearGraphicFromAir();
+                return;
+            }
+            if (e.altKey && e.key === 'ArrowRight') {
+                e.preventDefault();
+                if (currentActiveGraphicsTab === 'scripture') stepSermonQueue(1);
+                else if (currentActiveGraphicsTab === 'hymn') stepHymnStanza(1);
+                return;
+            }
+            if (e.altKey && e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (currentActiveGraphicsTab === 'scripture') stepSermonQueue(-1);
+                else if (currentActiveGraphicsTab === 'hymn') stepHymnStanza(-1);
+                return;
+            }
+
+            // Modal Escape & Outside Handlers
+            const hkModal = document.getElementById('hotkeys-modal');
+            const photosModal = document.getElementById('photos-modal');
+            const qrModal = document.getElementById('qr-modal');
+
+            if (e.key === 'Escape') {
+                if (hkModal && hkModal.style.display === 'flex') {
+                    closeHotkeysModal();
+                    return;
+                }
+                if (photosModal && photosModal.classList.contains('open')) {
+                    photosModal.classList.remove('open');
+                    return;
+                }
+                if (qrModal && qrModal.classList.contains('open')) {
+                    qrModal.classList.remove('open');
+                    return;
+                }
+                clearGraphicFromAir();
+                return;
+            }
+
+            // Navigation Hotkeys (suppressed while typing)
+            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
             const num = parseInt(e.key, 10);
             if (num >= 1 && num <= 6) {
@@ -2304,6 +2512,12 @@
                 const sel = document.getElementById('sel-intercom-target');
                 const target = sel ? sel.value : 'all';
                 startSpeaking(target);
+            } else if (e.code === 'KeyG') {
+                e.preventDefault();
+                toggleGraphicsDrawer();
+            } else if (e.code === 'KeyH') {
+                e.preventDefault();
+                openHotkeysModal();
             }
         });
 
@@ -2537,5 +2751,45 @@
             </div>
         </div>
     </div>
+
+    <!-- Master Broadcast Keyboard Shortcuts Modal -->
+    <div id="hotkeys-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+        <div style="background: #0e071e; border: 1px solid #7c3aed; border-radius: 14px; width: 600px; max-width: 95vw; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 22px;">⌨️</span>
+                    <strong style="color: #fbbf24; font-size: 16px; letter-spacing: 0.5px;">MASTER BROADCAST STUDIO SHORTCUTS</strong>
+                </div>
+                <button type="button" onclick="closeHotkeysModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">✕</button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px;">
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px;">
+                    <strong style="color: #c4b5fd; display: block; margin-bottom: 8px; font-size: 13px;">🎥 CAMERA SWITCHING</strong>
+                    <div style="display: flex; flex-direction: column; gap: 6px; color: #cbd5e1;">
+                        <div><kbd style="background: #1e1338; border: 1px solid #7c3aed; padding: 2px 6px; border-radius: 4px; color: #fff; font-weight: 700;">1</kbd> - <kbd style="background: #1e1338; border: 1px solid #7c3aed; padding: 2px 6px; border-radius: 4px; color: #fff; font-weight: 700;">4</kbd> : Cut Camera Live</div>
+                        <div><kbd style="background: #1e1338; border: 1px solid #7c3aed; padding: 2px 6px; border-radius: 4px; color: #fff; font-weight: 700;">Space</kbd> : Instant Panic Cut (Flier)</div>
+                        <div><kbd style="background: #1e1338; border: 1px solid #7c3aed; padding: 2px 6px; border-radius: 4px; color: #fff; font-weight: 700;">T (Hold)</kbd> : Push-to-Talk Intercom</div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px;">
+                    <strong style="color: #fbbf24; display: block; margin-bottom: 8px; font-size: 13px;">📺 GRAPHICS & OVERLAYS</strong>
+                    <div style="display: flex; flex-direction: column; gap: 6px; color: #cbd5e1;">
+                        <div><kbd style="background: #1e1338; border: 1px solid #f59e0b; padding: 2px 6px; border-radius: 4px; color: #fbbf24; font-weight: 700;">Ctrl+Enter</kbd> : TAKE LIVE to OBS</div>
+                        <div><kbd style="background: #1e1338; border: 1px solid #ef4444; padding: 2px 6px; border-radius: 4px; color: #fca5a5; font-weight: 700;">Alt+C</kbd> / <kbd style="background: #1e1338; border: 1px solid #ef4444; padding: 2px 6px; border-radius: 4px; color: #fca5a5; font-weight: 700;">Esc</kbd> : Clear / Hide Screen</div>
+                        <div><kbd style="background: #1e1338; border: 1px solid #7c3aed; padding: 2px 6px; border-radius: 4px; color: #c4b5fd; font-weight: 700;">Alt+→</kbd> : Next Scripture / Stanza</div>
+                        <div><kbd style="background: #1e1338; border: 1px solid #7c3aed; padding: 2px 6px; border-radius: 4px; color: #c4b5fd; font-weight: 700;">Alt+←</kbd> : Prev Scripture / Stanza</div>
+                        <div><kbd style="background: #1e1338; border: 1px solid #7c3aed; padding: 2px 6px; border-radius: 4px; color: #c4b5fd; font-weight: 700;">G</kbd> : Toggle Graphics Drawer</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end;">
+                <button type="button" onclick="closeHotkeysModal()" class="btn" style="background: #7c3aed; border: none; color: #fff; font-size: 12px; font-weight: 700; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Got It</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

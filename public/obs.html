@@ -157,6 +157,63 @@
             letter-spacing: 0.3px;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
         }
+
+        /* Multi-Layout Overlay Styles */
+        #graphics-layer.layout-center-slate {
+            justify-content: center;
+            padding-bottom: 75px;
+        }
+        #graphics-layer.layout-center-slate .graphic-card {
+            max-width: 1150px;
+            width: 88%;
+            text-align: center;
+            align-items: center;
+            border-left: 1px solid rgba(245, 158, 11, 0.45);
+            border-top: 5px solid #f59e0b;
+        }
+        #graphics-layer.layout-center-slate .graphic-badge-row {
+            justify-content: center;
+        }
+        #graphics-layer.layout-center-slate .graphic-content {
+            align-items: center;
+        }
+        #graphics-layer.layout-center-slate .graphic-main-text {
+            font-size: 28px;
+            line-height: 1.35;
+        }
+
+        #graphics-layer.layout-ticker {
+            padding: 0;
+            align-items: flex-end;
+        }
+        #graphics-layer.layout-ticker .graphic-card {
+            max-width: 100vw;
+            width: 100vw;
+            min-width: 100vw;
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+            border-bottom: none;
+            border-top: 4px solid #f59e0b;
+            padding: 12px 50px;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 25px;
+        }
+        #graphics-layer.layout-ticker .graphic-content {
+            flex-direction: row;
+            align-items: center;
+            gap: 20px;
+            flex: 1;
+        }
+        #graphics-layer.layout-ticker .graphic-main-text {
+            font-size: 20px;
+        }
+        #graphics-layer.layout-ticker .graphic-sub-text {
+            font-size: 15px;
+            margin-top: 0;
+        }
     </style>
 </head>
 <body>
@@ -195,7 +252,12 @@
                 overlayHideTimer = null;
             }
 
+            const layer = document.getElementById('graphics-layer');
             const card = document.getElementById('graphic-card');
+            if (layer) {
+                const layout = payload.layout || 'lower-third';
+                layer.className = 'layout-' + layout;
+            }
             const icon = document.getElementById('graphic-icon');
             const title = document.getElementById('graphic-badge-title');
             const tag = document.getElementById('graphic-badge-tag');
