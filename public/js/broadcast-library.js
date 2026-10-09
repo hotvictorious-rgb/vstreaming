@@ -1,0 +1,705 @@
+/**
+ * VICTORIOUS STREAMING HUB - CHURCH BROADCAST SCRIPTURE & HYMN LIBRARY (PHASE 2)
+ * Executive Media Direction: Victory Saviour Edet, CEO of VICTORIOUS MARKET
+ * Provides instant indexed scripture lookups, translations, hymn catalog & sermon queue management.
+ */
+
+window.CHURCH_SCRIPTURE_LIBRARY = {
+    "ROMANS 8:28": {
+        ref: "ROMANS 8:28",
+        book: "Romans",
+        chapter: 8,
+        verse: 28,
+        category: "Faith & Purpose",
+        versions: {
+            KJV: "And we know that all things work together for good to them that love God, to them who are the called according to his purpose.",
+            NKJV: "And we know that all things work together for good to those who love God, to those who are the called according to His purpose.",
+            NIV: "And we know that in all things God works for the good of those who love him, who have been called according to his purpose.",
+            NLT: "And we know that God causes everything to work together for the good of those who love God and are called according to his purpose for them.",
+            AMP: "And we know [with great confidence] that God [who is deeply concerned about us] causes all things to work together as a plan for good for those who love God, to those who are called according to His plan and purpose.",
+            ESV: "And we know that for those who love God all things work together for good, for those who are called according to his purpose."
+        }
+    },
+    "JOHN 3:16": {
+        ref: "JOHN 3:16",
+        book: "John",
+        chapter: 3,
+        verse: 16,
+        category: "Salvation & Love",
+        versions: {
+            KJV: "For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.",
+            NKJV: "For God so loved the world that He gave His only begotten Son, that whoever believes in Him should not perish but have everlasting life.",
+            NIV: "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.",
+            NLT: "For this is how God loved the world: He gave his one and only Son, so that everyone who believes in him will not perish but have eternal life.",
+            AMP: "For God so greatly loved and dearly prized the world, that He [even] gave His [One and] only begotten Son, so that whoever believes and trusts in Him [as Savior] shall not perish, but have eternal life.",
+            ESV: "For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life."
+        }
+    },
+    "PSALM 23:1": {
+        ref: "PSALM 23:1",
+        book: "Psalms",
+        chapter: 23,
+        verse: 1,
+        category: "Provision & Shepherd",
+        versions: {
+            KJV: "The LORD is my shepherd; I shall not want. He maketh me to lie down in green pastures: he leadeth me beside the still waters.",
+            NKJV: "The LORD is my shepherd; I shall not want. He makes me to lie down in green pastures; He leads me beside the still waters.",
+            NIV: "The LORD is my shepherd, I lack nothing. He makes me lie down in green pastures, he leads me beside quiet waters.",
+            NLT: "The LORD is my shepherd; I have all that I need. He lets me rest in green meadows; he leads me beside peaceful streams.",
+            AMP: "The LORD is my Shepherd [to feed, guide, and shield me]; I shall not lack. He makes me lie down in [fresh, tender] green pastures; He leads me beside still and restful waters.",
+            ESV: "The LORD is my shepherd; I shall not want. He makes me lie down in green pastures. He leads me beside still waters."
+        }
+    },
+    "PHILIPPIANS 4:13": {
+        ref: "PHILIPPIANS 4:13",
+        book: "Philippians",
+        chapter: 4,
+        verse: 13,
+        category: "Strength & Victory",
+        versions: {
+            KJV: "I can do all things through Christ which strengtheneth me.",
+            NKJV: "I can do all things through Christ who strengthens me.",
+            NIV: "I can do all this through him who gives me strength.",
+            NLT: "For I can do everything through Christ, who gives me strength.",
+            AMP: "I can do all things [which He has called me to do] through Him who strengthens and empowers me [to fulfill His purpose].",
+            ESV: "I can do all things through him who strengthens me."
+        }
+    },
+    "ISAIAH 40:31": {
+        ref: "ISAIAH 40:31",
+        book: "Isaiah",
+        chapter: 40,
+        verse: 31,
+        category: "Renewed Strength",
+        versions: {
+            KJV: "But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary; and they shall walk, and not faint.",
+            NKJV: "But those who wait on the LORD shall renew their strength; they shall mount up with wings like eagles, they shall run and not be weary, they shall walk and not faint.",
+            NIV: "But those who hope in the LORD will renew their strength. They will soar on wings like eagles; they will run and not grow weary, they will walk and not be faint.",
+            NLT: "But those who trust in the LORD will find new strength. They will soar high on wings like eagles. They will run and not grow weary. They will walk and not faint.",
+            AMP: "But those who wait for the LORD [who expect, look, and hope for Him] will gain new strength and renew their power; they will lift up their wings [and soar] like eagles; they will run and not become weary, they will walk and not tire.",
+            ESV: "But they who wait for the LORD shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint."
+        }
+    },
+    "JEREMIAH 29:11": {
+        ref: "JEREMIAH 29:11",
+        book: "Jeremiah",
+        chapter: 29,
+        verse: 11,
+        category: "God's Plans & Future",
+        versions: {
+            KJV: "For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil, to give you an expected end.",
+            NKJV: "For I know the thoughts that I think toward you, says the LORD, thoughts of peace and not of evil, to give you a future and a hope.",
+            NIV: "'For I know the plans I have for you,' declares the LORD, 'plans to prosper you and not to harm you, plans to give you hope and a future.'",
+            NLT: "'For I know the plans I have for you,' says the LORD. 'They are plans for good and not for disaster, to give you a future and a hope.'",
+            AMP: "'For I know the plans and thoughts that I have for you,' says the LORD, 'plans for peace and well-being and not for disaster, to give you a future and a hope.'",
+            ESV: "For I know the plans I have for you, declares the LORD, plans for welfare and not for evil, to give you a future and a hope."
+        }
+    },
+    "PROVERBS 3:5-6": {
+        ref: "PROVERBS 3:5-6",
+        book: "Proverbs",
+        chapter: 3,
+        verse: 5,
+        category: "Trust & Direction",
+        versions: {
+            KJV: "Trust in the LORD with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths.",
+            NKJV: "Trust in the LORD with all your heart, and lean not on your own understanding; In all your ways acknowledge Him, and He shall direct your paths.",
+            NIV: "Trust in the LORD with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.",
+            NLT: "Trust in the LORD with all your heart; do not depend on your own understanding. Seek his will in all you do, and he will show you which path to take.",
+            AMP: "Trust in and rely confidently on the LORD with all your heart and do not rely on your own insight or understanding. In all your ways know and acknowledge and recognize Him, and He will make your paths straight and smooth.",
+            ESV: "Trust in the LORD with all your heart, and do not lean on your own understanding. In all your ways acknowledge him, and he will make straight your paths."
+        }
+    },
+    "HEBREWS 11:1": {
+        ref: "HEBREWS 11:1",
+        book: "Hebrews",
+        chapter: 11,
+        verse: 1,
+        category: "Faith & Evidence",
+        versions: {
+            KJV: "Now faith is the substance of things hoped for, the evidence of things not seen.",
+            NKJV: "Now faith is the substance of things hoped for, the evidence of things not seen.",
+            NIV: "Now faith is confidence in what we hope for and assurance about what we do not see.",
+            NLT: "Faith shows the reality of what we hope for; it is the evidence of things we cannot see.",
+            AMP: "Now faith is the assurance (title deed, confirmation) of things hoped for (divinely guaranteed), and the evidence of things not seen [the conviction of their reality].",
+            ESV: "Now faith is the assurance of things hoped for, the conviction of things not seen."
+        }
+    },
+    "2 CORINTHIANS 5:17": {
+        ref: "2 CORINTHIANS 5:17",
+        book: "2 Corinthians",
+        chapter: 5,
+        verse: 17,
+        category: "New Creation",
+        versions: {
+            KJV: "Therefore if any man be in Christ, he is a new creature: old things are passed away; behold, all things are become new.",
+            NKJV: "Therefore, if anyone is in Christ, he is a new creation; old things have passed away; behold, all things have become new.",
+            NIV: "Therefore, if anyone is in Christ, the new creation has come: The old has gone, the new is here!",
+            NLT: "This means that anyone who belongs to Christ has become a new person. The old life is gone; a new life has begun!",
+            AMP: "Therefore if anyone is in Christ [that is, grafted in, joined to Him by faith in Him as Savior], he is a new creature [reborn and renewed by the Holy Spirit]; the old things have passed away; behold, new things have come [because spiritual awakening brings a new life].",
+            ESV: "Therefore, if anyone is in Christ, he is a new creation. The old has passed away; behold, the new has come."
+        }
+    },
+    "PSALM 91:1-2": {
+        ref: "PSALM 91:1-2",
+        book: "Psalms",
+        chapter: 91,
+        verse: 1,
+        category: "Protection & Refuge",
+        versions: {
+            KJV: "He that dwelleth in the secret place of the most High shall abide under the shadow of the Almighty. I will say of the LORD, He is my refuge and my fortress: my God; in him will I trust.",
+            NKJV: "He who dwells in the secret place of the Most High shall abide under the shadow of the Almighty. I will say of the LORD, 'He is my refuge and my fortress; My God, in Him I will trust.'",
+            NIV: "Whoever dwells in the shelter of the Most High will rest in the shadow of the Almighty. I will say of the LORD, 'He is my refuge and my fortress, my God, in whom I trust.'",
+            NLT: "Those who live in the shelter of the Most High will find rest in the shadow of the Almighty. This I declare about the LORD: He alone is my refuge, my place of safety; he is my God, and I trust him.",
+            AMP: "He who dwells in the shelter of the Most High will remain secure and rest in the shadow of the Almighty [whose power no enemy can withstand]. I will say of the LORD, 'He is my refuge and my fortress, My God, in whom I trust [with great confidence, and on whom I rely]!'",
+            ESV: "He who dwells in the shelter of the Most High will abide in the shadow of the Almighty. I will say to the LORD, 'My refuge and my fortress, my God, in whom I trust.'"
+        }
+    },
+    "MATTHEW 6:33": {
+        ref: "MATTHEW 6:33",
+        book: "Matthew",
+        chapter: 6,
+        verse: 33,
+        category: "Kingdom First",
+        versions: {
+            KJV: "But seek ye first the kingdom of God, and his righteousness; and all these things shall be added unto you.",
+            NKJV: "But seek first the kingdom of God and His righteousness, and all these things shall be added to you.",
+            NIV: "But seek first his kingdom and his righteousness, and all these things will be given to you as well.",
+            NLT: "Seek the Kingdom of God above all else, and live righteously, and he will give you everything you need.",
+            AMP: "But first and most importantly seek (aim at, strive after) His kingdom and His righteousness [His way of doing and being right], and then all these things will be given to you besides.",
+            ESV: "But seek first the kingdom of God and his righteousness, and all these things will be added to you."
+        }
+    },
+    "ISAIAH 53:5": {
+        ref: "ISAIAH 53:5",
+        book: "Isaiah",
+        chapter: 53,
+        verse: 5,
+        category: "Divine Healing",
+        versions: {
+            KJV: "But he was wounded for our transgressions, he was bruised for our iniquities: the chastisement of our peace was upon him; and with his stripes we are healed.",
+            NKJV: "But He was wounded for our transgressions, He was bruised for our iniquities; The chastisement for our peace was upon Him, And by His stripes we are healed.",
+            NIV: "But he was pierced for our transgressions, he was crushed for our iniquities; the punishment that brought us peace was on him, and by his wounds we are healed.",
+            NLT: "But he was pierced for our rebellion, crushed for our sins. He was beaten so we could be whole. He was whipped so we could be healed.",
+            AMP: "But He was wounded for our transgressions, He was crushed for our wickedness [our sin, our injustice, our wrongdoing]; The punishment [required] for our well-being fell on Him, And by His stripes (wounds) we are healed.",
+            ESV: "But he was pierced for our transgressions; he was crushed for our iniquities; upon him was the chastisement that brought us peace, and with his wounds we are healed."
+        }
+    },
+    "2 TIMOTHY 1:7": {
+        ref: "2 TIMOTHY 1:7",
+        book: "2 Timothy",
+        chapter: 1,
+        verse: 7,
+        category: "Power & Sound Mind",
+        versions: {
+            KJV: "For God hath not given us the spirit of fear; but of power, and of love, and of a sound mind.",
+            NKJV: "For God has not given us a spirit of fear, but of power and of love and of a sound mind.",
+            NIV: "For the Spirit God gave us does not make us timid, but gives us power, love and self-discipline.",
+            NLT: "For God has not given us a spirit of fear and timidity, but of power, love, and self-discipline.",
+            AMP: "For God did not give us a spirit of timidity or cowardice or fear, but [He has given us a spirit] of power and of love and of sound judgment and personal discipline [abilities that result in a calm, well-balanced mind and self-control].",
+            ESV: "For God gave us a spirit not of fear but of power and love and self-control."
+        }
+    },
+    "JOSHUA 1:8": {
+        ref: "JOSHUA 1:8",
+        book: "Joshua",
+        chapter: 1,
+        verse: 8,
+        category: "Meditation & Success",
+        versions: {
+            KJV: "This book of the law shall not depart out of thy mouth; but thou shalt meditate therein day and night, that thou mayest observe to do according to all that is written therein: for then thou shalt make thy way prosperous, and then thou shalt have good success.",
+            NKJV: "This Book of the Law shall not depart from your mouth, but you shall meditate in it day and night, that you may observe to do according to all that is written in it. For then you will make your way prosperous, and then you will have good success.",
+            NIV: "Keep this Book of the Law always on your lips; meditate on it day and night, so that you may be careful to do everything written in it. Then you will be prosperous and successful.",
+            NLT: "Study this Book of Instruction continually. Meditate on it day and night so you will be sure to obey everything written in it. Only then will you prosper and succeed in all you do.",
+            AMP: "This Book of the Law shall not depart from your mouth, but you shall read [and meditate on] it day and night, so that you may be careful to do [everything] in accordance with all that is written in it; for then you will make your way prosperous, and then you will be successful.",
+            ESV: "This Book of the Law shall not depart from your mouth, but you shall meditate on it day and night, so that you may be careful to do according to all that is written in it. For then you will make your way prosperous, and then you will have good success."
+        }
+    },
+    "MALACHI 3:10": {
+        ref: "MALACHI 3:10",
+        book: "Malachi",
+        chapter: 3,
+        verse: 10,
+        category: "Tithe & Open Heavens",
+        versions: {
+            KJV: "Bring ye all the tithes into the storehouse, that there may be meat in mine house, and prove me now herewith, saith the LORD of hosts, if I will not open you the windows of heaven, and pour you out a blessing, that there shall not be room enough to receive it.",
+            NKJV: "'Bring all the tithes into the storehouse, That there may be food in My house, And try Me now in this,' Says the LORD of hosts, 'If I will not open for you the windows of heaven And pour out for you such blessing That there will not be room enough to receive it.'",
+            NIV: "'Bring the whole tithe into the storehouse, that there may be food in my house. Test me in this,' says the LORD Almighty, 'and see if I will not throw open the floodgates of heaven and pour out so much blessing that there will not be room enough to store it.'",
+            NLT: "'Bring all the tithes into the storehouse so there will be enough food in my Temple. If you do,' says the LORD of Heaven’s Armies, 'I will open the windows of heaven for you. I will pour out a blessing so great you won’t have enough room to take it in!'",
+            AMP: "'Bring all the tithes (the tenth) into the storehouse, so that there may be food in My house, and test Me now in this,' says the LORD of hosts, 'if I will not open for you the windows of heaven and pour out for you [so great] a blessing until there is no more room to receive it.'",
+            ESV: "Bring the full tithe into the storehouse, that there may be food in my house. And thereby put me to the test, says the LORD of hosts, if I will not open the windows of heaven for you and pour down for you a blessing until there is no more need."
+        }
+    },
+    "LUKE 6:38": {
+        ref: "LUKE 6:38",
+        book: "Luke",
+        chapter: 6,
+        verse: 38,
+        category: "Giving & Bountiful Return",
+        versions: {
+            KJV: "Give, and it shall be given unto you; good measure, pressed down, and shaken together, and running over, shall men give into your bosom. For with the same measure that ye mete withal it shall be measured to you again.",
+            NKJV: "Give, and it will be given to you: good measure, pressed down, shaken together, and running over will be put into your bosom. For with the same measure that you use, it will be measured back to you.",
+            NIV: "Give, and it will be given to you. A good measure, pressed down, shaken together and running over, will be poured into your lap. For with the measure you use, it will be measured to you.",
+            NLT: "Give, and you will receive. Your gift will return to you in full—pressed down, shaken together to make room for more, running over, and poured into your lap. The amount you give will determine the amount you get back.",
+            AMP: "Give, and it will be given to you. They will pour into your lap a good measure—pressed down, shaken together, and running over [with no space left for more]. For with the standard of measurement you use [when you do good to others], it will be measured to you in return.",
+            ESV: "Give, and it will be given to you. Good measure, pressed down, shaken together, running over, will be put into your lap. For with the measure you use it will be measured back to you."
+        }
+    },
+    "3 JOHN 1:2": {
+        ref: "3 JOHN 1:2",
+        book: "3 John",
+        chapter: 1,
+        verse: 2,
+        category: "Prosperity & Health",
+        versions: {
+            KJV: "Beloved, I wish above all things that thou mayest prosper and be in health, even as thy soul prospereth.",
+            NKJV: "Beloved, I pray that you may prosper in all things and be in health, just as your soul prospers.",
+            NIV: "Dear friend, I pray that you may enjoy good health and that all may go well with you, even as your soul is getting along well.",
+            NLT: "Dear friend, I hope all is well with you and that you are as healthy in body as you are strong in spirit.",
+            AMP: "Beloved, I pray that in every way you may succeed and prosper and be in good health [physically], just as [I know] your soul prospers [spiritually].",
+            ESV: "Beloved, I pray that all may go well with you and that you may be in good health, as it goes well with your soul."
+        }
+    },
+    "1 PETER 5:7": {
+        ref: "1 PETER 5:7",
+        book: "1 Peter",
+        chapter: 5,
+        verse: 7,
+        category: "Peace & Casting Care",
+        versions: {
+            KJV: "Casting all your care upon him; for he careth for you.",
+            NKJV: "Casting all your care upon Him, for He cares for you.",
+            NIV: "Cast all your anxiety on him because he cares for you.",
+            NLT: "Give all your worries and cares to God, for he cares about you.",
+            AMP: "Casting all your cares [all your anxieties, all your worries, and all your concerns, once and for all] on Him, for He cares about you [with deepest affection, and watches over you very carefully].",
+            ESV: "Casting all your anxieties on him, because he cares for you."
+        }
+    },
+    "PSALM 121:1-2": {
+        ref: "PSALM 121:1-2",
+        book: "Psalms",
+        chapter: 121,
+        verse: 1,
+        category: "Divine Help",
+        versions: {
+            KJV: "I will lift up mine eyes unto the hills, from whence cometh my help. My help cometh from the LORD, which made heaven and earth.",
+            NKJV: "I will lift up my eyes to the hills—From whence comes my help? My help comes from the LORD, Who made heaven and earth.",
+            NIV: "I lift up my eyes to the mountains—where does my help come from? My help comes from the LORD, the Maker of heaven and earth.",
+            NLT: "I look up to the mountains—does my help come from there? My help comes from the LORD, who made heaven and earth!",
+            AMP: "I will lift up my eyes to the hills [around Jerusalem, to sacred Mount Zion and Mount Moriah]—From where shall my help come? My help comes from the LORD, Who made heaven and earth.",
+            ESV: "I lift up my eyes to the hills. From where does my help come? My help comes from the LORD, who made heaven and earth."
+        }
+    },
+    "ROMANS 12:2": {
+        ref: "ROMANS 12:2",
+        book: "Romans",
+        chapter: 12,
+        verse: 2,
+        category: "Renewed Mind",
+        versions: {
+            KJV: "And be not conformed to this world: but be ye transformed by the renewing of your mind, that ye may prove what is that good, and acceptable, and perfect, will of God.",
+            NKJV: "And do not be conformed to this world, but be transformed by the renewing of your mind, that you may prove what is that good and acceptable and perfect will of God.",
+            NIV: "Do not conform to the pattern of this world, but be transformed by the renewing of your mind. Then you will be able to test and approve what God’s will is—his good, pleasing and perfect will.",
+            NLT: "Don't copy the behavior and customs of this world, but let God transform you into a new person by changing the way you think. Then you will learn to know God’s will for you, which is good and pleasing and perfect.",
+            AMP: "And do not be conformed to this world [any longer with its superficial values and customs], but be transformed and progressively changed [as you mature spiritually] by the renewing of your mind, so that you may prove what the will of God is, that which is good and acceptable and perfect.",
+            ESV: "Do not be conformed to this world, but be transformed by the renewal of your mind, that by testing you may discern what is the will of God, what is good and acceptable and perfect."
+        }
+    },
+    "EPHESIANS 2:8-9": {
+        ref: "EPHESIANS 2:8-9",
+        book: "Ephesians",
+        chapter: 2,
+        verse: 8,
+        category: "Saved by Grace",
+        versions: {
+            KJV: "For by grace are ye saved through faith; and that not of yourselves: it is the gift of God: Not of works, lest any man should boast.",
+            NKJV: "For by grace you have been saved through faith, and that not of yourselves; it is the gift of God, not of works, lest anyone should boast.",
+            NIV: "For it is by grace you have been saved, through faith—and this is not from yourselves, it is the gift of God—not by works, so that no one can boast.",
+            NLT: "God saved you by his grace when you believed. And you can’t take credit for this; it is a gift from God. Salvation is not a reward for the good things we have done, so none of us can boast about it.",
+            AMP: "For it is by grace [God’s remarkable, undeserved favor] that you have been saved through faith; and that [salvation] is not of yourselves, but it is the [free] gift of God; not as a result of [your] works, so that no one may boast.",
+            ESV: "For by grace you have been saved through faith. And this is not your own doing; it is the gift of God, not a result of works, so that no one may boast."
+        }
+    },
+    "1 CORINTHIANS 13:4-7": {
+        ref: "1 CORINTHIANS 13:4-7",
+        book: "1 Corinthians",
+        chapter: 13,
+        verse: 4,
+        category: "Love Never Fails",
+        versions: {
+            KJV: "Charity suffereth long, and is kind; charity envieth not; charity vaunteth not itself, is not puffed up, Doth not behave itself unseemly, seeketh not her own, is not easily provoked, thinketh no evil; Rejoiceth not in iniquity, but rejoiceth in the truth; Beareth all things, believeth all things, hopeth all things, endureth all things.",
+            NKJV: "Love suffers long and is kind; love does not envy; love does not parade itself, is not puffed up; does not behave rudely, does not seek its own, is not provoked, thinks no evil; does not rejoice in iniquity, but rejoices in the truth; bears all things, believes all things, hopes all things, endures all things.",
+            NIV: "Love is patient, love is kind. It does not envy, it does not boast, it is not proud. It does not dishonor others, it is not self-seeking, it is not easily angered, it keeps no record of wrongs. Love does not delight in evil but rejoices with the truth. It always protects, always trusts, always hopes, always perseveres.",
+            NLT: "Love is patient and kind. Love is not jealous or boastful or proud or rude. It does not demand its own way. It is not irritable, and it keeps no record of being wronged. It does not rejoice about injustice but rejoices whenever the truth wins out. Love never gives up, never loses faith, is always hopeful, and endures through every circumstance.",
+            AMP: "Love endures with patience and serenity, love is kind and thoughtful, and is not jealous or envious; love does not brag and is not proud or arrogant. It is not rude; it is not self-seeking, it is not provoked [nor overly sensitive and easily angered]; it does not take into account a wrong endured. It does not rejoice at injustice, but rejoices with the truth. Love bears all things, believes all things, hopes all things, endures all things.",
+            ESV: "Love is patient and kind; love does not envy or boast; it is not arrogant or rude. It does not insist on its own way; it is not irritable or resentful; it does not rejoice at wrongdoing, but rejoices with the truth. Love bears all things, believes all things, hopes all things, endures all things."
+        }
+    },
+    "PSALM 46:1": {
+        ref: "PSALM 46:1",
+        book: "Psalms",
+        chapter: 46,
+        verse: 1,
+        category: "Present Help",
+        versions: {
+            KJV: "God is our refuge and strength, a very present help in trouble.",
+            NKJV: "God is our refuge and strength, A very present help in trouble.",
+            NIV: "God is our refuge and strength, an ever-present help in trouble.",
+            NLT: "God is our refuge and strength, always ready to help in times of trouble.",
+            AMP: "God is our refuge and strength [mighty and impenetrable], A very present and well-proved help in trouble.",
+            ESV: "God is our refuge and strength, a very present help in trouble."
+        }
+    },
+    "PHILIPPIANS 4:6-7": {
+        ref: "PHILIPPIANS 4:6-7",
+        book: "Philippians",
+        chapter: 4,
+        verse: 6,
+        category: "Peace Over Anxiety",
+        versions: {
+            KJV: "Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God. And the peace of God, which passeth all understanding, shall keep your hearts and minds through Christ Jesus.",
+            NKJV: "Be anxious for nothing, but in everything by prayer and supplication, with thanksgiving, let your requests be made known to God; and the peace of God, which surpasses all understanding, will guard your hearts and minds through Christ Jesus.",
+            NIV: "Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God. And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.",
+            NLT: "Don't worry about anything; instead, pray about everything. Tell God what you need, and thank him for all he has done. Then you will experience God’s peace, which exceeds anything we can understand. His peace will guard your hearts and minds as you live in Christ Jesus.",
+            AMP: "Do not be anxious or worried about anything, but in everything [every circumstance and situation] by prayer and petition with thanksgiving, continue to make your [specific] requests known to God. And the peace of God [that peace which transcends all understanding] will guard your hearts and your minds in Christ Jesus.",
+            ESV: "Do not be anxious about anything, but in everything by prayer and supplication with thanksgiving let your requests be made known to God. And the peace of God, which surpasses all understanding, will guard your hearts and your minds in Christ Jesus."
+        }
+    },
+    "GALATIANS 2:20": {
+        ref: "GALATIANS 2:20",
+        book: "Galatians",
+        chapter: 2,
+        verse: 20,
+        category: "Crucified with Christ",
+        versions: {
+            KJV: "I am crucified with Christ: nevertheless I live; yet not I, but Christ liveth in me: and the life which I now live in the flesh I live by the faith of the Son of God, who loved me, and gave himself for me.",
+            NKJV: "I have been crucified with Christ; it is no longer I who live, but Christ lives in me; and the life which I now live in the flesh I live by faith in the Son of God, who loved me and gave Himself for me.",
+            NIV: "I have been crucified with Christ and I no longer live, but Christ lives in me. The life I now live in the body, I live by faith in the Son of God, who loved me and gave himself for me.",
+            NLT: "My old self has been crucified with Christ. It is no longer I who live, but Christ lives in me. So I live in this earthly body by trusting in the Son of God, who loved me and gave himself for me.",
+            AMP: "I have been crucified with Christ [in Him I have shared His crucifixion]; it is no longer I who live, but Christ lives in me. The life I now live in the body I live by faith [by adhering to, relying on, and completely trusting] in the Son of God, who loved me and gave Himself up for me.",
+            ESV: "I have been crucified with Christ. It is no longer I who live, but Christ lives in me. And the life I now live in the flesh I live by faith in the Son of God, who loved me and gave himself for me."
+        }
+    }
+};
+
+window.CHURCH_HYMN_LIBRARY = [
+    {
+        id: "hymn_1",
+        number: 1,
+        title: "AMAZING GRACE",
+        author: "John Newton",
+        stanzas: [
+            {
+                part: "STANZA 1",
+                text: "Amazing grace! how sweet the sound, That saved a wretch like me! I once was lost, but now am found; Was blind, but now I see."
+            },
+            {
+                part: "STANZA 2",
+                text: "’Twas grace that taught my heart to fear, And grace my fears relieved; How precious did that grace appear The hour I first believed!"
+            },
+            {
+                part: "STANZA 3",
+                text: "Through many dangers, toils and snares, I have already come; ’Tis grace hath brought me safe thus far, And grace will lead me home."
+            },
+            {
+                part: "STANZA 4",
+                text: "When we’ve been there ten thousand years, Bright shining as the sun, We’ve no less days to sing God’s praise Than when we first begun."
+            }
+        ]
+    },
+    {
+        id: "hymn_2",
+        number: 2,
+        title: "GREAT IS THY FAITHFULNESS",
+        author: "Thomas Chisholm",
+        stanzas: [
+            {
+                part: "STANZA 1",
+                text: "Great is Thy faithfulness, O God my Father, There is no shadow of turning with Thee; Thou changest not, Thy compassions, they fail not; As Thou hast been Thou forever wilt be."
+            },
+            {
+                part: "CHORUS",
+                text: "Great is Thy faithfulness! Great is Thy faithfulness! Morning by morning new mercies I see; All I have needed Thy hand hath provided— Great is Thy faithfulness, Lord, unto me!"
+            },
+            {
+                part: "STANZA 2",
+                text: "Summer and winter, and springtime and harvest, Sun, moon and stars in their courses above, Join with all nature in manifold witness To Thy great faithfulness, mercy and love."
+            },
+            {
+                part: "STANZA 3",
+                text: "Pardon for sin and a peace that endureth, Thine own dear presence to cheer and to guide; Strength for today and bright hope for tomorrow, Blessings all mine, with ten thousand beside!"
+            }
+        ]
+    },
+    {
+        id: "hymn_3",
+        number: 3,
+        title: "IT IS WELL WITH MY SOUL",
+        author: "Horatio Spafford",
+        stanzas: [
+            {
+                part: "STANZA 1",
+                text: "When peace, like a river, attendeth my way, When sorrows like sea billows roll; Whatever my lot, Thou hast taught me to say, It is well, it is well with my soul."
+            },
+            {
+                part: "REFRAIN",
+                text: "It is well with my soul, It is well, it is well with my soul."
+            },
+            {
+                part: "STANZA 2",
+                text: "Though Satan should buffet, though trials should come, Let this blest assurance control, That Christ hath regarded my helpless estate, And hath shed His own blood for my soul."
+            },
+            {
+                part: "STANZA 3",
+                text: "My sin, oh, the bliss of this glorious thought! My sin, not in part but the whole, Is nailed to the cross, and I bear it no more, Praise the Lord, praise the Lord, O my soul!"
+            },
+            {
+                part: "STANZA 4",
+                text: "And Lord, haste the day when my faith shall be sight, The clouds be rolled back as a scroll; The trump shall resound, and the Lord shall descend, Even so, it is well with my soul."
+            }
+        ]
+    },
+    {
+        id: "hymn_4",
+        number: 4,
+        title: "BLESSED ASSURANCE",
+        author: "Fanny Crosby",
+        stanzas: [
+            {
+                part: "STANZA 1",
+                text: "Blessed assurance, Jesus is mine! Oh, what a foretaste of glory divine! Heir of salvation, purchase of God, Born of His Spirit, washed in His blood."
+            },
+            {
+                part: "CHORUS",
+                text: "This is my story, this is my song, Praising my Savior all the day long; This is my story, this is my song, Praising my Savior all the day long."
+            },
+            {
+                part: "STANZA 2",
+                text: "Perfect submission, perfect delight, Visions of rapture now burst on my sight; Angels, descending, bring from above Echoes of mercy, whispers of love."
+            },
+            {
+                part: "STANZA 3",
+                text: "Perfect submission, all is at rest, I in my Savior am happy and blest, Watching and waiting, looking above, Filled with His goodness, lost in His love."
+            }
+        ]
+    },
+    {
+        id: "hymn_5",
+        number: 5,
+        title: "HOLY, HOLY, HOLY",
+        author: "Reginald Heber",
+        stanzas: [
+            {
+                part: "STANZA 1",
+                text: "Holy, holy, holy! Lord God Almighty! Early in the morning our song shall rise to Thee; Holy, holy, holy! Merciful and mighty! God in three Persons, blessed Trinity!"
+            },
+            {
+                part: "STANZA 2",
+                text: "Holy, holy, holy! All the saints adore Thee, Casting down their golden crowns around the glassy sea; Cherubim and seraphim falling down before Thee, Who wert, and art, and evermore shalt be."
+            },
+            {
+                part: "STANZA 3",
+                text: "Holy, holy, holy! Though the darkness hide Thee, Though the eye of sinful man Thy glory may not see; Only Thou art holy; there is none beside Thee, Perfect in power, in love, and purity."
+            },
+            {
+                part: "STANZA 4",
+                text: "Holy, holy, holy! Lord God Almighty! All Thy works shall praise Thy Name, in earth, and sky, and sea; Holy, holy, holy! Merciful and mighty! God in three Persons, blessed Trinity!"
+            }
+        ]
+    },
+    {
+        id: "hymn_6",
+        number: 6,
+        title: "HOW GREAT THOU ART",
+        author: "Carl Boberg",
+        stanzas: [
+            {
+                part: "STANZA 1",
+                text: "O Lord my God, when I in awesome wonder Consider all the worlds Thy hands have made, I see the stars, I hear the rolling thunder, Thy power throughout the universe displayed."
+            },
+            {
+                part: "CHORUS",
+                text: "Then sings my soul, my Savior God, to Thee: How great Thou art, how great Thou art! Then sings my soul, my Savior God, to Thee: How great Thou art, how great Thou art!"
+            },
+            {
+                part: "STANZA 2",
+                text: "When through the woods and forest glades I wander And hear the birds sing sweetly in the trees, When I look down from lofty mountain grandeur And hear the brook and feel the gentle breeze."
+            },
+            {
+                part: "STANZA 3",
+                text: "And when I think that God, His Son not sparing, Sent Him to die, I scarce can take it in; That on the cross, my burden gladly bearing, He bled and died to take away my sin."
+            },
+            {
+                part: "STANZA 4",
+                text: "When Christ shall come with shout of acclamation And take me home, what joy shall fill my heart! Then I shall bow in humble adoration, And then proclaim: 'My God, how great Thou art!'"
+            }
+        ]
+    },
+    {
+        id: "hymn_7",
+        number: 7,
+        title: "TO GOD BE THE GLORY",
+        author: "Fanny Crosby",
+        stanzas: [
+            {
+                part: "STANZA 1",
+                text: "To God be the glory, great things He hath done; So loved He the world that He gave us His Son, Who yielded His life an atonement for sin, And opened the life gate that all may go in."
+            },
+            {
+                part: "CHORUS",
+                text: "Praise the Lord, praise the Lord, Let the earth hear His voice! Praise the Lord, praise the Lord, Let the people rejoice! O come to the Father, through Jesus the Son, And give Him the glory, great things He hath done."
+            },
+            {
+                part: "STANZA 2",
+                text: "O perfect redemption, the purchase of blood, To every believer the promise of God; The vilest offender who truly believes, That moment from Jesus a pardon receives."
+            },
+            {
+                part: "STANZA 3",
+                text: "Great things He hath taught us, great things He hath done, And great our rejoicing through Jesus the Son; But purer, and higher, and greater will be Our wonder, our transport, when Jesus we see."
+            }
+        ]
+    },
+    {
+        id: "hymn_8",
+        number: 8,
+        title: "WHAT A FRIEND WE HAVE IN JESUS",
+        author: "Joseph Scriven",
+        stanzas: [
+            {
+                part: "STANZA 1",
+                text: "What a friend we have in Jesus, All our sins and griefs to bear! What a privilege to carry Everything to God in prayer! O what peace we often forfeit, O what needless pain we bear, All because we do not carry Everything to God in prayer."
+            },
+            {
+                part: "STANZA 2",
+                text: "Have we trials and temptations? Is there trouble anywhere? We should never be discouraged; Take it to the Lord in prayer. Can we find a friend so faithful Who will all our sorrows share? Jesus knows our every weakness; Take it to the Lord in prayer."
+            },
+            {
+                part: "STANZA 3",
+                text: "Are we weak and heavy laden, Cumbered with a load of care? Precious Savior, still our refuge, Take it to the Lord in prayer. Do thy friends despise, forsake thee? Take it to the Lord in prayer! In His arms He’ll take and shield thee; Thou wilt find a solace there."
+            }
+        ]
+    },
+    {
+        id: "hymn_9",
+        number: 9,
+        title: "THE OLD RUGGED CROSS",
+        author: "George Bennard",
+        stanzas: [
+            {
+                part: "STANZA 1",
+                text: "On a hill far away stood an old rugged cross, The emblem of suff'ring and shame; And I love that old cross where the dearest and best For a world of lost sinners was slain."
+            },
+            {
+                part: "CHORUS",
+                text: "So I'll cherish the old rugged cross, Till my trophies at last I lay down; I will cling to the old rugged cross, And exchange it some day for a crown."
+            },
+            {
+                part: "STANZA 2",
+                text: "O that old rugged cross, so despised by the world, Has a wondrous attraction for me; For the dear Lamb of God left His glory above To bear it to dark Calvary."
+            },
+            {
+                part: "STANZA 3",
+                text: "To the old rugged cross I will ever be true, Its shame and reproach gladly bear; Then He'll call me some day to my home far away, Where His glory forever I'll share."
+            }
+        ]
+    },
+    {
+        id: "hymn_10",
+        number: 10,
+        title: "ROCK OF AGES",
+        author: "Augustus Toplady",
+        stanzas: [
+            {
+                part: "STANZA 1",
+                text: "Rock of Ages, cleft for me, Let me hide myself in Thee; Let the water and the blood, From Thy wounded side which flowed, Be of sin the double cure, Save from wrath and make me pure."
+            },
+            {
+                part: "STANZA 2",
+                text: "Not the labors of my hands Can fulfill Thy law’s demands; Could my zeal no respite know, Could my tears forever flow, All for sin could not atone; Thou must save, and Thou alone."
+            },
+            {
+                part: "STANZA 3",
+                text: "Nothing in my hand I bring, Simply to the cross I cling; Naked, come to Thee for dress; Helpless, look to Thee for grace; Foul, I to the fountain fly; Wash me, Savior, or I die."
+            },
+            {
+                part: "STANZA 4",
+                text: "While I draw this fleeting breath, When mine eyes shall close in death, When I soar to worlds unknown, See Thee on Thy judgment throne, Rock of Ages, cleft for me, Let me hide myself in Thee."
+            }
+        ]
+    }
+];
+
+// Helper Functions
+window.findScriptures = function(query) {
+    if (!query || query.trim() === '') {
+        return Object.values(window.CHURCH_SCRIPTURE_LIBRARY);
+    }
+    const q = query.trim().toUpperCase();
+    return Object.values(window.CHURCH_SCRIPTURE_LIBRARY).filter(s => {
+        return s.ref.includes(q) ||
+               s.book.toUpperCase().includes(q) ||
+               s.category.toUpperCase().includes(q);
+    });
+};
+
+window.findHymns = function(query) {
+    if (!query || query.trim() === '') {
+        return window.CHURCH_HYMN_LIBRARY;
+    }
+    const q = query.trim().toUpperCase();
+    return window.CHURCH_HYMN_LIBRARY.filter(h => {
+        return h.title.toUpperCase().includes(q) ||
+               h.author.toUpperCase().includes(q) ||
+               String(h.number).includes(q) ||
+               h.stanzas.some(st => st.text.toUpperCase().includes(q));
+    });
+};
+
+// Sermon Queue Manager
+window.SermonQueue = {
+    items: [],
+    currentIndex: -1,
+
+    add: function(item) {
+        this.items.push(item);
+        this.save();
+        if (this.currentIndex === -1) this.currentIndex = 0;
+        return this.items.length - 1;
+    },
+
+    remove: function(index) {
+        if (index >= 0 && index < this.items.length) {
+            this.items.splice(index, 1);
+            if (this.currentIndex >= this.items.length) {
+                this.currentIndex = this.items.length - 1;
+            }
+            this.save();
+        }
+    },
+
+    clear: function() {
+        this.items = [];
+        this.currentIndex = -1;
+        this.save();
+    },
+
+    save: function() {
+        try {
+            localStorage.setItem('vstreaming_sermon_queue', JSON.stringify(this.items));
+        } catch(e) {}
+    },
+
+    load: function() {
+        try {
+            const raw = localStorage.getItem('vstreaming_sermon_queue');
+            if (raw) {
+                this.items = JSON.parse(raw);
+                if (this.items.length > 0 && this.currentIndex === -1) {
+                    this.currentIndex = 0;
+                }
+            }
+        } catch(e) {}
+    }
+};
+
+window.SermonQueue.load();

@@ -135,6 +135,7 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
+            transition: opacity 0.18s ease-in-out;
         }
 
         .graphic-main-text {
@@ -227,6 +228,17 @@
             } else {
                 card.style.borderLeftColor = '#f59e0b'; // Gold
                 main.style.fontSize = '26px';
+            }
+
+            const isAlreadyActive = card.classList.contains('active');
+            if (isAlreadyActive) {
+                const gContent = document.getElementById('graphic-content');
+                if (gContent) {
+                    gContent.style.opacity = '0.2';
+                    setTimeout(() => {
+                        gContent.style.opacity = '1';
+                    }, 120);
+                }
             }
 
             card.classList.remove('hiding');

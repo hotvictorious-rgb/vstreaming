@@ -331,22 +331,34 @@
 
                     <!-- TAB 2: SCRIPTURE -->
                     <div id="tab-panel-scripture" style="display: none; flex-direction: column; gap: 10px;">
-                        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
-                            <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">⚡ Popular Verses:</span>
-                            <button class="preset-pill" onclick="applyScripturePreset('ROMANS 8:28', 'And we know that all things work together for good to them that love God, to them who are the called according to his purpose.', 'KJV')">Rom 8:28</button>
-                            <button class="preset-pill" onclick="applyScripturePreset('JOHN 3:16', 'For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.', 'KJV')">John 3:16</button>
-                            <button class="preset-pill" onclick="applyScripturePreset('PSALM 23:1', 'The LORD is my shepherd; I shall not want. He maketh me to lie down in green pastures: he leadeth me beside the still waters.', 'KJV')">Ps 23:1</button>
-                            <button class="preset-pill" onclick="applyScripturePreset('PHILIPPIANS 4:13', 'I can do all things through Christ which strengtheneth me.', 'KJV')">Phil 4:13</button>
-                            <button class="preset-pill" onclick="applyScripturePreset('ISAIAH 40:31', 'But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary.', 'KJV')">Isa 40:31</button>
+                        <!-- Smart Search & Autocomplete Bar -->
+                        <div style="position: relative;">
+                            <input type="text" id="input-scripture-search" placeholder="🔍 Search Bible Library (e.g. Rom 8:28, John 3, Ps 23, Faith, Healing, Tithe...)" oninput="onScriptureSearchInput(this.value)" onfocus="onScriptureSearchInput(this.value)" style="width: 100%; background: #070314; border: 1px solid rgba(245, 158, 11, 0.6); color: #fbbf24; padding: 7px 12px; border-radius: 6px; font-size: 12px; outline: none;">
+                            <div id="scripture-search-dropdown" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #0f0a21; border: 1px solid #f59e0b; border-radius: 6px; max-height: 190px; overflow-y: auto; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.8);"></div>
                         </div>
-                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px;">
+
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                            <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">⚡ Quick Verses:</span>
+                            <button class="preset-pill" onclick="loadScriptureDirect('ROMANS 8:28')">Rom 8:28</button>
+                            <button class="preset-pill" onclick="loadScriptureDirect('JOHN 3:16')">John 3:16</button>
+                            <button class="preset-pill" onclick="loadScriptureDirect('PSALM 23:1')">Ps 23:1</button>
+                            <button class="preset-pill" onclick="loadScriptureDirect('PHILIPPIANS 4:13')">Phil 4:13</button>
+                            <button class="preset-pill" onclick="loadScriptureDirect('ISAIAH 40:31')">Isa 40:31</button>
+                            <button class="preset-pill" onclick="loadScriptureDirect('HEBREWS 11:1')">Heb 11:1</button>
+                            <button class="preset-pill" onclick="loadScriptureDirect('2 CORINTHIANS 5:17')">2 Cor 5:17</button>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 8px;">
                             <div>
-                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Bible Reference (Book Chapter:Verse):</label>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                    <label style="font-size: 11px; color: #94a3b8; font-weight: 600;">Bible Reference:</label>
+                                    <button type="button" onclick="addCurrentScriptureToQueue()" style="background: rgba(124, 58, 237, 0.25); border: 1px solid #8b5cf6; color: #c4b5fd; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; cursor: pointer;">📋 + Add to Sermon Queue</button>
+                                </div>
                                 <input type="text" id="input-scripture-ref" value="ROMANS 8:28" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; font-weight: 700; padding: 8px 12px; border-radius: 6px; font-size: 13px;">
                             </div>
                             <div>
                                 <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Translation Version:</label>
-                                <select id="sel-scripture-version" onchange="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; font-weight: 700; padding: 8px 8px; border-radius: 6px; font-size: 12px; cursor: pointer;">
+                                <select id="sel-scripture-version" onchange="onScriptureVersionChange()" style="width: 100%; background: #0b0717; border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; font-weight: 700; padding: 8px 8px; border-radius: 6px; font-size: 12px; cursor: pointer;">
                                     <option value="KJV">KJV (King James)</option>
                                     <option value="NKJV">NKJV (New King James)</option>
                                     <option value="NIV">NIV (New International)</option>
@@ -364,12 +376,36 @@
 
                     <!-- TAB 3: HYMN -->
                     <div id="tab-panel-hymn" style="display: none; flex-direction: column; gap: 10px;">
-                        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
-                            <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">⚡ Classic Hymns:</span>
-                            <button class="preset-pill" onclick="applyHymnPreset('AMAZING GRACE • HYMN 1', 'STANZA 1', 'Amazing grace! how sweet the sound, That saved a wretch like me! I once was lost, but now am found; Was blind, but now I see.')">Amazing Grace</button>
-                            <button class="preset-pill" onclick="applyHymnPreset('GREAT IS THY FAITHFULNESS', 'STANZA 1', 'Great is Thy faithfulness, O God my Father, There is no shadow of turning with Thee; Thou changest not, Thy compassions, they fail not.')">Great Is Thy Faithfulness</button>
-                            <button class="preset-pill" onclick="applyHymnPreset('IT IS WELL WITH MY SOUL', 'STANZA 1', 'When peace, like a river, attendeth my way, When sorrows like sea billows roll; Whatever my lot, Thou hast taught me to say, It is well, it is well with my soul.')">It Is Well</button>
+                        <!-- Hymn Book Select & Filter -->
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px;">
+                            <div>
+                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Hymn Book Catalog:</label>
+                                <select id="sel-hymn-catalog" onchange="onHymnCatalogSelect(this.value)" style="width: 100%; background: #0b0717; border: 1px solid rgba(56, 189, 248, 0.6); color: #38bdf8; font-weight: 700; padding: 7px 8px; border-radius: 6px; font-size: 12px; cursor: pointer;"></select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Quick Filter:</label>
+                                <input type="text" id="input-hymn-search" placeholder="Filter title/number..." oninput="onHymnSearchInput(this.value)" style="width: 100%; background: #0b0717; border: 1px solid rgba(56, 189, 248, 0.4); color: #fff; padding: 7px 10px; border-radius: 6px; font-size: 12px;">
+                            </div>
                         </div>
+
+                        <!-- Stanza Stepper Toolbar -->
+                        <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 8px 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span style="font-size: 11px; color: #7dd3fc; font-weight: 700;">🎵 STANZA STEPPER:</span>
+                                <label style="display: flex; align-items: center; gap: 5px; font-size: 11px; color: #94a3b8; cursor: pointer;">
+                                    <input type="checkbox" id="chk-auto-push-hymn" checked style="accent-color: #38bdf8; cursor: pointer;">
+                                    <span>Auto-push live if ON AIR</span>
+                                </label>
+                            </div>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                                <div id="hymn-stanza-container" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                                <div style="display: flex; gap: 4px; margin-left: auto;">
+                                    <button type="button" onclick="stepHymnStanza(-1)" class="preset-pill" style="background: rgba(56, 189, 248, 0.2); border-color: #38bdf8; color: #38bdf8;">◀ Prev</button>
+                                    <button type="button" onclick="stepHymnStanza(1)" class="preset-pill" style="background: rgba(56, 189, 248, 0.3); border-color: #38bdf8; color: #fff;">Next ▶</button>
+                                </div>
+                            </div>
+                        </div>
+
                         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px;">
                             <div>
                                 <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Hymn Title / Number:</label>
@@ -377,7 +413,7 @@
                             </div>
                             <div>
                                 <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Stanza / Part:</label>
-                                <select id="sel-hymn-part" onchange="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(56, 189, 248, 0.5); color: #38bdf8; font-weight: 700; padding: 8px 8px; border-radius: 6px; font-size: 12px; cursor: pointer;">
+                                <select id="sel-hymn-part" onchange="onManualHymnPartChange()" style="width: 100%; background: #0b0717; border: 1px solid rgba(56, 189, 248, 0.5); color: #38bdf8; font-weight: 700; padding: 8px 8px; border-radius: 6px; font-size: 12px; cursor: pointer;">
                                     <option value="STANZA 1">STANZA 1</option>
                                     <option value="STANZA 2">STANZA 2</option>
                                     <option value="STANZA 3">STANZA 3</option>
@@ -447,6 +483,23 @@
                             <button class="btn-clear-graphic" onclick="clearGraphicFromAir()">
                                 ✕ HIDE
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Sermon Passages Rundown / Playlist -->
+                    <div style="background: rgba(20, 12, 40, 0.85); border: 1px solid rgba(124, 58, 237, 0.4); border-radius: 8px; padding: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <div style="font-size: 11px; font-weight: 800; color: #c4b5fd; display: flex; align-items: center; gap: 6px;">
+                                <span>📋</span> SERMON PASSAGES PLAYLIST (<span id="sermon-queue-count">0</span>)
+                            </div>
+                            <div style="display: flex; gap: 4px;">
+                                <button onclick="stepSermonQueue(-1)" class="preset-pill" style="font-size: 10px; padding: 2px 7px;">◀ Prev</button>
+                                <button onclick="stepSermonQueue(1)" class="preset-pill" style="font-size: 10px; padding: 2px 7px;">Next ▶</button>
+                                <button onclick="clearSermonQueue()" class="preset-pill" style="font-size: 10px; padding: 2px 7px; background: rgba(239, 68, 68, 0.2); border-color: #ef4444; color: #fca5a5;">Clear</button>
+                            </div>
+                        </div>
+                        <div id="sermon-queue-list" style="max-height: 90px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;">
+                            <div style="font-size: 11px; color: #64748b; font-style: italic;">No passages queued yet. Click "+ Add to Sermon Queue" on scriptures.</div>
                         </div>
                     </div>
                 </div>
@@ -802,6 +855,7 @@
         </div>
     </div>
 
+    <script src="/js/broadcast-library.js"></script>
     <script>
         // =====================================================================
         // CLOSE GUARD & AUTO-SHUTDOWN CONTROLLER
@@ -1236,7 +1290,304 @@
         }
 
         // =====================================================================
-        // DIRECTOR INTERCOM TALKBACK SYSTEM (Dedicated Out-Of-Band WebRTC Engine)
+
+        // =====================================================================
+        // CHURCH SCRIPTURE & HYMN INTELLIGENCE ENGINE (PHASE 2)
+        // =====================================================================
+        let currentLoadedHymn = null;
+
+        function initBroadcastIntelligence() {
+            initHymnCatalogUI();
+            renderSermonQueueUI();
+
+            // Close scripture search dropdown if clicking outside
+            document.addEventListener('click', function(e) {
+                const drop = document.getElementById('scripture-search-dropdown');
+                const inp = document.getElementById('input-scripture-search');
+                if (drop && inp && !drop.contains(e.target) && e.target !== inp) {
+                    drop.style.display = 'none';
+                }
+            });
+        }
+
+        // --- SCRIPTURE INTELLIGENCE ---
+        function loadScriptureDirect(ref) {
+            if (!window.CHURCH_SCRIPTURE_LIBRARY) return;
+            const item = window.CHURCH_SCRIPTURE_LIBRARY[ref];
+            if (!item) return;
+
+            const selVer = document.getElementById('sel-scripture-version');
+            const version = selVer ? selVer.value : 'KJV';
+            const text = item.versions[version] || item.versions['KJV'] || '';
+
+            document.getElementById('input-scripture-ref').value = item.ref;
+            document.getElementById('input-scripture-text').value = text;
+            updateLiveGraphicPreview();
+            showToast('📖 Loaded: ' + item.ref + ' [' + version + ']');
+        }
+
+        function onScriptureSearchInput(query) {
+            const drop = document.getElementById('scripture-search-dropdown');
+            if (!drop) return;
+            if (!query || query.trim() === '') {
+                drop.style.display = 'none';
+                return;
+            }
+
+            const results = (typeof window.findScriptures === 'function') ? window.findScriptures(query) : [];
+            if (results.length === 0) {
+                drop.innerHTML = '<div style="padding: 10px; font-size: 11px; color: #94a3b8; text-align: center;">No matching scriptures found. You can type any custom verse below!</div>';
+                drop.style.display = 'block';
+                return;
+            }
+
+            const selVer = document.getElementById('sel-scripture-version');
+            const curVer = selVer ? selVer.value : 'KJV';
+
+            let html = '';
+            results.slice(0, 8).forEach(s => {
+                const snippet = (s.versions[curVer] || s.versions['KJV'] || '').substring(0, 75) + '...';
+                html += '<div onclick="selectScriptureResult(\'' + s.ref + '\')" style="padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background=\'rgba(245,158,11,0.15)\'" onmouseout="this.style.background=\'transparent\'">' +
+                    '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+                    '<strong style="color: #fbbf24; font-size: 12px;">' + s.ref + '</strong>' +
+                    '<span style="font-size: 10px; color: #c4b5fd; background: rgba(124,58,237,0.3); padding: 1px 6px; border-radius: 4px;">' + s.category + '</span>' +
+                    '</div>' +
+                    '<div style="font-size: 11px; color: #cbd5e1; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + snippet + '</div>' +
+                    '</div>';
+            });
+
+            drop.innerHTML = html;
+            drop.style.display = 'block';
+        }
+
+        function selectScriptureResult(ref) {
+            const drop = document.getElementById('scripture-search-dropdown');
+            if (drop) drop.style.display = 'none';
+            const sInp = document.getElementById('input-scripture-search');
+            if (sInp) sInp.value = '';
+            loadScriptureDirect(ref);
+        }
+
+        function onScriptureVersionChange() {
+            const ref = document.getElementById('input-scripture-ref').value.trim();
+            const selVer = document.getElementById('sel-scripture-version');
+            const version = selVer ? selVer.value : 'KJV';
+
+            if (window.CHURCH_SCRIPTURE_LIBRARY && window.CHURCH_SCRIPTURE_LIBRARY[ref]) {
+                const item = window.CHURCH_SCRIPTURE_LIBRARY[ref];
+                const text = item.versions[version] || item.versions['KJV'];
+                if (text) {
+                    document.getElementById('input-scripture-text').value = text;
+                    showToast('Switched to ' + version + ' translation');
+                }
+            }
+            updateLiveGraphicPreview();
+        }
+
+        // --- SERMON PLAYLIST / QUEUE ---
+        function addCurrentScriptureToQueue() {
+            const ref = document.getElementById('input-scripture-ref').value.trim();
+            const text = document.getElementById('input-scripture-text').value.trim();
+            const version = document.getElementById('sel-scripture-version').value;
+
+            if (!ref || !text) {
+                showToast('⚠️ Please enter a scripture before queuing');
+                return;
+            }
+
+            if (window.SermonQueue) {
+                window.SermonQueue.add({ ref, text, version });
+                renderSermonQueueUI();
+                showToast('📋 Added ' + ref + ' [' + version + '] to Sermon Playlist');
+            }
+        }
+
+        function renderSermonQueueUI() {
+            const list = document.getElementById('sermon-queue-list');
+            const countLbl = document.getElementById('sermon-queue-count');
+            if (!list || !window.SermonQueue) return;
+
+            const items = window.SermonQueue.items;
+            if (countLbl) countLbl.innerText = items.length;
+
+            if (items.length === 0) {
+                list.innerHTML = '<div style="font-size: 11px; color: #64748b; font-style: italic; padding: 4px;">No passages queued yet. Click "+ Add to Sermon Queue" on scriptures.</div>';
+                return;
+            }
+
+            let html = '';
+            items.forEach((item, idx) => {
+                const isActive = (window.SermonQueue.currentIndex === idx);
+                const bg = isActive ? 'background: rgba(245, 158, 11, 0.2); border-left: 3px solid #f59e0b;' : 'background: rgba(255,255,255,0.03); border-left: 3px solid transparent;';
+                html += '<div style="' + bg + ' border-radius: 4px; padding: 4px 8px; display: flex; align-items: center; justify-content: space-between; font-size: 11px;">' +
+                    '<div onclick="loadSermonQueueItem(' + idx + ')" style="cursor: pointer; display: flex; align-items: center; gap: 6px; flex: 1; overflow: hidden;">' +
+                    '<strong style="color: #fbbf24;">' + (idx + 1) + '. ' + item.ref + '</strong>' +
+                    '<span style="color: #c4b5fd; font-size: 9px; background: rgba(124,58,237,0.3); padding: 1px 4px; border-radius: 3px;">' + item.version + '</span>' +
+                    '</div>' +
+                    '<div style="display: flex; gap: 4px;">' +
+                    '<button onclick="event.stopPropagation(); loadSermonQueueItem(' + idx + ', true);" style="background: rgba(245,158,11,0.25); border: 1px solid #f59e0b; color: #fbbf24; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; cursor: pointer;" title="Load & Take Live">🔥 LIVE</button>' +
+                    '<button onclick="event.stopPropagation(); removeSermonQueueItem(' + idx + ');" style="background: rgba(239,68,68,0.2); border: 1px solid #ef4444; color: #fca5a5; font-size: 9px; padding: 1px 5px; border-radius: 3px; cursor: pointer;" title="Remove">✕</button>' +
+                    '</div>' +
+                    '</div>';
+            });
+            list.innerHTML = html;
+        }
+
+        function loadSermonQueueItem(index, fireLive) {
+            if (!window.SermonQueue || index < 0 || index >= window.SermonQueue.items.length) return;
+            window.SermonQueue.currentIndex = index;
+            const item = window.SermonQueue.items[index];
+
+            switchGraphicsTab('scripture');
+            document.getElementById('input-scripture-ref').value = item.ref;
+            document.getElementById('input-scripture-text').value = item.text;
+            const selVer = document.getElementById('sel-scripture-version');
+            if (selVer && item.version) selVer.value = item.version;
+
+            updateLiveGraphicPreview();
+            renderSermonQueueUI();
+
+            if (fireLive) {
+                takeGraphicLive();
+            } else {
+                showToast('Loaded ' + item.ref + ' (' + (index + 1) + ' of ' + window.SermonQueue.items.length + ')');
+            }
+        }
+
+        function stepSermonQueue(delta) {
+            if (!window.SermonQueue || window.SermonQueue.items.length === 0) {
+                showToast('No passages in sermon playlist');
+                return;
+            }
+            let nextIdx = window.SermonQueue.currentIndex + delta;
+            if (nextIdx < 0) nextIdx = 0;
+            if (nextIdx >= window.SermonQueue.items.length) nextIdx = window.SermonQueue.items.length - 1;
+
+            loadSermonQueueItem(nextIdx, isGraphicOnAir);
+        }
+
+        function removeSermonQueueItem(index) {
+            if (window.SermonQueue) {
+                window.SermonQueue.remove(index);
+                renderSermonQueueUI();
+            }
+        }
+
+        function clearSermonQueue() {
+            if (window.SermonQueue) {
+                window.SermonQueue.clear();
+                renderSermonQueueUI();
+                showToast('Cleared sermon playlist');
+            }
+        }
+
+        // --- HYMN CATALOG & STANZA STEPPER ---
+        function initHymnCatalogUI() {
+            const sel = document.getElementById('sel-hymn-catalog');
+            if (!sel || !window.CHURCH_HYMN_LIBRARY) return;
+
+            let html = '';
+            window.CHURCH_HYMN_LIBRARY.forEach(h => {
+                html += '<option value="' + h.id + '">' + h.number + '. ' + h.title + '</option>';
+            });
+            sel.innerHTML = html;
+
+            if (window.CHURCH_HYMN_LIBRARY.length > 0) {
+                onHymnCatalogSelect(window.CHURCH_HYMN_LIBRARY[0].id);
+            }
+        }
+
+        function onHymnSearchInput(query) {
+            const sel = document.getElementById('sel-hymn-catalog');
+            if (!sel || !window.CHURCH_HYMN_LIBRARY) return;
+
+            const filtered = (typeof window.findHymns === 'function') ? window.findHymns(query) : window.CHURCH_HYMN_LIBRARY;
+            let html = '';
+            filtered.forEach(h => {
+                html += '<option value="' + h.id + '">' + h.number + '. ' + h.title + '</option>';
+            });
+            sel.innerHTML = html;
+
+            if (filtered.length > 0) {
+                onHymnCatalogSelect(filtered[0].id);
+            }
+        }
+
+        function onHymnCatalogSelect(hymnId) {
+            if (!window.CHURCH_HYMN_LIBRARY) return;
+            const hymn = window.CHURCH_HYMN_LIBRARY.find(h => h.id === hymnId);
+            if (!hymn) return;
+            currentLoadedHymn = hymn;
+
+            const title = hymn.title + ' • HYMN ' + hymn.number;
+            document.getElementById('input-hymn-title').value = title;
+
+            // Render Stanza Stepper Pills
+            renderHymnStanzaPills(hymn, hymn.stanzas[0] ? hymn.stanzas[0].part : 'STANZA 1');
+
+            if (hymn.stanzas[0]) {
+                document.getElementById('input-hymn-text').value = hymn.stanzas[0].text;
+                const selPart = document.getElementById('sel-hymn-part');
+                if (selPart) selPart.value = hymn.stanzas[0].part;
+            }
+            updateLiveGraphicPreview();
+        }
+
+        function renderHymnStanzaPills(hymn, activePart) {
+            const container = document.getElementById('hymn-stanza-container');
+            if (!container || !hymn) return;
+
+            let html = '';
+            hymn.stanzas.forEach(st => {
+                const isActive = (st.part === activePart);
+                const cls = isActive ? 'preset-pill active-pill' : 'preset-pill';
+                const style = isActive ? 'background: #0284c7; border-color: #38bdf8; color: #fff; font-weight: 800;' : 'background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.4); color: #7dd3fc;';
+                html += '<button type="button" class="' + cls + '" style="' + style + '" onclick="selectHymnStanza(\'' + st.part + '\')">' + st.part + '</button>';
+            });
+            container.innerHTML = html;
+        }
+
+        function selectHymnStanza(partName) {
+            if (!currentLoadedHymn) return;
+            const stanza = currentLoadedHymn.stanzas.find(s => s.part === partName);
+            if (!stanza) return;
+
+            document.getElementById('input-hymn-text').value = stanza.text;
+            const selPart = document.getElementById('sel-hymn-part');
+            if (selPart) selPart.value = stanza.part;
+
+            renderHymnStanzaPills(currentLoadedHymn, stanza.part);
+            updateLiveGraphicPreview();
+
+            // Auto-push live if currently ON AIR on OBS
+            const chkAutoPush = document.getElementById('chk-auto-push-hymn');
+            if (chkAutoPush && chkAutoPush.checked && isGraphicOnAir) {
+                takeGraphicLive();
+            }
+        }
+
+        function stepHymnStanza(delta) {
+            if (!currentLoadedHymn || !currentLoadedHymn.stanzas.length) return;
+            const selPart = document.getElementById('sel-hymn-part');
+            const currentPart = selPart ? selPart.value : currentLoadedHymn.stanzas[0].part;
+
+            const curIdx = currentLoadedHymn.stanzas.findIndex(s => s.part === currentPart);
+            let nextIdx = curIdx + delta;
+            if (nextIdx < 0) nextIdx = 0;
+            if (nextIdx >= currentLoadedHymn.stanzas.length) nextIdx = currentLoadedHymn.stanzas.length - 1;
+
+            selectHymnStanza(currentLoadedHymn.stanzas[nextIdx].part);
+        }
+
+        function onManualHymnPartChange() {
+            const selPart = document.getElementById('sel-hymn-part');
+            if (selPart) {
+                selectHymnStanza(selPart.value);
+            }
+        }
+
+
+                // DIRECTOR INTERCOM TALKBACK SYSTEM (Dedicated Out-Of-Band WebRTC Engine)
         // Decoupled 100% from video - microphone audio will never freeze camera feeds!
         // =====================================================================
 
