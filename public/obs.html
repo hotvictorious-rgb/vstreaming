@@ -52,6 +52,110 @@
         #obs-video.live {
             opacity: 1;
         }
+
+        /* =====================================================================
+           LIVE BROADCAST GRAPHICS & LOWER-THIRD OVERLAY (LAYER 10)
+           ===================================================================== */
+        #graphics-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10;
+            pointer-events: none;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            padding: 45px 50px;
+        }
+
+        .graphic-card {
+            background: linear-gradient(135deg, rgba(20, 10, 42, 0.94) 0%, rgba(35, 16, 68, 0.90) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            border-left: 6px solid #f59e0b;
+            border-radius: 12px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7), 0 0 20px rgba(124, 58, 237, 0.35);
+            backdrop-filter: blur(20px);
+            max-width: 960px;
+            min-width: 440px;
+            padding: 16px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transform: translateX(-120%);
+            opacity: 0;
+            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+        }
+
+        .graphic-card.active {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .graphic-card.hiding {
+            transform: translateY(25px);
+            opacity: 0;
+            transition: transform 0.3s ease-in, opacity 0.25s ease-in;
+        }
+
+        .graphic-badge-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .graphic-icon {
+            font-size: 20px;
+            filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.6));
+        }
+
+        .graphic-badge-title {
+            color: #fbbf24;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .graphic-badge-tag {
+            background: rgba(124, 58, 237, 0.35);
+            border: 1px solid rgba(139, 92, 246, 0.6);
+            color: #c4b5fd;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .graphic-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .graphic-main-text {
+            color: #ffffff;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            line-height: 1.3;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            letter-spacing: 0.2px;
+        }
+
+        .graphic-sub-text {
+            color: #cbd5e1;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            line-height: 1.35;
+            letter-spacing: 0.3px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+        }
     </style>
 </head>
 <body>
@@ -61,8 +165,96 @@
     <!-- Live Video Stream Layer (Overlays Flier when Active & Authorized by Tally) -->
     <video id="obs-video" autoplay playsinline muted></video>
 
+    <!-- Live Broadcast Graphics & Lower-Third Layer (Layer 10) -->
+    <div id="graphics-layer">
+        <div id="graphic-card" class="graphic-card">
+            <div class="graphic-badge-row" id="graphic-badge-row">
+                <span class="graphic-icon" id="graphic-icon">👤</span>
+                <span class="graphic-badge-title" id="graphic-badge-title">SPEAKER</span>
+                <span class="graphic-badge-tag" id="graphic-badge-tag">LIVE</span>
+            </div>
+            <div class="graphic-content" id="graphic-content">
+                <div class="graphic-main-text" id="graphic-main-text"></div>
+                <div class="graphic-sub-text" id="graphic-sub-text"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
+
+        // =====================================================================
+        // LIVE BROADCAST GRAPHICS CONTROLLER (LOWER-THIRDS & SCRIPTURES)
+        // =====================================================================
+        let overlayHideTimer = null;
+
+        function showGraphicOverlay(payload) {
+            if (isEmergency) return; // Never show over emergency flier
+            if (overlayHideTimer) {
+                clearTimeout(overlayHideTimer);
+                overlayHideTimer = null;
+            }
+
+            const card = document.getElementById('graphic-card');
+            const icon = document.getElementById('graphic-icon');
+            const title = document.getElementById('graphic-badge-title');
+            const tag = document.getElementById('graphic-badge-tag');
+            const main = document.getElementById('graphic-main-text');
+            const sub = document.getElementById('graphic-sub-text');
+
+            if (!card) return;
+
+            icon.innerText = payload.icon || '🎬';
+            title.innerText = payload.badgeTitle || 'BROADCAST';
+            tag.innerText = payload.badgeTag || '';
+            tag.style.display = payload.badgeTag ? 'inline-block' : 'none';
+
+            main.innerText = payload.mainText || '';
+            main.style.display = payload.mainText ? 'block' : 'none';
+
+            sub.innerText = payload.subText || '';
+            sub.style.display = payload.subText ? 'block' : 'none';
+
+            // Distinct theme borders and font sizing per template type
+            if (payload.template === 'scripture') {
+                card.style.borderLeftColor = '#f59e0b'; // Gold
+                main.style.fontSize = '22px';
+            } else if (payload.template === 'hymn') {
+                card.style.borderLeftColor = '#38bdf8'; // Sky Blue
+                main.style.fontSize = '22px';
+            } else if (payload.template === 'giving') {
+                card.style.borderLeftColor = '#10b981'; // Emerald
+                main.style.fontSize = '24px';
+            } else {
+                card.style.borderLeftColor = '#f59e0b'; // Gold
+                main.style.fontSize = '26px';
+            }
+
+            card.classList.remove('hiding');
+            card.classList.add('active');
+
+            if (payload.autoHideSeconds && payload.autoHideSeconds > 0) {
+                overlayHideTimer = setTimeout(() => {
+                    hideGraphicOverlay();
+                }, payload.autoHideSeconds * 1000);
+            }
+        }
+
+        function hideGraphicOverlay() {
+            if (overlayHideTimer) {
+                clearTimeout(overlayHideTimer);
+                overlayHideTimer = null;
+            }
+            const card = document.getElementById('graphic-card');
+            if (card && card.classList.contains('active')) {
+                card.classList.add('hiding');
+                setTimeout(() => {
+                    card.classList.remove('active');
+                    card.classList.remove('hiding');
+                }, 350);
+            }
+        }
+
+                const urlParams = new URLSearchParams(window.location.search);
         const idParam = urlParams.get('id') || '1';
         const isProgramMode = (idParam === 'program' || idParam === 'live');
         let camId = isProgramMode ? 'program' : parseInt(idParam, 10);
@@ -196,10 +388,21 @@
                         flierSlate.style.backgroundImage = `url("${data.url}")`;
                     }
 
+                    // Live Graphics & Lower-Third Overlay Commands from Director Hub
+                    if (data.type === 'overlay_show') {
+                        showGraphicOverlay(data);
+                    }
+                    if (data.type === 'overlay_hide') {
+                        hideGraphicOverlay();
+                    }
+
                     // Emergency Panic Cut (Instant Hard Cut to Flier)
                     if (data.type === 'emergency_cut') {
                         if (data.url) flierSlate.style.backgroundImage = `url("${data.url}")`;
                         setEmergency(data.active, true);
+                        if (data.active) {
+                            hideGraphicOverlay();
+                        }
                         if (!data.active && isProgramMode && currentProgramCamId && activeTallyState === 'PROGRAM') {
                             requestStream(currentProgramCamId);
                         }

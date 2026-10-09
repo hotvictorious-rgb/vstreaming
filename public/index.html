@@ -83,6 +83,146 @@
             from { box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
             to { box-shadow: 0 0 20px rgba(239, 68, 68, 1); }
         }
+
+        /* =====================================================================
+           LIVE GRAPHICS & LOWER-THIRDS CONSOLE (DIRECTOR DRAWER)
+           ===================================================================== */
+        .graphics-console-bar {
+            background: linear-gradient(90deg, rgba(30, 19, 56, 0.95), rgba(20, 10, 40, 0.95));
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            border-radius: 10px;
+            padding: 8px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+        .graphics-console-bar:hover {
+            border-color: #f59e0b;
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.2);
+        }
+        .graphics-drawer-content {
+            background: rgba(16, 10, 32, 0.95);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .graphics-drawer-content.open {
+            display: flex;
+        }
+        .graphics-tab-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .graphics-tab-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        .graphics-tab-btn.active {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: #f59e0b;
+            color: #fbbf24;
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+        }
+        .preset-pill {
+            background: rgba(124, 58, 237, 0.2);
+            border: 1px solid rgba(124, 58, 237, 0.5);
+            color: #c4b5fd;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .preset-pill:hover {
+            background: #7c3aed;
+            color: #fff;
+        }
+        .live-preview-box {
+            background: #080410;
+            border: 1px dashed rgba(245, 158, 11, 0.4);
+            border-radius: 10px;
+            padding: 16px 20px;
+            position: relative;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .live-preview-box::before {
+            content: 'OBS BROADCAST PREVIEW';
+            position: absolute;
+            top: 6px;
+            right: 10px;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: rgba(245, 158, 11, 0.4);
+        }
+        .btn-take-live {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: none;
+            color: #000;
+            font-size: 14px;
+            font-weight: 800;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: 0.5px;
+        }
+        .btn-take-live:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
+            filter: brightness(1.1);
+        }
+        .btn-take-live.on-air {
+            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+            color: #fff !important;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.8) !important;
+            animation: pulse-talking 1s infinite alternate;
+        }
+        .btn-clear-graphic {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #f87171;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-clear-graphic:hover {
+            background: #ef4444;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -137,6 +277,182 @@
                     <button class="btn-exit-studio" onclick="exitStudio()" title="Stop Broadcast & Exit Studio" style="background: rgba(220, 38, 38, 0.25); border: 1px solid #ef4444; color: #fca5a5; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;">⏹ Exit Studio</button>
         </div>
     </header>
+
+    <!-- Live Broadcast Graphics & Lower-Thirds Drawer -->
+    <div style="max-width: 1400px; margin: 0 auto; padding: 0 20px;">
+        <div class="graphics-console-bar" onclick="toggleGraphicsDrawer()">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 20px;">📺</span>
+                <div>
+                    <strong style="color: #fbbf24; font-size: 13px; letter-spacing: 0.5px;">LIVE LOWER-THIRDS & SCRIPTURES CONSOLE</strong>
+                    <span style="color: #94a3b8; font-size: 11px; margin-left: 8px;">Speaker Titles • Bible Verses • Hymn Lyrics • Giving Slates</span>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div id="badge-overlay-status" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #94a3b8; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; display: flex; align-items: center; gap: 6px;">
+                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #64748b;" id="dot-overlay-status"></span>
+                    <span id="lbl-overlay-status">OFF AIR</span>
+                </div>
+                <button onclick="event.stopPropagation(); clearGraphicFromAir();" class="btn" style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; cursor: pointer;" title="Instant Hard Clear from OBS Screen">✕ Clear Screen</button>
+                <span id="icon-drawer-chevron" style="color: #fbbf24; font-size: 12px; transition: transform 0.2s;">▼ Expand</span>
+            </div>
+        </div>
+
+        <div class="graphics-drawer-content" id="graphics-drawer-content">
+            <!-- Tabs -->
+            <div style="display: flex; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
+                <button class="graphics-tab-btn active" id="tab-btn-speaker" onclick="switchGraphicsTab('speaker')"><span>👤</span> Speaker Lower-Third</button>
+                <button class="graphics-tab-btn" id="tab-btn-scripture" onclick="switchGraphicsTab('scripture')"><span>📖</span> Bible Scripture</button>
+                <button class="graphics-tab-btn" id="tab-btn-hymn" onclick="switchGraphicsTab('hymn')"><span>🎵</span> Hymn & Lyrics</button>
+                <button class="graphics-tab-btn" id="tab-btn-giving" onclick="switchGraphicsTab('giving')"><span>💰</span> Tithes & Giving</button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 18px; align-items: start;">
+                <!-- Left Input Controls -->
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    
+                    <!-- TAB 1: SPEAKER -->
+                    <div id="tab-panel-speaker" style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                            <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">⚡ Quick Ministers:</span>
+                            <button class="preset-pill" onclick="applySpeakerPreset('Pastor Victory Saviour Edet', 'Lead Pastor • Victorious Church')">👑 Pastor Victory</button>
+                            <button class="preset-pill" onclick="applySpeakerPreset('Sanctuary Worship Team', 'Choir & Praise Ministration')">🎵 Worship Team</button>
+                            <button class="preset-pill" onclick="applySpeakerPreset('Special Guest Minister', 'Guest Speaker • Word Ministration')">🕊️ Guest Speaker</button>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Speaker / Minister Full Name:</label>
+                            <input type="text" id="input-speaker-name" value="Pastor Victory Saviour Edet" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(124, 58, 237, 0.5); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 13px;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Title, Role or Sermon Series:</label>
+                            <input type="text" id="input-speaker-title" value="Lead Pastor • Victorious Church" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(124, 58, 237, 0.5); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 13px;">
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: SCRIPTURE -->
+                    <div id="tab-panel-scripture" style="display: none; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                            <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">⚡ Popular Verses:</span>
+                            <button class="preset-pill" onclick="applyScripturePreset('ROMANS 8:28', 'And we know that all things work together for good to them that love God, to them who are the called according to his purpose.', 'KJV')">Rom 8:28</button>
+                            <button class="preset-pill" onclick="applyScripturePreset('JOHN 3:16', 'For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.', 'KJV')">John 3:16</button>
+                            <button class="preset-pill" onclick="applyScripturePreset('PSALM 23:1', 'The LORD is my shepherd; I shall not want. He maketh me to lie down in green pastures: he leadeth me beside the still waters.', 'KJV')">Ps 23:1</button>
+                            <button class="preset-pill" onclick="applyScripturePreset('PHILIPPIANS 4:13', 'I can do all things through Christ which strengtheneth me.', 'KJV')">Phil 4:13</button>
+                            <button class="preset-pill" onclick="applyScripturePreset('ISAIAH 40:31', 'But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary.', 'KJV')">Isa 40:31</button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px;">
+                            <div>
+                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Bible Reference (Book Chapter:Verse):</label>
+                                <input type="text" id="input-scripture-ref" value="ROMANS 8:28" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; font-weight: 700; padding: 8px 12px; border-radius: 6px; font-size: 13px;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Translation Version:</label>
+                                <select id="sel-scripture-version" onchange="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; font-weight: 700; padding: 8px 8px; border-radius: 6px; font-size: 12px; cursor: pointer;">
+                                    <option value="KJV">KJV (King James)</option>
+                                    <option value="NKJV">NKJV (New King James)</option>
+                                    <option value="NIV">NIV (New International)</option>
+                                    <option value="NLT">NLT (New Living)</option>
+                                    <option value="AMP">AMP (Amplified)</option>
+                                    <option value="ESV">ESV (English Standard)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Scripture Text (Editable):</label>
+                            <textarea id="input-scripture-text" rows="3" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(124, 58, 237, 0.5); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; resize: vertical; line-height: 1.4;">And we know that all things work together for good to them that love God, to them who are the called according to his purpose.</textarea>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: HYMN -->
+                    <div id="tab-panel-hymn" style="display: none; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                            <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">⚡ Classic Hymns:</span>
+                            <button class="preset-pill" onclick="applyHymnPreset('AMAZING GRACE • HYMN 1', 'STANZA 1', 'Amazing grace! how sweet the sound, That saved a wretch like me! I once was lost, but now am found; Was blind, but now I see.')">Amazing Grace</button>
+                            <button class="preset-pill" onclick="applyHymnPreset('GREAT IS THY FAITHFULNESS', 'STANZA 1', 'Great is Thy faithfulness, O God my Father, There is no shadow of turning with Thee; Thou changest not, Thy compassions, they fail not.')">Great Is Thy Faithfulness</button>
+                            <button class="preset-pill" onclick="applyHymnPreset('IT IS WELL WITH MY SOUL', 'STANZA 1', 'When peace, like a river, attendeth my way, When sorrows like sea billows roll; Whatever my lot, Thou hast taught me to say, It is well, it is well with my soul.')">It Is Well</button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px;">
+                            <div>
+                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Hymn Title / Number:</label>
+                                <input type="text" id="input-hymn-title" value="AMAZING GRACE • HYMN 1" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(56, 189, 248, 0.5); color: #38bdf8; font-weight: 700; padding: 8px 12px; border-radius: 6px; font-size: 13px;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Stanza / Part:</label>
+                                <select id="sel-hymn-part" onchange="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(56, 189, 248, 0.5); color: #38bdf8; font-weight: 700; padding: 8px 8px; border-radius: 6px; font-size: 12px; cursor: pointer;">
+                                    <option value="STANZA 1">STANZA 1</option>
+                                    <option value="STANZA 2">STANZA 2</option>
+                                    <option value="STANZA 3">STANZA 3</option>
+                                    <option value="STANZA 4">STANZA 4</option>
+                                    <option value="CHORUS">CHORUS</option>
+                                    <option value="REFRAIN">REFRAIN</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Hymn Lyrics:</label>
+                            <textarea id="input-hymn-text" rows="3" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(56, 189, 248, 0.5); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; resize: vertical; line-height: 1.4;">Amazing grace! how sweet the sound, That saved a wretch like me! I once was lost, but now am found; Was blind, but now I see.</textarea>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: GIVING -->
+                    <div id="tab-panel-giving" style="display: none; flex-direction: column; gap: 10px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <div>
+                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Bank Name:</label>
+                                <input type="text" id="input-giving-bank" value="Zenith Bank" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(16, 185, 129, 0.5); color: #34d399; font-weight: 700; padding: 8px 12px; border-radius: 6px; font-size: 13px;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Account Number:</label>
+                                <input type="text" id="input-giving-acct" value="1012345678" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(16, 185, 129, 0.5); color: #34d399; font-weight: 700; padding: 8px 12px; border-radius: 6px; font-size: 13px;">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Account Name:</label>
+                            <input type="text" id="input-giving-name" value="Victorious Church Worldwide" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(16, 185, 129, 0.5); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 13px;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">USSD / Online Giving Link:</label>
+                            <input type="text" id="input-giving-ussd" value="USSD: *966*000# • Online: church.org/give" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(16, 185, 129, 0.5); color: #cbd5e1; padding: 8px 12px; border-radius: 6px; font-size: 13px;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Live Preview & Controls -->
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-bottom: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Live Monitor Graphic Preview</div>
+                        <div class="live-preview-box" id="director-preview-box">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                <span style="font-size: 18px;" id="prev-icon">👤</span>
+                                <span style="color: #fbbf24; font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;" id="prev-title">SPEAKER</span>
+                                <span style="background: rgba(124, 58, 237, 0.35); border: 1px solid rgba(139, 92, 246, 0.6); color: #c4b5fd; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 4px;" id="prev-tag">LIVE</span>
+                            </div>
+                            <div style="color: #fff; font-size: 18px; font-weight: 700; line-height: 1.3;" id="prev-main">Pastor Victory Saviour Edet</div>
+                            <div style="color: #cbd5e1; font-size: 13px; font-weight: 500; margin-top: 2px;" id="prev-sub">Lead Pastor • Victorious Church</div>
+                        </div>
+                    </div>
+
+                    <!-- Action Bar -->
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #cbd5e1; cursor: pointer;">
+                                <input type="checkbox" id="chk-auto-hide" checked style="accent-color: #f59e0b; cursor: pointer;">
+                                <span>Auto-Hide after 8 seconds</span>
+                            </label>
+                            <span style="font-size: 11px; color: #64748b;">(Uncheck for persistent slates)</span>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-take-live" id="btn-take-live-overlay" onclick="takeGraphicLive()" style="flex: 1;">
+                                <span>🔥</span> <span id="lbl-take-live">TAKE LIVE TO OBS</span>
+                            </button>
+                            <button class="btn-clear-graphic" onclick="clearGraphicFromAir()">
+                                ✕ HIDE
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Main Container -->
     <main class="container">
@@ -579,6 +895,15 @@
                 if (data.type === 'emergency_cut') {
                     if (serverInfo) serverInfo.isEmergencyCut = data.active;
                     updateEmergencyCutUI(data.active);
+                    if (data.active) {
+                        setOverlayLiveStatus(false);
+                    }
+                }
+                if (data.type === 'overlay_show') {
+                    setOverlayLiveStatus(true, data.badgeTitle || data.mainText);
+                }
+                if (data.type === 'overlay_hide') {
+                    setOverlayLiveStatus(false);
                 }
                 if (data.type === 'telemetry_update') {
                     updateTelemetry(data.camId, data.battery, data.charging);
@@ -710,6 +1035,205 @@
             }));
         }
 
+
+        
+        // =====================================================================
+        // LIVE LOWER-THIRDS & SCRIPTURES CONTROLLER (PHASE 1)
+        // =====================================================================
+        let currentActiveGraphicsTab = 'speaker';
+        let isGraphicOnAir = false;
+        let activeGraphicPayload = null;
+
+        function toggleGraphicsDrawer() {
+            const drawer = document.getElementById('graphics-drawer-content');
+            const chevron = document.getElementById('icon-drawer-chevron');
+            if (!drawer) return;
+            const isOpen = drawer.classList.contains('open');
+            if (isOpen) {
+                drawer.classList.remove('open');
+                if (chevron) chevron.innerText = '▼ Expand';
+            } else {
+                drawer.classList.add('open');
+                if (chevron) chevron.innerText = '▲ Collapse';
+                updateLiveGraphicPreview();
+            }
+        }
+
+        function switchGraphicsTab(tabName) {
+            currentActiveGraphicsTab = tabName;
+            ['speaker', 'scripture', 'hymn', 'giving'].forEach(t => {
+                const btn = document.getElementById('tab-btn-' + t);
+                const panel = document.getElementById('tab-panel-' + t);
+                if (btn) btn.className = (t === tabName) ? 'graphics-tab-btn active' : 'graphics-tab-btn';
+                if (panel) panel.style.display = (t === tabName) ? 'flex' : 'none';
+            });
+            const chkAutoHide = document.getElementById('chk-auto-hide');
+            if (chkAutoHide) {
+                chkAutoHide.checked = (tabName === 'speaker');
+            }
+            updateLiveGraphicPreview();
+        }
+
+        function applySpeakerPreset(name, title) {
+            document.getElementById('input-speaker-name').value = name;
+            document.getElementById('input-speaker-title').value = title;
+            updateLiveGraphicPreview();
+        }
+
+        function applyScripturePreset(ref, text, version) {
+            version = version || 'KJV';
+            document.getElementById('input-scripture-ref').value = ref;
+            document.getElementById('input-scripture-text').value = text;
+            const selVer = document.getElementById('sel-scripture-version');
+            if (selVer) selVer.value = version;
+            updateLiveGraphicPreview();
+        }
+
+        function applyHymnPreset(title, part, text) {
+            document.getElementById('input-hymn-title').value = title;
+            document.getElementById('input-hymn-text').value = text;
+            const selPart = document.getElementById('sel-hymn-part');
+            if (selPart) selPart.value = part;
+            updateLiveGraphicPreview();
+        }
+
+        function getActiveGraphicData() {
+            const tab = currentActiveGraphicsTab;
+            if (tab === 'speaker') {
+                return {
+                    template: 'speaker',
+                    icon: '👤',
+                    badgeTitle: 'SPEAKER',
+                    badgeTag: 'LIVE',
+                    mainText: document.getElementById('input-speaker-name').value.trim(),
+                    subText: document.getElementById('input-speaker-title').value.trim()
+                };
+            } else if (tab === 'scripture') {
+                const ver = document.getElementById('sel-scripture-version').value;
+                const ref = document.getElementById('input-scripture-ref').value.trim();
+                return {
+                    template: 'scripture',
+                    icon: '📖',
+                    badgeTitle: ref || 'HOLY BIBLE',
+                    badgeTag: ver,
+                    mainText: document.getElementById('input-scripture-text').value.trim(),
+                    subText: ''
+                };
+            } else if (tab === 'hymn') {
+                const part = document.getElementById('sel-hymn-part').value;
+                const title = document.getElementById('input-hymn-title').value.trim();
+                return {
+                    template: 'hymn',
+                    icon: '🎵',
+                    badgeTitle: title || 'HYMN',
+                    badgeTag: part,
+                    mainText: document.getElementById('input-hymn-text').value.trim(),
+                    subText: ''
+                };
+            } else if (tab === 'giving') {
+                const bank = document.getElementById('input-giving-bank').value.trim();
+                const acct = document.getElementById('input-giving-acct').value.trim();
+                const name = document.getElementById('input-giving-name').value.trim();
+                const ussd = document.getElementById('input-giving-ussd').value.trim();
+                return {
+                    template: 'giving',
+                    icon: '💰',
+                    badgeTitle: 'TITHES & ONLINE GIVING',
+                    badgeTag: 'OFFERING',
+                    mainText: bank + ': ' + acct + ' (' + name + ')',
+                    subText: ussd
+                };
+            }
+            return null;
+        }
+
+        function updateLiveGraphicPreview() {
+            const data = getActiveGraphicData();
+            if (!data) return;
+            const pBox = document.getElementById('director-preview-box');
+            const pIcon = document.getElementById('prev-icon');
+            const pTitle = document.getElementById('prev-title');
+            const pTag = document.getElementById('prev-tag');
+            const pMain = document.getElementById('prev-main');
+            const pSub = document.getElementById('prev-sub');
+
+            if (pIcon) pIcon.innerText = data.icon;
+            if (pTitle) pTitle.innerText = data.badgeTitle;
+            if (pTag) {
+                pTag.innerText = data.badgeTag;
+                pTag.style.display = data.badgeTag ? 'inline-block' : 'none';
+            }
+            if (pMain) pMain.innerText = data.mainText;
+            if (pSub) {
+                pSub.innerText = data.subText;
+                pSub.style.display = data.subText ? 'block' : 'none';
+            }
+            if (pBox) {
+                if (data.template === 'scripture') pBox.style.borderLeft = '4px solid #f59e0b';
+                else if (data.template === 'hymn') pBox.style.borderLeft = '4px solid #38bdf8';
+                else if (data.template === 'giving') pBox.style.borderLeft = '4px solid #10b981';
+                else pBox.style.borderLeft = '4px solid #f59e0b';
+            }
+        }
+
+        function takeGraphicLive() {
+            const payload = getActiveGraphicData();
+            if (!payload || !payload.mainText) {
+                showToast('⚠️ Please enter text before taking live!');
+                return;
+            }
+
+            const chkAutoHide = document.getElementById('chk-auto-hide');
+            payload.autoHideSeconds = (chkAutoHide && chkAutoHide.checked) ? 8 : 0;
+            payload.type = 'overlay_show';
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify(payload));
+                setOverlayLiveStatus(true, payload.badgeTitle || payload.mainText);
+                showToast('🔥 Graphic taken LIVE on OBS: ' + (payload.badgeTitle || 'Graphic'));
+            }
+        }
+
+        function clearGraphicFromAir() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'overlay_hide' }));
+                setOverlayLiveStatus(false);
+                showToast('📺 Graphic cleared from OBS screen');
+            }
+        }
+
+        function setOverlayLiveStatus(live, title) {
+            title = title || '';
+            isGraphicOnAir = live;
+            const dot = document.getElementById('dot-overlay-status');
+            const lbl = document.getElementById('lbl-overlay-status');
+            const btn = document.getElementById('btn-take-live-overlay');
+            const btnLbl = document.getElementById('lbl-take-live');
+
+            if (dot && lbl) {
+                if (live) {
+                    dot.style.background = '#ef4444';
+                    dot.style.boxShadow = '0 0 8px #ef4444';
+                    lbl.innerText = 'ON AIR: ' + title.substring(0, 16);
+                    lbl.style.color = '#ef4444';
+                } else {
+                    dot.style.background = '#64748b';
+                    dot.style.boxShadow = 'none';
+                    lbl.innerText = 'OFF AIR';
+                    lbl.style.color = '#94a3b8';
+                }
+            }
+
+            if (btn && btnLbl) {
+                if (live) {
+                    btn.classList.add('on-air');
+                    btnLbl.innerText = 'ON AIR (CLICK TO RE-TRIGGER)';
+                } else {
+                    btn.classList.remove('on-air');
+                    btnLbl.innerText = 'TAKE LIVE TO OBS';
+                }
+            }
+        }
 
         // =====================================================================
         // DIRECTOR INTERCOM TALKBACK SYSTEM (Dedicated Out-Of-Band WebRTC Engine)

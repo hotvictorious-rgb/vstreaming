@@ -495,6 +495,12 @@ function setupWebSocket(wss) {
                     return;
                 }
 
+                // Live Broadcast Graphics & Lower-Thirds Overlay Commands (OBS Layer)
+                if (['overlay_show', 'overlay_hide'].includes(data.type)) {
+                    broadcastToAll(data);
+                    return;
+                }
+
                 // Intercom Talkback: Director speaking to all or specific camera phone
                 if (data.type === 'intercom_active') {
                     [wssHttp, wssHttps].forEach(wss => {
