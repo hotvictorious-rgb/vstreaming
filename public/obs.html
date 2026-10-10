@@ -362,6 +362,16 @@
         let overlayHideTimer = null;
 
         function showGraphicOverlay(payload) {
+            // =================================================================
+            // IMPENETRABLE AIR-SAFETY SHIELD: NEVER PROJECT ERROR MESSAGES!
+            // =================================================================
+            if (payload && payload.mainText) {
+                if (/(could not load|failed to|error|please edit manually|out of bounds|undefined|null)/i.test(payload.mainText)) {
+                    console.warn('[OBS Air Safety] Blocked projection of error text:', payload.mainText);
+                    hideGraphicOverlay();
+                    return;
+                }
+            }
             if (isEmergency) return; // Never show over emergency flier
             if (overlayHideTimer) {
                 clearTimeout(overlayHideTimer);

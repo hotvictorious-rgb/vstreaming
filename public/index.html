@@ -911,7 +911,7 @@ God in three Persons, blessed Trinity!</textarea>
         </div>
     </div>
 
-    <script src="/js/broadcast-library.js?v=1791632171078"></script>
+    <script src="/js/broadcast-library.js?v=1791632942916"></script>
     <script>
         // =====================================================================
         // CLOSE GUARD & AUTO-SHUTDOWN CONTROLLER
@@ -1424,6 +1424,13 @@ God in three Persons, blessed Trinity!</textarea>
                 return;
             }
 
+            // IMPENETRABLE AIR-SAFETY GUARD: NEVER PROJECT ERROR MESSAGES TO OBS / STREAM!
+            if (/(could not load|failed to|error|please edit manually|out of bounds|undefined|null)/i.test(payload.mainText)) {
+                showToast('🛑 AIR-SAFETY GUARD: Blocked projection of error text! Your live stream was kept safe.');
+                console.warn('[Air Guard] Blocked projection containing error text:', payload.mainText);
+                return;
+            }
+
             const chkAutoHide = document.getElementById('chk-auto-hide');
             payload.autoHideSeconds = (chkAutoHide && chkAutoHide.checked) ? 8 : 0;
             payload.type = 'overlay_show';
@@ -1710,9 +1717,10 @@ God in three Persons, blessed Trinity!</textarea>
                             takeGraphicLive();
                         }
                     } else {
-                        if (textInput) textInput.value = 'Could not load text for ' + ref + '. Please edit manually.';
-                        updateLiveGraphicPreview();
-                        showToast('⚠️ ' + (res ? res.error : 'Could not auto-fetch. Please edit manually.'));
+                        // BROADCAST AIR-SAFETY GUARD:
+                        // NEVER write error messages into textInput or call updateLiveGraphicPreview()!
+                        // The on-air stream text must NEVER be contaminated with error text.
+                        showToast('⚠️ ' + (res && res.error ? res.error : ('Could not load scripture: ' + ref)) + ' (Kept current verse on air)');
                     }
                 });
             }

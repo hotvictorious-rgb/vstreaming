@@ -709,6 +709,8 @@ window.BIBLE_TRANSLATIONS_50 = [
 
 function cleanBibleVerseText(text) {
     if (!text) return '';
+    text = text.replace(/<RF>[\s\S]*?<Rf>/gi, '');
+    if (!text) return '';
     return text
         .replace(/<S>\d+<\/S>/gi, '')
         .replace(/<[^>]+>/g, '')
@@ -741,7 +743,7 @@ window.BIBLE_BOOK_ALIASES = {
     'psalms': 'Psalms', 'psalm': 'Psalms', 'psa': 'Psalms', 'ps': 'Psalms', 'pss': 'Psalms', 'psm': 'Psalms',
     'proverbs': 'Proverbs', 'proverb': 'Proverbs', 'prov': 'Proverbs', 'pro': 'Proverbs', 'prv': 'Proverbs', 'pr': 'Proverbs',
     'ecclesiastes': 'Ecclesiastes', 'ecclesiast': 'Ecclesiastes', 'eccl': 'Ecclesiastes', 'ecc': 'Ecclesiastes', 'ec': 'Ecclesiastes', 'qoh': 'Ecclesiastes',
-    'song of solomon': 'Song of Solomon', 'song of songs': 'Song of Solomon', 'song': 'Song of Solomon', 'sos': 'Song of Solomon', 'songs': 'Song of Solomon', 'canticles': 'Song of Solomon',
+    'solomon': 'Song of Solomon', 'song of solomon': 'Song of Solomon', 'song of songs': 'Song of Solomon', 'song': 'Song of Solomon', 'sos': 'Song of Solomon', 'songs': 'Song of Solomon', 'canticles': 'Song of Solomon',
     'isaiah': 'Isaiah', 'isa': 'Isaiah', 'is': 'Isaiah',
     'jeremiah': 'Jeremiah', 'jer': 'Jeremiah', 'je': 'Jeremiah', 'jr': 'Jeremiah',
     'lamentations': 'Lamentations', 'lamentation': 'Lamentations', 'lam': 'Lamentations', 'la': 'Lamentations',
@@ -794,7 +796,7 @@ window.parseScriptureQuery = function(query) {
     if (!query || typeof query !== 'string') return null;
     const clean = query.trim().replace(/\s+/g, ' ');
     // Match: [Optional Number + Book Name] [Chapter] [: or space or .] [Verse] [optional -VerseEnd]
-    const m = clean.match(/^([1-3]?\s*[a-zA-Z\s]+?)\s*(\d+)[\s:.,]+(\d+)(?:\s*[-–\s]\s*(\d+))?$/i);
+    const m = clean.match(/^([1-3]?\s*[a-zA-Z\s]+?)\s*(\d+)[\s:;.,vV]+(\d+)(?:\s*[-–\s]\s*(\d+))?$/i);
     if (!m) return null;
 
     const rawBook = m[1].toLowerCase().trim();

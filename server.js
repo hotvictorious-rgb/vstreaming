@@ -324,7 +324,7 @@ app.get('/api/bible/verse', (req, res) => {
         try {
             let rawText = offlineKjv.getVerse(bookId, chapter, verse);
             if (rawText) {
-                let cleanText = rawText.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+                let cleanText = rawText.replace(/<RF>[\s\S]*?<Rf>/gi, '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
                 return res.json({
                     success: true,
                     ref: canonicalRef,
