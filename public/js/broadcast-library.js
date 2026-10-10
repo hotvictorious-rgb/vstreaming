@@ -756,7 +756,7 @@ window.resolveScriptureVerse = function(ref, version, callback) {
         if (cached) {
             const parsed = JSON.parse(cached);
             if (parsed && parsed.text) {
-                if (callback) callback({ success: true, ref, text: parsed.text, version, source: 'cache' });
+                if (callback) callback({ success: true, ref, text: parsed.text, version, verses: parsed.verses || [], source: 'cache' });
                 return;
             }
         }
@@ -780,10 +780,10 @@ window.resolveScriptureVerse = function(ref, version, callback) {
 
             // Save to localStorage
             try {
-                localStorage.setItem(cacheKey, JSON.stringify({ ref: resolvedRef, text: cleanText, version }));
+                localStorage.setItem(cacheKey, JSON.stringify({ ref: resolvedRef, text: cleanText, version, verses: data.verses || [] }));
             } catch(e) {}
 
-            if (callback) callback({ success: true, ref: resolvedRef, text: cleanText, version, source: 'network' });
+            if (callback) callback({ success: true, ref: resolvedRef, text: cleanText, version, verses: data.verses || [], source: 'network' });
         })
         .catch(err => {
             console.warn('[Victorious Hub] Scripture fetch error:', err.message);

@@ -339,12 +339,20 @@
 
                     <!-- TAB 2: SCRIPTURE -->
                     <div id="tab-panel-scripture" style="display: none; flex-direction: column; gap: 10px;">
-                        <!-- Smart Search & Autocomplete Bar -->
+                        <!-- Smart Command Search Bar (All 66 Books, 31,102 Verses) -->
                         <div style="position: relative;">
-                            <input type="text" id="input-scripture-search" placeholder="🔍 Search Bible Library (e.g. Rom 8:28, John 3, Ps 23, Faith, Healing, Tithe...)" oninput="onScriptureSearchInput(this.value)" onfocus="onScriptureSearchInput(this.value)" style="width: 100%; background: #070314; border: 1px solid rgba(245, 158, 11, 0.6); color: #fbbf24; padding: 7px 12px; border-radius: 6px; font-size: 12px; outline: none;">
-                            <div id="scripture-search-dropdown" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #0f0a21; border: 1px solid #f59e0b; border-radius: 6px; max-height: 190px; overflow-y: auto; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.8);"></div>
+                            <label style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #fbbf24; margin-bottom: 5px; font-weight: 700;">
+                                <span>📖 SMART BIBLE COMMAND SEARCH (All 66 Books • Single Verse on OBS):</span>
+                                <span style="font-size: 10px; color: #94a3b8; font-weight: normal;">Type reference & press Enter (e.g. Ps 91:1, Rom 8:28, John 3:16, 1 Cor 13:4)</span>
+                            </label>
+                            <div style="display: flex; gap: 6px;">
+                                <input type="text" id="input-scripture-search" placeholder="🔍 Type scripture (e.g. John 3:16, Rom 8:28, Ps 91:1-2, 1 Cor 13:4) and press Enter..." oninput="onScriptureSearchInput(this.value)" onfocus="onScriptureSearchInput(this.value)" onkeydown="if(event.key==='Enter') executeScriptureSmartSearch(this.value)" style="flex: 1; background: #070314; border: 1px solid rgba(245, 158, 11, 0.7); color: #fbbf24; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; outline: none;">
+                                <button type="button" onclick="executeScriptureSmartSearch(document.getElementById('input-scripture-search').value)" style="background: linear-gradient(135deg, #f59e0b, #d97706); border: none; color: #000; font-weight: 800; font-size: 12px; padding: 0 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px;">⚡ Load</button>
+                            </div>
+                            <div id="scripture-search-dropdown" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #0f0a21; border: 1px solid #f59e0b; border-radius: 6px; max-height: 220px; overflow-y: auto; z-index: 1000; box-shadow: 0 12px 35px rgba(0,0,0,0.9);"></div>
                         </div>
 
+                        <!-- Quick Verse Presets -->
                         <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
                             <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">⚡ Quick Verses:</span>
                             <button class="preset-pill" onclick="loadScriptureDirect('ROMANS 8:28')">Rom 8:28</button>
@@ -354,26 +362,22 @@
                             <button class="preset-pill" onclick="loadScriptureDirect('ISAIAH 40:31')">Isa 40:31</button>
                             <button class="preset-pill" onclick="loadScriptureDirect('HEBREWS 11:1')">Heb 11:1</button>
                             <button class="preset-pill" onclick="loadScriptureDirect('2 CORINTHIANS 5:17')">2 Cor 5:17</button>
+                            <button class="preset-pill" onclick="loadScriptureDirect('PSALM 46:1')">Ps 46:1</button>
                         </div>
 
-                        
-                        <!-- 66-Book Bible Cascade Navigator -->
-                        <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 8px 10px;">
+                        <!-- One-Verse Stepper Bar for Multi-Verse Passages -->
+                        <div id="scripture-verse-stepper-container" style="display: none; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 8px; padding: 8px 10px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                <span style="font-size: 11px; color: #fbbf24; font-weight: 700;">📖 66-BOOK BIBLE NAVIGATOR:</span>
-                                <span style="font-size: 10px; color: #94a3b8;">Pick Book → Chapter → Verse</span>
+                                <span style="font-size: 11px; color: #fbbf24; font-weight: 700;">📺 ONE VERSE TO OBS STEPPER:</span>
+                                <span id="scripture-stepper-label" style="font-size: 10px; color: #cbd5e1;">Showing 1 verse at a time</span>
                             </div>
-                            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 6px;">
-                                <select id="sel-bible-book" onchange="onBibleBookChange()" style="background: #070314; border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; font-size: 12px; font-weight: 700; padding: 6px 8px; border-radius: 6px; cursor: pointer;"></select>
-                                <select id="sel-bible-chapter" onchange="onBibleChapterChange()" style="background: #070314; border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; font-size: 12px; font-weight: 700; padding: 6px 8px; border-radius: 6px; cursor: pointer;"></select>
-                                <select id="sel-bible-verse" onchange="onBibleVerseChange()" style="background: #070314; border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; font-size: 12px; font-weight: 700; padding: 6px 8px; border-radius: 6px; cursor: pointer;"></select>
-                            </div>
+                            <div style="display: flex; gap: 6px; align-items: center; overflow-x: auto;" id="scripture-verse-stepper-pills"></div>
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 8px;">
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                    <label style="font-size: 11px; color: #94a3b8; font-weight: 600;">Bible Reference:</label>
+                                    <label style="font-size: 11px; color: #94a3b8; font-weight: 600;">Bible Reference (Single Verse to OBS):</label>
                                     <button type="button" onclick="addCurrentScriptureToQueue()" style="background: rgba(124, 58, 237, 0.25); border: 1px solid #8b5cf6; color: #c4b5fd; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; cursor: pointer;">📋 + Add to Sermon Queue</button>
                                 </div>
                                 <input type="text" id="input-scripture-ref" value="ROMANS 8:28" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; font-weight: 700; padding: 8px 12px; border-radius: 6px; font-size: 13px;">
@@ -391,7 +395,7 @@
                             </div>
                         </div>
                         <div>
-                            <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Scripture Text (Editable):</label>
+                            <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Scripture Text (One Verse On Air):</label>
                             <textarea id="input-scripture-text" rows="3" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(124, 58, 237, 0.5); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; resize: vertical; line-height: 1.4;">And we know that all things work together for good to them that love God, to them who are the called according to his purpose.</textarea>
                         </div>
                     </div>
@@ -853,7 +857,7 @@ God in three Persons, blessed Trinity!</textarea>
         </div>
     </div>
 
-    <script src="/js/broadcast-library.js"></script>
+    <script src="/js/broadcast-library.js?v=1791614086222"></script>
     <script>
         // =====================================================================
         // CLOSE GUARD & AUTO-SHUTDOWN CONTROLLER
@@ -1439,6 +1443,65 @@ God in three Persons, blessed Trinity!</textarea>
         }
 
         // --- SCRIPTURE INTELLIGENCE ---
+        // Global passage state for Single-Verse Stepper
+        let activePassageVerses = [];
+        let activePassageVerseIndex = 0;
+
+        function renderScriptureVerseStepper() {
+            const container = document.getElementById('scripture-verse-stepper-container');
+            const pillsDiv = document.getElementById('scripture-verse-stepper-pills');
+            const label = document.getElementById('scripture-stepper-label');
+            if (!container || !pillsDiv) return;
+
+            if (!activePassageVerses || activePassageVerses.length <= 1) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'block';
+            if (label) {
+                label.innerText = 'Verse ' + (activePassageVerseIndex + 1) + ' of ' + activePassageVerses.length + ' (One Verse on OBS)';
+            }
+
+            let html = '<button type="button" onclick="stepPassageVerse(-1)" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 5px; cursor: pointer;">◄ Prev</button>';
+
+            activePassageVerses.forEach((v, idx) => {
+                const isSelected = (idx === activePassageVerseIndex);
+                const bg = isSelected ? 'background: #f59e0b; color: #000; font-weight: 800; border: 1px solid #f59e0b;' : 'background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);';
+                html += '<button type="button" onclick="selectPassageVerse(' + idx + ')" style="' + bg + ' font-size: 11px; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.15s; white-space: nowrap;">' + (v.shortLabel || ('v' + (idx + 1))) + '</button>';
+            });
+
+            html += '<button type="button" onclick="stepPassageVerse(1)" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 5px; cursor: pointer;">Next ►</button>';
+
+            pillsDiv.innerHTML = html;
+        }
+
+        function stepPassageVerse(delta) {
+            if (!activePassageVerses || activePassageVerses.length <= 1) return;
+            let nextIdx = activePassageVerseIndex + delta;
+            if (nextIdx < 0) nextIdx = 0;
+            if (nextIdx >= activePassageVerses.length) nextIdx = activePassageVerses.length - 1;
+            selectPassageVerse(nextIdx, isGraphicOnAir);
+        }
+
+        function selectPassageVerse(idx, fireLive) {
+            if (!activePassageVerses || idx < 0 || idx >= activePassageVerses.length) return;
+            activePassageVerseIndex = idx;
+            const verse = activePassageVerses[idx];
+
+            const refInput = document.getElementById('input-scripture-ref');
+            const textInput = document.getElementById('input-scripture-text');
+            if (refInput) refInput.value = verse.ref;
+            if (textInput) textInput.value = verse.text;
+
+            renderScriptureVerseStepper();
+            updateLiveGraphicPreview();
+
+            if (fireLive || isGraphicOnAir) {
+                takeGraphicLive();
+            }
+        }
+
         function executeScriptureSmartSearch(query) {
             query = (query || '').trim();
             if (!query) return;
@@ -1451,22 +1514,40 @@ God in three Persons, blessed Trinity!</textarea>
             const refInput = document.getElementById('input-scripture-ref');
             const textInput = document.getElementById('input-scripture-text');
 
-            // Parse canonical reference if query matches reference pattern
             const parsed = (typeof window.parseScriptureQuery === 'function') ? window.parseScriptureQuery(query) : null;
             const targetRef = parsed ? parsed.ref : query.toUpperCase();
 
             if (refInput) refInput.value = targetRef;
-            if (textInput) textInput.value = '⏳ Loading authentic verse text from Holy Bible (' + version + ')...';
+            if (textInput) textInput.value = '⏳ Loading authentic single verse from Holy Bible (' + version + ')...';
             updateLiveGraphicPreview();
             showToast('⏳ Looking up ' + targetRef + ' [' + version + ']...');
 
+            // If query is a range (e.g. John 3:16-18 or Ps 91:1-2), fetch multi-verse and decompose into single verses!
+            const isRange = parsed && parsed.verseEnd && (parsed.verseEnd > parsed.verseStart);
+
             if (typeof window.resolveScriptureVerse === 'function') {
                 window.resolveScriptureVerse(targetRef, version, function(res) {
-                    if (res && res.success && res.text) {
-                        if (refInput) refInput.value = res.ref;
-                        if (textInput) textInput.value = res.text;
-                        updateLiveGraphicPreview();
-                        showToast('📖 Loaded: ' + res.ref + ' [' + version + ']');
+                    if (res && res.success) {
+                        if (isRange && res.verses && res.verses.length > 1) {
+                            // Multiple verses found: build 1-verse per slide stepper
+                            activePassageVerses = res.verses.map(function(v) {
+                                return {
+                                    ref: (parsed.book + ' ' + parsed.chapter + ':' + v.verse).toUpperCase(),
+                                    text: v.text.trim().replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' '),
+                                    shortLabel: 'v' + v.verse
+                                };
+                            });
+                            selectPassageVerse(0);
+                            showToast('📖 Loaded passage (' + activePassageVerses.length + ' single verses ready for OBS)');
+                        } else {
+                            // Single verse only
+                            activePassageVerses = [];
+                            renderScriptureVerseStepper();
+                            if (refInput) refInput.value = res.ref;
+                            if (textInput) textInput.value = res.text;
+                            updateLiveGraphicPreview();
+                            showToast('📖 Loaded: ' + res.ref + ' [' + version + ']');
+                        }
                     } else {
                         // Check if keyword match in local library
                         const matches = (typeof window.findScriptures === 'function') ? window.findScriptures(query) : [];
@@ -1474,8 +1555,10 @@ God in three Persons, blessed Trinity!</textarea>
                         if (nonDirect.length > 0) {
                             loadScriptureDirect(nonDirect[0].ref);
                         } else {
+                            activePassageVerses = [];
+                            renderScriptureVerseStepper();
                             if (refInput) refInput.value = targetRef;
-                            if (textInput) textInput.value = 'Please enter or edit scripture text for ' + targetRef;
+                            if (textInput) textInput.value = 'Please enter or edit verse text for ' + targetRef;
                             updateLiveGraphicPreview();
                             showToast('⚠️ Could not auto-fetch. Please edit text manually for: ' + targetRef);
                         }
@@ -1490,6 +1573,9 @@ God in three Persons, blessed Trinity!</textarea>
             ref = (ref || '').trim().toUpperCase();
             if (!ref) return;
 
+            activePassageVerses = [];
+            renderScriptureVerseStepper();
+
             const selVer = document.getElementById('sel-scripture-version');
             const version = selVer ? selVer.value : 'KJV';
             const refInput = document.getElementById('input-scripture-ref');
@@ -1497,13 +1583,13 @@ God in three Persons, blessed Trinity!</textarea>
 
             if (refInput) refInput.value = ref;
 
-            // Check local church library first (0ms latency)
+            // Check local church library first (0ms latency, always 1 verse)
             if (window.CHURCH_SCRIPTURE_LIBRARY && window.CHURCH_SCRIPTURE_LIBRARY[ref]) {
                 const item = window.CHURCH_SCRIPTURE_LIBRARY[ref];
                 const text = item.versions[version] || item.versions['KJV'] || Object.values(item.versions)[0];
                 if (textInput) textInput.value = text;
                 updateLiveGraphicPreview();
-                showToast('📖 Loaded: ' + ref + ' [' + version + ']');
+                showToast('📖 Loaded single verse: ' + ref + ' [' + version + ']');
                 return;
             }
 
@@ -1516,7 +1602,7 @@ God in three Persons, blessed Trinity!</textarea>
                         if (refInput) refInput.value = res.ref;
                         if (textInput) textInput.value = res.text;
                         updateLiveGraphicPreview();
-                        showToast('📖 Loaded: ' + res.ref + ' [' + version + ']');
+                        showToast('📖 Loaded single verse: ' + res.ref + ' [' + version + ']');
                     } else {
                         if (textInput) textInput.value = '';
                         updateLiveGraphicPreview();
@@ -1540,17 +1626,16 @@ God in three Persons, blessed Trinity!</textarea>
 
             let html = '';
 
-            // Direct instant action banner if query parses as valid Scripture reference
             const parsed = (typeof window.parseScriptureQuery === 'function') ? window.parseScriptureQuery(query) : null;
             if (parsed) {
                 html += '<div onclick="executeScriptureSmartSearch(\'' + parsed.ref + '\')" style="padding: 10px 12px; background: rgba(245, 158, 11, 0.22); border-bottom: 1px solid rgba(245, 158, 11, 0.45); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">' +
-                    '<div><strong style="color: #fbbf24; font-size: 13px;">⚡ Instant Load: ' + parsed.ref + '</strong><div style="font-size: 10px; color: #cbd5e1;">Press Enter or click to load authentic ' + curVer + ' text</div></div>' +
+                    '<div><strong style="color: #fbbf24; font-size: 13px;">⚡ Instant Load: ' + parsed.ref + '</strong><div style="font-size: 10px; color: #cbd5e1;">Press Enter to load strictly one verse at a time to OBS</div></div>' +
                     '<span style="background: #f59e0b; color: #000; font-weight: 800; font-size: 10px; padding: 3px 8px; border-radius: 4px;">LOAD</span>' +
                 '</div>';
             }
 
             if (results.length === 0 && !parsed) {
-                drop.innerHTML = '<div style="padding: 12px; font-size: 11px; color: #94a3b8; text-align: center;">Press Enter to search & load any reference (e.g. <em>' + query + '</em>)...</div>';
+                drop.innerHTML = '<div style="padding: 12px; font-size: 11px; color: #94a3b8; text-align: center;">Press Enter to search & load (e.g. <em>' + query + '</em>)...</div>';
                 drop.style.display = 'block';
                 return;
             }
@@ -1582,7 +1667,7 @@ God in three Persons, blessed Trinity!</textarea>
         function onScriptureVersionChange() {
             const ref = document.getElementById('input-scripture-ref').value.trim();
             if (ref) {
-                loadScriptureDirect(ref);
+                executeScriptureSmartSearch(ref);
             }
         }
 
