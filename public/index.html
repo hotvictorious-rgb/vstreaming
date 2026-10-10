@@ -398,27 +398,18 @@
                     <!-- TAB 3: HYMN & WORSHIP (500+ CATALOG) -->
                     <div id="tab-panel-hymn" style="display: none; flex-direction: column; gap: 10px;">
                         
-                        <!-- Top Controls: Hymn # Direct Jump + 500+ Autocomplete Search -->
-                        <div style="display: grid; grid-template-columns: 140px 1fr 140px; gap: 8px; align-items: start;">
-                            <!-- Direct Hymn # Jump -->
-                            <div>
-                                <label style="display: block; font-size: 11px; color: #7dd3fc; margin-bottom: 4px; font-weight: 700;">⚡ Hymn # Jump:</label>
-                                <div style="display: flex; gap: 4px;">
-                                    <input type="number" id="input-hymn-number" min="1" max="600" placeholder="1-522" onkeydown="if(event.key==='Enter') jumpToHymnNumber(this.value)" style="width: 70px; background: #070314; border: 1px solid rgba(56, 189, 248, 0.6); color: #38bdf8; font-weight: 800; padding: 6px 8px; border-radius: 6px; font-size: 12px; outline: none;">
-                                    <button type="button" onclick="jumpToHymnNumber(document.getElementById('input-hymn-number').value)" class="preset-pill" style="background: #0284c7; border-color: #38bdf8; color: #fff; font-weight: 700; padding: 4px 8px;">Go ⚡</button>
-                                </div>
-                            </div>
-
-                            <!-- Live Autocomplete Search Input -->
+                        <!-- Top Controls: 550+ Live Autocomplete Search + Hymnal Category Filter -->
+                        <div style="display: grid; grid-template-columns: 1fr 180px; gap: 10px; align-items: start;">
+                            <!-- Live Autocomplete Search Input (Supports Hymn #, MOP #, Title, and Lyrics) -->
                             <div style="position: relative;">
-                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Search 520+ Hymns (Title, Lyrics, Author):</label>
-                                <input type="text" id="input-hymn-search" placeholder="🔍 Search e.g. Amazing Grace, Blood, Peace, Faithfulness, Rock..." oninput="onHymnSearch500Input(this.value)" onfocus="onHymnSearch500Input(this.value)" style="width: 100%; background: #070314; border: 1px solid rgba(56, 189, 248, 0.5); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; outline: none;">
+                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Search 550+ Hymns (Type #, MOP #, Title, or Lyrics):</label>
+                                <input type="text" id="input-hymn-search" placeholder="🔍 Type hymn number (e.g. 142, MOP 84) or title/lyrics (Press Enter to load)..." oninput="onHymnSearch500Input(this.value)" onfocus="onHymnSearch500Input(this.value)" onkeydown="if(event.key==='Enter') selectFirstHymnSearchResult()" style="width: 100%; background: #070314; border: 1px solid rgba(56, 189, 248, 0.5); color: #fff; padding: 7px 12px; border-radius: 6px; font-size: 12px; outline: none;">
                                 <div id="hymn-search-results" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #0a061c; border: 1px solid #38bdf8; border-radius: 6px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.85);"></div>
                             </div>
 
                             <!-- Category Filter & Add Song -->
                             <div>
-                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Category Filter:</label>
+                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Category / Hymnal:</label>
                                 <select id="sel-hymn-category-filter" onchange="onHymnCategoryFilterChange(this.value)" style="width: 100%; background: #070314; border: 1px solid rgba(56, 189, 248, 0.4); color: #7dd3fc; padding: 6px 6px; border-radius: 6px; font-size: 11px; cursor: pointer;">
                                     <option value="ALL">All Songs (550+)</option>
                                     <option value="MELODIES_OF_PRAISE" style="color: #fbbf24; font-weight: bold; background: #1e1b4b;">📕 Melodies of Praise (MOP)</option>
@@ -1664,6 +1655,18 @@ God in three Persons, blessed Trinity!</textarea>
 
             drop.innerHTML = html;
             drop.style.display = 'block';
+        }
+
+        function selectFirstHymnSearchResult() {
+            const sInp = document.getElementById('input-hymn-search');
+            if (!sInp || !sInp.value.trim()) return;
+            const q = sInp.value.trim();
+            const selCat = document.getElementById('sel-hymn-category-filter');
+            const category = selCat ? selCat.value : 'ALL';
+            const matches = (typeof window.searchHymns500 === 'function') ? window.searchHymns500(q, category) : [];
+            if (matches && matches.length > 0) {
+                selectHymnSearchResult(matches[0].id);
+            }
         }
 
         function selectHymnSearchResult(hymnId) {
