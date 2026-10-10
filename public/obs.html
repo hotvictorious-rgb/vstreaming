@@ -159,27 +159,110 @@
         }
 
         /* Multi-Layout Overlay Styles */
-        #graphics-layer.layout-center-slate {
+        /* Style A: Lower-Center (Worship leader on camera visible above, lyrics centered below) */
+        #graphics-layer.layout-center-slate,
+        #graphics-layer.layout-lower-center {
             justify-content: center;
-            padding-bottom: 75px;
+            align-items: flex-end;
+            padding-bottom: 50px;
         }
-        #graphics-layer.layout-center-slate .graphic-card {
-            max-width: 1150px;
-            width: 88%;
+        #graphics-layer.layout-center-slate .graphic-card,
+        #graphics-layer.layout-lower-center .graphic-card {
+            max-width: 1120px;
+            width: 86%;
             text-align: center;
             align-items: center;
-            border-left: 1px solid rgba(245, 158, 11, 0.45);
-            border-top: 5px solid #f59e0b;
+            border-left: 1px solid rgba(56, 189, 248, 0.45);
+            border-top: 5px solid #38bdf8;
+            box-shadow: 0 16px 45px rgba(0, 0, 0, 0.85), 0 0 30px rgba(56, 189, 248, 0.3);
+            border-radius: 14px;
+            padding: 18px 32px;
+            transform: translateY(120%);
         }
-        #graphics-layer.layout-center-slate .graphic-badge-row {
+        #graphics-layer.layout-center-slate .graphic-card.active,
+        #graphics-layer.layout-lower-center .graphic-card.active {
+            transform: translateY(0);
+        }
+        #graphics-layer.layout-center-slate .graphic-badge-row,
+        #graphics-layer.layout-lower-center .graphic-badge-row {
             justify-content: center;
         }
-        #graphics-layer.layout-center-slate .graphic-content {
+        #graphics-layer.layout-center-slate .graphic-content,
+        #graphics-layer.layout-lower-center .graphic-content {
             align-items: center;
+            width: 100%;
         }
-        #graphics-layer.layout-center-slate .graphic-main-text {
-            font-size: 28px;
-            line-height: 1.35;
+        #graphics-layer.layout-center-slate .graphic-main-text,
+        #graphics-layer.layout-lower-center .graphic-main-text {
+            font-size: 26px;
+            line-height: 1.45;
+            text-align: center;
+            white-space: pre-line;
+            width: 100%;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95);
+        }
+        #graphics-layer.layout-center-slate .graphic-sub-text,
+        #graphics-layer.layout-lower-center .graphic-sub-text {
+            text-align: center;
+            white-space: pre-line;
+            width: 100%;
+        }
+
+        /* Style B: Full-Center (Dead center in the middle of the screen like a sanctuary projector slide) */
+        #graphics-layer.layout-full-center {
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
+        #graphics-layer.layout-full-center .graphic-card {
+            max-width: 1180px;
+            width: 88%;
+            max-height: 86vh;
+            text-align: center;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(14, 7, 32, 0.96) 0%, rgba(28, 12, 58, 0.94) 100%);
+            border: 1px solid rgba(56, 189, 248, 0.55);
+            border-top: 5px solid #38bdf8;
+            border-bottom: 5px solid #f59e0b;
+            border-radius: 20px;
+            padding: 32px 48px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95), 0 0 50px rgba(56, 189, 248, 0.35);
+            backdrop-filter: blur(25px);
+            transform: scale(0.92);
+            opacity: 0;
+        }
+        #graphics-layer.layout-full-center .graphic-card.active {
+            transform: scale(1);
+            opacity: 1;
+        }
+        #graphics-layer.layout-full-center .graphic-badge-row {
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        #graphics-layer.layout-full-center .graphic-badge-title {
+            font-size: 16px;
+            letter-spacing: 2px;
+        }
+        #graphics-layer.layout-full-center .graphic-content {
+            align-items: center;
+            width: 100%;
+        }
+        #graphics-layer.layout-full-center .graphic-main-text {
+            font-size: 32px;
+            line-height: 1.5;
+            font-weight: 700;
+            text-align: center;
+            white-space: pre-line;
+            width: 100%;
+            letter-spacing: 0.3px;
+            text-shadow: 0 3px 8px rgba(0, 0, 0, 1);
+        }
+        #graphics-layer.layout-full-center .graphic-sub-text {
+            text-align: center;
+            white-space: pre-line;
+            width: 100%;
+            font-size: 18px;
+            margin-top: 8px;
         }
 
         #graphics-layer.layout-ticker {
@@ -273,9 +356,11 @@
 
             main.innerText = payload.mainText || '';
             main.style.display = payload.mainText ? 'block' : 'none';
+            main.style.whiteSpace = 'pre-line';
 
             sub.innerText = payload.subText || '';
             sub.style.display = payload.subText ? 'block' : 'none';
+            sub.style.whiteSpace = 'pre-line';
 
             // Distinct theme borders and font sizing per template type
             if (payload.template === 'scripture') {

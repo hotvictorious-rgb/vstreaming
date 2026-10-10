@@ -298,7 +298,8 @@
                 <!-- Layout Mode Selector -->
                 <div onclick="event.stopPropagation();" style="display: flex; gap: 4px; align-items: center; background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
                     <button type="button" class="preset-pill active-pill" id="btn-layout-lower-third" onclick="setGraphicLayout('lower-third')" style="padding: 2px 7px; font-size: 10px;" title="Standard Lower Third (Bottom-Left)">🪟 Lower-Third</button>
-                    <button type="button" class="preset-pill" id="btn-layout-center-slate" onclick="setGraphicLayout('center-slate')" style="padding: 2px 7px; font-size: 10px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: #94a3b8;" title="Centered Scripture / Hymn Slate">📜 Center Slate</button>
+                    <button type="button" class="preset-pill" id="btn-layout-center-slate" onclick="setGraphicLayout('center-slate')" style="padding: 2px 7px; font-size: 10px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: #94a3b8;" title="Style A: Lower-Center (Worship leader on camera visible above, lyrics centered below)">🔽 Style A (Lower-Center)</button>
+                    <button type="button" class="preset-pill" id="btn-layout-full-center" onclick="setGraphicLayout('full-center')" style="padding: 2px 7px; font-size: 10px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: #94a3b8;" title="Style B: Full-Center (Dead center on screen like a sanctuary projector slide)">🎯 Style B (Full-Center)</button>
                     <button type="button" class="preset-pill" id="btn-layout-ticker" onclick="setGraphicLayout('ticker')" style="padding: 2px 7px; font-size: 10px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: #94a3b8;" title="Full-Width Bottom Ticker / Banner">📢 Ticker</button>
                 </div>
                 <span id="icon-drawer-chevron" style="color: #fbbf24; font-size: 12px; transition: transform 0.2s;">▼ Expand</span>
@@ -434,6 +435,10 @@
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <span style="font-size: 11px; color: #7dd3fc; font-weight: 700;">🎵 STANZA STEPPER:</span>
                                     <button type="button" onclick="triggerHymnChorus()" id="btn-persistent-chorus" class="preset-pill" style="background: linear-gradient(135deg, #f59e0b, #d97706); border-color: #fbbf24; color: #000; font-weight: 800; box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);" title="Jump Directly to Chorus / Refrain">🎵 CHORUS</button>
+                                    <div style="display: flex; gap: 4px; align-items: center; margin-left: 6px;">
+                                        <button type="button" id="btn-hymn-style-a" onclick="setGraphicLayout('center-slate')" class="preset-pill active-pill" style="font-size: 10px; padding: 2px 7px; font-weight: 700; background: #0284c7; border-color: #38bdf8; color: #fff;" title="Style A: Lower-Center (Worship leader on camera visible above, lyrics centered below)">🔽 Style A (Lower-Center)</button>
+                                        <button type="button" id="btn-hymn-style-b" onclick="setGraphicLayout('full-center')" class="preset-pill" style="font-size: 10px; padding: 2px 7px; font-weight: 700; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: #94a3b8;" title="Style B: Full-Center (Dead center on screen like a sanctuary projector slide)">🎯 Style B (Full-Center)</button>
+                                    </div>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <button type="button" onclick="addCurrentHymnToServiceQueue()" style="background: rgba(124, 58, 237, 0.25); border: 1px solid #8b5cf6; color: #c4b5fd; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; cursor: pointer;">📋 + Queue Hymn</button>
@@ -1184,6 +1189,12 @@ God in three Persons, blessed Trinity!</textarea>
             if (chkAutoHide) {
                 chkAutoHide.checked = (tabName === 'speaker');
             }
+            // Auto-default hymns and scriptures to centered layout (Style A: Lower-Center)
+            if (tabName === 'hymn' || tabName === 'scripture') {
+                setGraphicLayout('center-slate');
+            } else if (tabName === 'speaker') {
+                setGraphicLayout('lower-third');
+            }
             updateLiveGraphicPreview();
         }
 
@@ -1214,13 +1225,13 @@ God in three Persons, blessed Trinity!</textarea>
 
         function setGraphicLayout(layout) {
             currentGraphicLayout = layout;
-            ['lower-third', 'center-slate', 'ticker'].forEach(l => {
+            ['lower-third', 'center-slate', 'full-center', 'ticker'].forEach(l => {
                 const btn = document.getElementById('btn-layout-' + l);
                 if (btn) {
                     if (l === layout) {
                         btn.className = 'preset-pill active-pill';
-                        btn.style.background = '#7c3aed';
-                        btn.style.borderColor = '#a78bfa';
+                        btn.style.background = (layout === 'center-slate') ? '#0284c7' : '#7c3aed';
+                        btn.style.borderColor = (layout === 'center-slate') ? '#38bdf8' : '#a78bfa';
                         btn.style.color = '#fff';
                     } else {
                         btn.className = 'preset-pill';
@@ -1231,20 +1242,39 @@ God in three Persons, blessed Trinity!</textarea>
                 }
             });
 
-            // Update Preview Box styling to reflect layout mode
-            const pBox = document.getElementById('director-preview-box');
-            if (pBox) {
+            // Update in-tab Hymn style pills
+            const btnA = document.getElementById('btn-hymn-style-a');
+            const btnB = document.getElementById('btn-hymn-style-b');
+            if (btnA && btnB) {
                 if (layout === 'center-slate') {
-                    pBox.style.textAlign = 'center';
-                    pBox.style.alignItems = 'center';
-                } else if (layout === 'ticker') {
-                    pBox.style.textAlign = 'left';
-                    pBox.style.alignItems = 'flex-start';
+                    btnA.className = 'preset-pill active-pill';
+                    btnA.style.background = '#0284c7';
+                    btnA.style.borderColor = '#38bdf8';
+                    btnA.style.color = '#fff';
+                    btnB.className = 'preset-pill';
+                    btnB.style.background = 'rgba(255,255,255,0.05)';
+                    btnB.style.borderColor = 'rgba(255,255,255,0.15)';
+                    btnB.style.color = '#94a3b8';
+                } else if (layout === 'full-center') {
+                    btnB.className = 'preset-pill active-pill';
+                    btnB.style.background = '#7c3aed';
+                    btnB.style.borderColor = '#a78bfa';
+                    btnB.style.color = '#fff';
+                    btnA.className = 'preset-pill';
+                    btnA.style.background = 'rgba(255,255,255,0.05)';
+                    btnA.style.borderColor = 'rgba(255,255,255,0.15)';
+                    btnA.style.color = '#94a3b8';
                 } else {
-                    pBox.style.textAlign = 'left';
-                    pBox.style.alignItems = 'flex-start';
+                    btnA.style.background = 'rgba(255,255,255,0.05)';
+                    btnA.style.borderColor = 'rgba(255,255,255,0.15)';
+                    btnA.style.color = '#94a3b8';
+                    btnB.style.background = 'rgba(255,255,255,0.05)';
+                    btnB.style.borderColor = 'rgba(255,255,255,0.15)';
+                    btnB.style.color = '#94a3b8';
                 }
             }
+
+            updateLiveGraphicPreview();
 
             if (isGraphicOnAir) {
                 takeGraphicLive();
@@ -1321,16 +1351,45 @@ God in three Persons, blessed Trinity!</textarea>
                 pTag.innerText = data.badgeTag;
                 pTag.style.display = data.badgeTag ? 'inline-block' : 'none';
             }
-            if (pMain) pMain.innerText = data.mainText;
+            if (pMain) {
+                pMain.innerText = data.mainText;
+                pMain.style.whiteSpace = (data.template === 'hymn' || data.template === 'scripture') ? 'pre-line' : 'normal';
+                pMain.style.textAlign = (data.layout === 'center-slate' || data.layout === 'full-center') ? 'center' : 'left';
+            }
             if (pSub) {
                 pSub.innerText = data.subText;
                 pSub.style.display = data.subText ? 'block' : 'none';
+                pSub.style.textAlign = (data.layout === 'center-slate' || data.layout === 'full-center') ? 'center' : 'left';
             }
             if (pBox) {
-                if (data.template === 'scripture') pBox.style.borderLeft = '4px solid #f59e0b';
-                else if (data.template === 'hymn') pBox.style.borderLeft = '4px solid #38bdf8';
-                else if (data.template === 'giving') pBox.style.borderLeft = '4px solid #10b981';
-                else pBox.style.borderLeft = '4px solid #f59e0b';
+                const isCentered = (data.layout === 'center-slate' || data.layout === 'full-center');
+                pBox.style.alignItems = isCentered ? 'center' : 'flex-start';
+                pBox.style.textAlign = isCentered ? 'center' : 'left';
+
+                if (data.layout === 'full-center') {
+                    pBox.style.background = 'radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(8, 4, 16, 0.95) 100%)';
+                    pBox.style.border = '1px solid #38bdf8';
+                    pBox.style.borderTop = '4px solid #38bdf8';
+                    pBox.style.borderBottom = '4px solid #f59e0b';
+                } else if (data.layout === 'center-slate') {
+                    pBox.style.background = '#080410';
+                    pBox.style.border = '1px dashed rgba(56, 189, 248, 0.4)';
+                    pBox.style.borderTop = '4px solid #38bdf8';
+                    pBox.style.borderBottom = 'none';
+                } else {
+                    pBox.style.background = '#080410';
+                    pBox.style.border = '1px dashed rgba(245, 158, 11, 0.4)';
+                    if (data.template === 'scripture') pBox.style.borderLeft = '4px solid #f59e0b';
+                    else if (data.template === 'hymn') pBox.style.borderLeft = '4px solid #38bdf8';
+                    else if (data.template === 'giving') pBox.style.borderLeft = '4px solid #10b981';
+                    else pBox.style.borderLeft = '4px solid #f59e0b';
+                }
+
+                const headerRow = pBox.firstElementChild;
+                if (headerRow) {
+                    headerRow.style.justifyContent = isCentered ? 'center' : 'flex-start';
+                    headerRow.style.width = '100%';
+                }
             }
         }
 
