@@ -420,7 +420,8 @@
                             <div>
                                 <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Category Filter:</label>
                                 <select id="sel-hymn-category-filter" onchange="onHymnCategoryFilterChange(this.value)" style="width: 100%; background: #070314; border: 1px solid rgba(56, 189, 248, 0.4); color: #7dd3fc; padding: 6px 6px; border-radius: 6px; font-size: 11px; cursor: pointer;">
-                                    <option value="ALL">All Songs (522+)</option>
+                                    <option value="ALL">All Songs (550+)</option>
+                                    <option value="MELODIES_OF_PRAISE" style="color: #fbbf24; font-weight: bold; background: #1e1b4b;">📕 Melodies of Praise (MOP)</option>
                                     <option value="Praise & Adoration">Praise & Adoration</option>
                                     <option value="The Cross & The Blood">The Cross & The Blood</option>
                                     <option value="Grace & Salvation">Grace & Salvation</option>
@@ -1611,17 +1612,22 @@ God in three Persons, blessed Trinity!</textarea>
 
         function jumpToHymnNumber(num, notify = true) {
             if (!num) return;
-            const n = parseInt(num, 10);
-            const hymn = (typeof window.getHymnByNumber === 'function') ? window.getHymnByNumber(n) : (window.CHURCH_HYMN_LIBRARY ? window.CHURCH_HYMN_LIBRARY.find(h => h.number === n) : null);
+            const rawStr = String(num).trim();
+            const isMopExplicit = /^MOP/i.test(rawStr);
+            const selCat = document.getElementById('sel-hymn-category-filter');
+            const isMopMode = isMopExplicit || (selCat && selCat.value === 'MELODIES_OF_PRAISE');
+            const cleanNum = rawStr.replace(/^MOP\s*/i, '');
+            const n = parseInt(cleanNum, 10);
+            const hymn = (typeof window.getHymnByNumber === 'function') ? window.getHymnByNumber(n, isMopMode) : (window.CHURCH_HYMN_LIBRARY ? window.CHURCH_HYMN_LIBRARY.find(h => h.number === n) : null);
             if (!hymn) {
-                showToast('⚠️ Hymn #' + n + ' not found in catalog');
+                showToast('⚠️ Hymn #' + n + (isMopMode ? ' (MOP)' : '') + ' not found in catalog');
                 return;
             }
             loadHymnObject(hymn);
             const numInput = document.getElementById('input-hymn-number');
-            if (numInput) numInput.value = n;
+            if (numInput) numInput.value = (isMopMode && hymn.mopNumber) ? hymn.mopNumber : hymn.number;
             if (notify) {
-                showToast('📖 Loaded Hymn #' + n + ': ' + hymn.title);
+                showToast('📖 Loaded ' + (hymn.mopNumber ? 'MOP #' + hymn.mopNumber : 'Hymn #' + n) + ': ' + hymn.title);
             }
         }
 
@@ -1644,11 +1650,12 @@ God in three Persons, blessed Trinity!</textarea>
             }
 
             let html = '';
-            matches.slice(0, 15).forEach(h => {
+            matches.slice(0, 20).forEach(h => {
                 const snippet = (h.stanzas[0] ? h.stanzas[0].text.replace(/\n/g, ' ') : '').substring(0, 65) + '...';
+                const mopBadge = h.mopNumber ? '<span style="font-size: 9px; color: #fbbf24; background: rgba(245,158,11,0.25); border: 1px solid rgba(245,158,11,0.5); padding: 1px 5px; border-radius: 3px; font-weight: bold; margin-left: 6px;">MOP #' + h.mopNumber + '</span>' : '';
                 html += '<div onclick="selectHymnSearchResult(\'' + h.id + '\')" style="padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background=\'rgba(56,189,248,0.15)\'" onmouseout="this.style.background=\'transparent\'">' +
                     '<div style="display: flex; justify-content: space-between; align-items: center;">' +
-                    '<strong style="color: #38bdf8; font-size: 12px;">#' + h.number + ' • ' + h.title + '</strong>' +
+                    '<div style="display: flex; align-items: center;"><strong style="color: #38bdf8; font-size: 12px;">#' + h.number + ' • ' + h.title + '</strong>' + mopBadge + '</div>' +
                     '<span style="font-size: 9px; color: #7dd3fc; background: rgba(56,189,248,0.2); padding: 1px 5px; border-radius: 3px;">' + h.category + '</span>' +
                     '</div>' +
                     '<div style="font-size: 11px; color: #cbd5e1; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + snippet + '</div>' +
@@ -1681,7 +1688,8 @@ God in three Persons, blessed Trinity!</textarea>
 
         function loadHymnObject(hymn) {
             currentLoadedHymn = hymn;
-            const title = hymn.title + ' • HYMN ' + hymn.number;
+            const mopSuffix = hymn.mopNumber ? ' (MOP #' + hymn.mopNumber + ')' : '';
+            const title = hymn.title + mopSuffix + ' • HYMN #' + hymn.number;
             document.getElementById('input-hymn-title').value = title;
 
             // Render Stanza Stepper Pills

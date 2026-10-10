@@ -21,7 +21,9 @@
         "part": "STANZA 4",
         "text": "Holy, holy, holy! Lord God Almighty!\nAll Thy works shall praise Thy Name, in earth, and sky, and sea;\nHoly, holy, holy! Merciful and mighty!\nGod in three Persons, blessed Trinity!"
       }
-    ]
+    ],
+    "mopNumber": 1,
+    "book": "Melodies of Praise"
   },
   {
     "number": 2,
@@ -69,7 +71,9 @@
         "part": "STANZA 3",
         "text": "Pardon for sin and a peace that endureth,\nThine own dear presence to cheer and to guide;\nStrength for today and bright hope for tomorrow,\nBlessings all mine, with ten thousand beside!"
       }
-    ]
+    ],
+    "mopNumber": 23,
+    "book": "Melodies of Praise"
   },
   {
     "number": 4,
@@ -121,7 +125,9 @@
         "part": "STANZA 3",
         "text": "Perfect submission, all is at rest,\nI in my Savior am happy and blest,\nWatching and waiting, looking above,\nFilled with His goodness, lost in His love."
       }
-    ]
+    ],
+    "mopNumber": 26,
+    "book": "Melodies of Praise"
   },
   {
     "number": 6,
@@ -173,7 +179,9 @@
         "part": "STANZA 3",
         "text": "Great things He hath taught us, great things He hath done,\nAnd great our rejoicing through Jesus the Son;\nBut purer, and higher, and greater will be\nOur wonder, our transport, when Jesus we see."
       }
-    ]
+    ],
+    "mopNumber": 14,
+    "book": "Melodies of Praise"
   },
   {
     "number": 8,
@@ -328,7 +336,9 @@
         "part": "STANZA 4",
         "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
       }
-    ]
+    ],
+    "mopNumber": 6,
+    "book": "Melodies of Praise"
   },
   {
     "id": "hymn_14",
@@ -357,7 +367,9 @@
         "part": "STANZA 4",
         "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
       }
-    ]
+    ],
+    "mopNumber": 15,
+    "book": "Melodies of Praise"
   },
   {
     "id": "hymn_15",
@@ -392,59 +404,51 @@
     "id": "hymn_16",
     "number": 16,
     "title": "JOYFUL, JOYFUL, WE ADORE THEE",
-    "author": "Traditional Church Hymnal",
+    "author": "Henry van Dyke",
     "category": "Praise & Adoration",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "JOYFUL, JOYFUL, WE ADORE THEE we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
-      },
-      {
-        "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "Joyful, joyful, we adore Thee,\nGod of glory, Lord of love;\nHearts unfold like flow’rs before Thee,\nOp’ning to the sun above.\nMelt the clouds of sin and sadness;\nDrive the dark of doubt away;\nGiver of immortal gladness,\nFill us with the light of day!"
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
+        "text": "All Thy works with joy surround Thee,\nEarth and heav’n reflect Thy rays,\nStars and angels sing around Thee,\nCenter of unbroken praise.\nField and forest, vale and mountain,\nFlow’ry meadow, flashing sea,\nChanting bird and flowing fountain\nCall us to rejoice in Thee."
       },
       {
         "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
-      },
-      {
-        "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "Mortals, join the happy chorus,\nWhich the morning stars began;\nFather love is reigning o’er us,\nBrother love binds man to man.\nEver singing, march we onward,\nVictors in the midst of strife,\nJoyful music leads us sunward\nIn the triumph song of life."
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 2
   },
   {
     "id": "hymn_17",
     "number": 17,
     "title": "COME, THOU ALMIGHTY KING",
-    "author": "Traditional Church Hymnal",
+    "author": "Anonymous",
     "category": "Praise & Adoration",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "COME, THOU ALMIGHTY KING we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
-      },
-      {
-        "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "Come, Thou Almighty King,\nHelp us Thy name to sing,\nHelp us to praise:\nFather, all glorious,\nO’er all victorious,\nCome, and reign over us,\nAncient of Days."
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
+        "text": "Come, Thou Incarnate Word,\nGird on Thy mighty sword,\nOur prayer attend:\nCome, and Thy people bless,\nAnd give Thy word success;\nSpirit of holiness,\nOn us descend."
       },
       {
         "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
+        "text": "Come, Holy Comforter,\nThy sacred witness bear\nIn this glad hour:\nThou who almighty art,\nNow rule in every heart,\nAnd ne’er from us depart,\nSpirit of power."
       },
       {
         "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "To the great One in Three\nEternal praises be,\nHence evermore.\nHis sov’reign majesty\nMay we in glory see,\nAnd to eternity\nLove and adore."
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 3
   },
   {
     "id": "hymn_18",
@@ -1871,88 +1875,90 @@
     "id": "hymn_67",
     "number": 67,
     "title": "POWER IN THE BLOOD",
-    "author": "Traditional Church Hymnal",
+    "author": "Lewis E. Jones",
     "category": "The Cross & The Blood",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "POWER IN THE BLOOD we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
+        "text": "Would you be free from the burden of sin?\nThere’s power in the blood, power in the blood;\nWould you o’er evil a victory win?\nThere’s wonderful power in the blood."
       },
       {
         "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "There is power, power, wonder-working power\nIn the blood of the Lamb;\nThere is power, power, wonder-working power\nIn the precious blood of the Lamb."
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
+        "text": "Would you be free from your passion and pride?\nThere’s power in the blood, power in the blood;\nCome for a cleansing to Calvary’s tide;\nThere’s wonderful power in the blood."
       },
       {
         "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
-      },
-      {
-        "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "Would you do service for Jesus your King?\nThere’s power in the blood, power in the blood;\nWould you live daily His praises to sing?\nThere’s wonderful power in the blood."
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 70
   },
   {
     "id": "hymn_68",
     "number": 68,
     "title": "AT CALVARY",
-    "author": "Traditional Church Hymnal",
+    "author": "William R. Newell",
     "category": "The Cross & The Blood",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "AT CALVARY we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
+        "text": "Years I spent in vanity and pride,\nCaring not my Lord was crucified,\nKnowing not it was for me He died\nOn Calvary."
       },
       {
         "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "Mercy there was great, and grace was free;\nPardon there was multiplied to me;\nThere my burdened soul found liberty\nAt Calvary."
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
+        "text": "By God’s Word at last my sin I learned;\nThen I trembled at the law I’d spurned,\nTill my guilty soul imploring turned\nTo Calvary."
       },
       {
         "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
+        "text": "Now I’ve giv’n to Jesus everything,\nNow I gladly own Him as my King,\nNow my raptured soul can only sing\nOf Calvary!"
       },
       {
         "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "Oh, the love that drew salvation’s plan!\nOh, the grace that brought it down to man!\nOh, the mighty gulf that God did span\nAt Calvary!"
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 108
   },
   {
     "id": "hymn_69",
     "number": 69,
     "title": "NEAR THE CROSS",
-    "author": "Traditional Church Hymnal",
+    "author": "Fanny Crosby",
     "category": "The Cross & The Blood",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "NEAR THE CROSS we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
+        "text": "Jesus, keep me near the cross; there a precious fountain,\nFree to all, a healing stream, flows from Calv’ry’s mountain."
       },
       {
         "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "In the cross, in the cross, be my glory ever,\nTill my raptured soul shall find rest beyond the river."
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
+        "text": "Near the cross, a trembling soul, love and mercy found me;\nThere the Bright and Morning Star shed its beams around me."
       },
       {
         "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
+        "text": "Near the cross! O Lamb of God, bring its scenes before me;\nHelp me walk from day to day with its shadow o’er me."
       },
       {
         "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "Near the cross I’ll watch and wait, hoping, trusting ever,\nTill I reach the golden strand just beyond the river."
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 62
   },
   {
     "id": "hymn_70",
@@ -3292,30 +3298,32 @@
     "id": "hymn_116",
     "number": 116,
     "title": "GRACE GREATER THAN OUR SIN",
-    "author": "Traditional Church Hymnal",
+    "author": "Julia H. Johnston",
     "category": "Grace & Salvation",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "GRACE GREATER THAN OUR SIN we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
+        "text": "Marvelous grace of our loving Lord,\nGrace that exceeds our sin and our guilt!\nYonder on Calvary’s mount outpoured,\nThere where the blood of the Lamb was spilt."
       },
       {
         "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "Grace, grace, God’s grace,\nGrace that will pardon and cleanse within;\nGrace, grace, God’s grace,\nGrace that is greater than all our sin!"
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
+        "text": "Sin and despair, like the sea waves cold,\nThreaten the soul with infinite loss;\nGrace that is greater, yes, grace untold,\nPoints to the refuge, the mighty Cross."
       },
       {
         "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
+        "text": "Dark is the stain that we cannot hide,\nWhat can avail to wash it away?\nLook! there is flowing a crimson tide;\nWhiter than snow you may be today."
       },
       {
         "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "Marvelous, infinite, matchless grace,\nFreely bestowed on all who believe!\nYou that are longing to see His face,\nWill you this moment His grace receive?"
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 78
   },
   {
     "id": "hymn_117",
@@ -3408,30 +3416,32 @@
     "id": "hymn_120",
     "number": 120,
     "title": "PASS ME NOT, O GENTLE SAVIOR",
-    "author": "Traditional Church Hymnal",
-    "category": "Grace & Salvation",
+    "author": "Fanny Crosby",
+    "category": "Prayer & Fellowship",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "PASS ME NOT, O GENTLE SAVIOR we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
+        "text": "Pass me not, O gentle Savior, hear my humble cry;\nWhile on others Thou art calling, do not pass me by."
       },
       {
         "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "Savior, Savior, hear my humble cry;\nWhile on others Thou art calling, do not pass me by."
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
+        "text": "Let me at a throne of mercy find a sweet relief,\nKneeling there in deep contrition; help my unbelief."
       },
       {
         "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
+        "text": "Trusting only in Thy merit, would I seek Thy face;\nHeal my wounded, broken spirit, save me by Thy grace."
       },
       {
         "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "Thou the Spring of all my comfort, more than life to me,\nWhom have I on earth beside Thee? Whom in heav’n but Thee?"
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 77
   },
   {
     "id": "hymn_121",
@@ -3553,30 +3563,28 @@
     "id": "hymn_125",
     "number": 125,
     "title": "I HAVE DECIDED TO FOLLOW JESUS",
-    "author": "Traditional Church Hymnal",
-    "category": "Grace & Salvation",
+    "author": "Sadhu Sundar Singh",
+    "category": "Consecration & Surrender",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "I HAVE DECIDED TO FOLLOW JESUS we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
-      },
-      {
-        "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "I have decided to follow Jesus;\nI have decided to follow Jesus;\nI have decided to follow Jesus;\nNo turning back, no turning back."
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
+        "text": "The world behind me, the cross before me;\nThe world behind me, the cross before me;\nThe world behind me, the cross before me;\nNo turning back, no turning back."
       },
       {
         "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
+        "text": "Though none go with me, still I will follow;\nThough none go with me, still I will follow;\nThough none go with me, still I will follow;\nNo turning back, no turning back."
       },
       {
         "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "Will you decide now to follow Jesus?\nWill you decide now to follow Jesus?\nWill you decide now to follow Jesus?\nNo turning back, no turning back."
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 210
   },
   {
     "id": "hymn_126",
@@ -5003,30 +5011,32 @@
     "id": "hymn_175",
     "number": 175,
     "title": "TRUST AND OBEY",
-    "author": "Traditional Church Hymnal",
+    "author": "John H. Sammis",
     "category": "Faith & Assurance",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "TRUST AND OBEY we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
+        "text": "When we walk with the Lord in the light of His Word,\nWhat a glory He sheds on our way!\nWhile we do His good will, He abides with us still,\nAnd with all who will trust and obey."
       },
       {
         "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "Trust and obey, for there’s no other way\nTo be happy in Jesus, but to trust and obey."
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
+        "text": "Not a shadow can rise, not a cloud in the skies,\nBut His smile quickly drives it away;\nNot a doubt or a fear, not a sigh or a tear,\nCan abide while we trust and obey."
       },
       {
         "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
+        "text": "Not a burden we bear, not a sorrow we share,\nBut our toil He doth richly repay;\nNot a grief or a loss, not a frown or a cross,\nBut is blest if we trust and obey."
       },
       {
         "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "Then in fellowship sweet we will sit at His feet,\nOr we’ll walk by His side in the way;\nWhat He says we will do, where He sends we will go;\nNever fear, only trust and obey."
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 176
   },
   {
     "id": "hymn_176",
@@ -5090,30 +5100,28 @@
     "id": "hymn_178",
     "number": 178,
     "title": "LEANING ON THE EVERLASTING ARMS",
-    "author": "Traditional Church Hymnal",
+    "author": "Elisha A. Hoffman",
     "category": "Faith & Assurance",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "LEANING ON THE EVERLASTING ARMS we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
+        "text": "What a fellowship, what a joy divine,\nLeaning on the everlasting arms;\nWhat a blessedness, what a peace is mine,\nLeaning on the everlasting arms."
       },
       {
         "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "Leaning, leaning, safe and secure from all alarms;\nLeaning, leaning, leaning on the everlasting arms."
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
+        "text": "O how sweet to walk in this pilgrim way,\nLeaning on the everlasting arms;\nO how bright the path grows from day to day,\nLeaning on the everlasting arms."
       },
       {
         "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
-      },
-      {
-        "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "What have I to dread, what have I to fear,\nLeaning on the everlasting arms?\nI have blessed peace with my Lord so near,\nLeaning on the everlasting arms."
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 115
   },
   {
     "id": "hymn_179",
@@ -5844,30 +5852,28 @@
     "id": "hymn_204",
     "number": 204,
     "title": "MY FAITH LOOKS UP TO THEE",
-    "author": "Traditional Church Hymnal",
+    "author": "Ray Palmer",
     "category": "Faith & Assurance",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "MY FAITH LOOKS UP TO THEE we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
-      },
-      {
-        "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "My faith looks up to Thee,\nThou Lamb of Calvary,\nSavior divine!\nNow hear me while I pray,\nTake all my guilt away,\nO let me from this day\nBe wholly Thine!"
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
+        "text": "May Thy rich grace impart\nStrength to my fainting heart,\nMy zeal inspire;\nAs Thou hast died for me,\nO may my love to Thee\nPure, warm, and changeless be,\nA living fire!"
       },
       {
         "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
+        "text": "While life’s dark maze I tread,\nAnd griefs around me spread,\nBe Thou my guide;\nBid darkness turn to day,\nWipe sorrow’s tears away,\nNor let me ever stray\nFrom Thee aside."
       },
       {
         "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "When ends life’s transient dream,\nWhen death’s cold, sullen stream\nShall o’er me roll;\nBlest Savior, then, in love,\nFear and distrust remove;\nO bear me safe above,\nA ransomed soul!"
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 125
   },
   {
     "id": "hymn_205",
@@ -6627,30 +6633,28 @@
     "id": "hymn_231",
     "number": 231,
     "title": "BREATHE ON ME, BREATH OF GOD",
-    "author": "Traditional Church Hymnal",
+    "author": "Edwin Hatch",
     "category": "The Holy Spirit & Revival",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "BREATHE ON ME, BREATH OF GOD we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
-      },
-      {
-        "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "Breathe on me, Breath of God,\nFill me with life anew,\nThat I may love what Thou dost love,\nAnd do what Thou wouldst do."
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
+        "text": "Breathe on me, Breath of God,\nUntil my heart is pure,\nUntil with Thee I will one will,\nTo do and to endure."
       },
       {
         "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
+        "text": "Breathe on me, Breath of God,\nTill I am wholly Thine,\nUntil this earthly part of me\nGlows with Thy fire divine."
       },
       {
         "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "Breathe on me, Breath of God,\nSo shall I never die,\nBut live with Thee the perfect life\nOf Thine eternity."
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 70
   },
   {
     "id": "hymn_232",
@@ -8100,7 +8104,9 @@
         "part": "STANZA 4",
         "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
       }
-    ]
+    ],
+    "mopNumber": 33,
+    "book": "Melodies of Praise"
   },
   {
     "id": "hymn_282",
@@ -9817,59 +9823,59 @@
     "id": "hymn_341",
     "number": 341,
     "title": "WHERE HE LEADS ME I WILL FOLLOW",
-    "author": "Traditional Church Hymnal",
+    "author": "E.W. Blandy",
     "category": "Consecration & Surrender",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "WHERE HE LEADS ME I WILL FOLLOW we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
+        "text": "I can hear my Savior calling,\nI can hear my Savior calling,\nI can hear my Savior calling,\n'Take thy cross and follow, follow Me.'"
       },
       {
         "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "Where He leads me I will follow,\nWhere He leads me I will follow,\nWhere He leads me I will follow,\nI’ll go with Him, with Him all the way."
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
+        "text": "I’ll go with Him through the garden,\nI’ll go with Him through the garden,\nI’ll go with Him through the garden,\nI’ll go with Him, with Him all the way."
       },
       {
         "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
+        "text": "I’ll go with Him through the judgment,\nI’ll go with Him through the judgment,\nI’ll go with Him through the judgment,\nI’ll go with Him, with Him all the way."
       },
       {
         "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "He will give me grace and glory,\nHe will give me grace and glory,\nHe will give me grace and glory,\nAnd go with me, with me all the way."
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 175
   },
   {
     "id": "hymn_342",
     "number": 342,
     "title": "TURN YOUR EYES UPON JESUS",
-    "author": "Traditional Church Hymnal",
-    "category": "Consecration & Surrender",
+    "author": "Helen H. Lemmel",
+    "category": "Faith & Assurance",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "TURN YOUR EYES UPON JESUS we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
+        "text": "O soul, are you weary and troubled?\nNo light in the darkness you see?\nThere’s light for a look at the Savior,\nAnd life more abundant and free!"
       },
       {
         "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "Turn your eyes upon Jesus,\nLook full in His wonderful face,\nAnd the things of earth will grow strangely dim,\nIn the light of His glory and grace."
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
+        "text": "Through death into life everlasting\nHe passed, and we follow Him there;\nOver us sin no more hath dominion—\nFor more than conq’rors we are!"
       },
       {
         "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
-      },
-      {
-        "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "His Word shall not fail you—He promised;\nBelieve Him, and all will be well:\nThen go to a world that is dying,\nHis perfect salvation to tell!"
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 220
   },
   {
     "id": "hymn_343",
@@ -12920,30 +12926,24 @@
     "id": "hymn_448",
     "number": 448,
     "title": "MANSION OVER THE HILLTOP",
-    "author": "Traditional Church Hymnal",
+    "author": "Ira Stanphill",
     "category": "Comfort & Second Coming",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "MANSION OVER THE HILLTOP we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
+        "text": "I’m satisfied with just a cottage below,\nA little silver and a little gold;\nBut in that city where the ransomed will shine,\nI want a gold one that’s silver lined."
       },
       {
         "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "I’ve got a mansion just over the hilltop,\nIn that bright land where we’ll never grow old;\nAnd someday yonder we will nevermore wander,\nBut walk the streets that are purest gold."
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
-      },
-      {
-        "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
-      },
-      {
-        "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "Don’t think me poor or deserted or lonely,\nI’m not discouraged, for I’m heaven bound;\nI’m just a pilgrim in search of a city,\nI want a mansion, a harp and a crown."
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 270
   },
   {
     "id": "hymn_449",
@@ -13036,30 +13036,32 @@
     "id": "hymn_452",
     "number": 452,
     "title": "SHALL WE GATHER AT THE RIVER?",
-    "author": "Traditional Church Hymnal",
+    "author": "Robert Lowry",
     "category": "Comfort & Second Coming",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "SHALL WE GATHER AT THE RIVER? we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
+        "text": "Shall we gather at the river,\nWhere bright angel feet have trod,\nWith its crystal tide forever\nFlowing by the throne of God?"
       },
       {
         "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "Yes, we’ll gather at the river,\nThe beautiful, the beautiful river;\nGather with the saints at the river\nThat flows by the throne of God."
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
+        "text": "On the margin of the river,\nWashing up its silver spray,\nWe will walk and worship ever,\nAll the happy golden day."
       },
       {
         "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
+        "text": "Ere we reach the shining river,\nLay we ev’ry burden down;\nGrace our spirits will deliver,\nAnd provide a robe and crown."
       },
       {
         "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "Soon we’ll reach the silver river,\nSoon our pilgrimage will cease;\nSoon our happy hearts will quiver\nWith the melody of peace."
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 225
   },
   {
     "id": "hymn_453",
@@ -13094,30 +13096,28 @@
     "id": "hymn_454",
     "number": 454,
     "title": "JUST OVER IN THE GLORYLAND",
-    "author": "Traditional Church Hymnal",
+    "author": "James W. Acuff",
     "category": "Comfort & Second Coming",
     "stanzas": [
       {
         "part": "STANZA 1",
-        "text": "JUST OVER IN THE GLORYLAND we sing with joy and praise,\nTo God our King our thankful voices raise;\nHis wondrous love and unfailing mercy shine,\nEnfolding all in grace and truth divine."
+        "text": "I’ve a home prepared where the saints abide,\nJust over in the gloryland;\nAnd I long to be by my Savior’s side,\nJust over in the gloryland."
       },
       {
         "part": "CHORUS",
-        "text": "Glory and honor, majesty and power,\nBe unto God in every passing hour;\nSing of His love, proclaim His holy grace,\nUntil we see our Savior face to face."
+        "text": "Just over in the gloryland, I’ll join the happy angel band,\nJust over in the gloryland;\nJust over in the gloryland, there with the mighty host I’ll stand,\nJust over in the gloryland."
       },
       {
         "part": "STANZA 2",
-        "text": "Through every trial, in sunshine or in shade,\nHis mighty hand our steady shield is made;\nNo foe can harm, no shadow can dismay,\nWhen Jesus leads and lights our pilgrim way."
+        "text": "I am clinging to the dear Savior’s hand,\nJust over in the gloryland;\nAnd with joy I’ll go to that promised land,\nJust over in the gloryland."
       },
       {
         "part": "STANZA 3",
-        "text": "O come and taste, and see that God is good,\nHe feeds our souls with rich and heavenly food;\nIn Him alone our hungry hearts are filled,\nAnd all our fears by His sweet voice are stilled."
-      },
-      {
-        "part": "STANZA 4",
-        "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+        "text": "What a joyful singing will be up there,\nJust over in the gloryland;\nFree from all heartaches and all earthly care,\nJust over in the gloryland."
       }
-    ]
+    ],
+    "book": "Melodies of Praise",
+    "mopNumber": 240
   },
   {
     "id": "hymn_455",
@@ -15088,6 +15088,1042 @@
       {
         "part": "STANZA 4",
         "text": "And when on earth our earthly course is run,\nWhen faith is crowned and victory is won,\nWe'll join the saints before the shining throne,\nTo praise the Lord who made us all His own."
+      }
+    ]
+  },
+  {
+    "id": "hymn_523",
+    "number": 523,
+    "title": "HIGHER GROUND",
+    "author": "Johnson Oatman Jr.",
+    "category": "Faith & Assurance",
+    "book": "Melodies of Praise",
+    "mopNumber": 142,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "I’m pressing on the upward way,\nNew heights I’m gaining every day;\nStill praying as I onward bound,\n'Lord, plant my feet on higher ground.'"
+      },
+      {
+        "part": "CHORUS",
+        "text": "Lord, lift me up, and let me stand\nBy faith on Canaan’s tableland;\nA higher plane than I have found,\nLord, plant my feet on higher ground."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "My heart has no desire to stay\nWhere doubts arise and fears dismay;\nThough some may dwell where these abound,\nMy prayer, my aim, is higher ground."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "I want to live above the world,\nThough Satan’s darts at me are hurled;\nFor faith has caught the joyful sound,\nThe song of saints on higher ground."
+      },
+      {
+        "part": "STANZA 4",
+        "text": "I want to scale the utmost height,\nAnd catch a gleam of glory bright;\nBut still I’ll pray till heaven I’ve found,\n'Lord, lead me on to higher ground.'"
+      }
+    ]
+  },
+  {
+    "id": "hymn_524",
+    "number": 524,
+    "title": "LOVE LIFTED ME",
+    "author": "James Rowe",
+    "category": "Grace & Salvation",
+    "book": "Melodies of Praise",
+    "mopNumber": 84,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "I was sinking deep in sin, far from the peaceful shore,\nVery deeply stained within, sinking to rise no more;\nBut the Master of the sea heard my despairing cry,\nFrom the waters lifted me, now safe am I."
+      },
+      {
+        "part": "CHORUS",
+        "text": "Love lifted me! Love lifted me!\nWhen nothing else could help, love lifted me!\nLove lifted me! Love lifted me!\nWhen nothing else could help, love lifted me!"
+      },
+      {
+        "part": "STANZA 2",
+        "text": "All my heart to Him I give, ever to Him I’ll cling,\nIn His blessed presence live, ever His praises sing;\nLove so mighty and so true merits my soul’s best songs;\nFaithful, loving service, too, to Him belongs."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Souls in danger, look above, Jesus completely saves;\nHe will lift you by His love out of the angry waves;\nHe’s the Master of the sea, billows His will obey;\nHe your Savior wants to be, be saved today."
+      }
+    ]
+  },
+  {
+    "id": "hymn_525",
+    "number": 525,
+    "title": "SINCE JESUS CAME INTO MY HEART",
+    "author": "Rufus H. McDaniel",
+    "category": "Grace & Salvation",
+    "book": "Melodies of Praise",
+    "mopNumber": 100,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "What a wonderful change in my life has been wrought\nSince Jesus came into my heart!\nI have light in my soul for which long I had sought,\nSince Jesus came into my heart!"
+      },
+      {
+        "part": "CHORUS",
+        "text": "Since Jesus came into my heart,\nSince Jesus came into my heart,\nFloods of joy o’er my soul like the sea billows roll,\nSince Jesus came into my heart."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "I have ceased from my wand’ring and going astray,\nSince Jesus came into my heart!\nAnd my sins, which were many, are all washed away,\nSince Jesus came into my heart!"
+      },
+      {
+        "part": "STANZA 3",
+        "text": "I’m possessed of a hope that is steadfast and sure,\nSince Jesus came into my heart!\nAnd no dark cloud of doubt now my pathway can hide,\nSince Jesus came into my heart!"
+      },
+      {
+        "part": "STANZA 4",
+        "text": "There’s a light in the valley of death now for me,\nSince Jesus came into my heart!\nAnd the gates of the City beyond I can see,\nSince Jesus came into my heart!"
+      }
+    ]
+  },
+  {
+    "id": "hymn_526",
+    "number": 526,
+    "title": "COUNT YOUR BLESSINGS",
+    "author": "Johnson Oatman Jr.",
+    "category": "Faith & Assurance",
+    "book": "Melodies of Praise",
+    "mopNumber": 19,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "When upon life’s billows you are tempest-tossed,\nWhen you are discouraged, thinking all is lost,\nCount your many blessings, name them one by one,\nAnd it will surprise you what the Lord has done."
+      },
+      {
+        "part": "CHORUS",
+        "text": "Count your blessings, name them one by one;\nCount your blessings, see what God has done;\nCount your blessings, name them one by one;\nCount your many blessings, see what God has done."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "Are you ever burdened with a load of care?\nDoes the cross seem heavy you are called to bear?\nCount your many blessings, every doubt will fly,\nAnd you will be singing as the days go by."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "When you look at others with their lands and gold,\nThink that Christ has promised you His wealth untold;\nCount your many blessings, money cannot buy\nYour reward in heaven, nor your home on high."
+      },
+      {
+        "part": "STANZA 4",
+        "text": "So, amid the conflict, whether great or small,\nDo not be discouraged, God is over all;\nCount your many blessings, angels will attend,\nHelp and comfort give you to your journey’s end."
+      }
+    ]
+  },
+  {
+    "id": "hymn_527",
+    "number": 527,
+    "title": "THE LILY OF THE VALLEY",
+    "author": "Charles W. Fry",
+    "category": "Praise & Adoration",
+    "book": "Melodies of Praise",
+    "mopNumber": 134,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "I’ve found a friend in Jesus, He’s everything to me,\nHe’s the fairest of ten thousand to my soul;\nThe Lily of the Valley, in Him alone I see\nAll I need to cleanse and make me fully whole.\nIn sorrow He’s my comfort, in trouble He’s my stay;\nHe tells me every care on Him to roll."
+      },
+      {
+        "part": "CHORUS",
+        "text": "He’s the Lily of the Valley, the Bright and Morning Star,\nHe’s the fairest of ten thousand to my soul."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "He all my grief has taken, and all my sorrows borne;\nIn temptation He’s my strong and mighty tow’r;\nI have all for Him forsaken, and all my idols torn\nFrom my heart, and now He keeps me by His pow’r.\nThough all the world forsake me, and Satan tempt me sore,\nThrough Jesus I shall safely reach the goal."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "He’ll never, never leave me, nor yet forsake me here,\nWhile I live by faith and do His blessed will;\nA wall of fire about me, I’ve nothing now to fear;\nWith His manna He my hungry soul shall fill.\nThen sweeping up to glory, to see His blessed face,\nWhere rivers of delight shall ever roll."
+      }
+    ]
+  },
+  {
+    "id": "hymn_528",
+    "number": 528,
+    "title": "HE ABIDES",
+    "author": "Herbert Buffum",
+    "category": "The Holy Spirit & Revival",
+    "book": "Melodies of Praise",
+    "mopNumber": 52,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "I’m rejoicing night and day, as I walk the narrow way,\nFor the hand of God in all my life I see;\nAnd the reason of my bliss, yes, the secret all is this:\nThat the Comforter abides with me."
+      },
+      {
+        "part": "CHORUS",
+        "text": "He abides, He abides,\nHallelujah, He abides with me!\nI’m rejoicing night and day, as I walk the narrow way,\nFor the Comforter abides with me."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "Once my heart was full of sin, once despair had dwelt within,\nTill the blessed Savior washed me white as snow;\nNow with joy I walk along, with my heart a cheerful song,\nFor the Comforter abides with me."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "He is with me everywhere, and He knows my every care,\nI’m as happy as a bird and just as free;\nFor the Spirit has control, Jesus satisfies my soul,\nSince the Comforter abides with me."
+      },
+      {
+        "part": "STANZA 4",
+        "text": "There’s no thirsting for the world, nor its pleasures here unfurled,\nFor the living stream of life is flowing free;\nAnd my soul is satisfied, walking at my Savior’s side,\nWhile the Comforter abides with me."
+      }
+    ]
+  },
+  {
+    "id": "hymn_529",
+    "number": 529,
+    "title": "PENTECOSTAL POWER",
+    "author": "Charles H. Gabriel",
+    "category": "The Holy Spirit & Revival",
+    "book": "Melodies of Praise",
+    "mopNumber": 65,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "They were in an upper room, praying in His name,\nWhen the promised Holy Ghost with power upon them came;\nLike a rushing mighty wind, filling all the place,\nFell the glory from above, the marvelous free grace."
+      },
+      {
+        "part": "CHORUS",
+        "text": "Lord, send the power just now, Lord, send the power just now;\nLord, send the power just now, and baptize every one.\nLord, send the power just now, Lord, send the power just now;\nLord, send the power just now, and baptize every one."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "Cloven tongues of fire appeared, resting on each head,\nAnd the disciples spoke with tongues, as the Spirit led;\nBoldly then they testified of the Savior’s grace,\nPreaching Christ the crucified to all the human race."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "We are waiting, Lord, today, for that holy fire;\nCleanse our hearts from every sin, kindle holy desire;\nSend the baptism, we pray, fill us through and through,\nWith the Holy Ghost and power to live and work for You."
+      }
+    ]
+  },
+  {
+    "id": "hymn_530",
+    "number": 530,
+    "title": "HEAVEN CAME DOWN",
+    "author": "John W. Peterson",
+    "category": "Grace & Salvation",
+    "book": "Melodies of Praise",
+    "mopNumber": 95,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "O what a wonderful, wonderful day, day I will never forget;\nAfter I’d wandered in darkness away, Jesus my Savior I met.\nO what a tender, compassionate friend, He met the need of my heart;\nShadows dispelling, with joy I am telling, He made all the darkness depart!"
+      },
+      {
+        "part": "CHORUS",
+        "text": "Heaven came down and glory filled my soul,\nWhen at the cross the Savior made me whole;\nMy sins were washed away, and my night was turned to day,\nHeaven came down and glory filled my soul!"
+      },
+      {
+        "part": "STANZA 2",
+        "text": "Born of the Spirit with life from above into God’s family divine,\nJustified fully through Calvary’s love, O what a standing is mine!\nAnd the transaction so quickly was made, when as a sinner I came,\nTook of the offer of grace He did proffer, He saved me, O praise His dear name!"
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Now I’ve a hope that will surely endure after the passing of time,\nI have a future in heaven for sure, there in those mansions sublime.\nAnd it’s because of that wonderful day when at the cross I believed;\nRiches eternal and blessings supernal from His precious hand I received."
+      }
+    ]
+  },
+  {
+    "id": "hymn_531",
+    "number": 531,
+    "title": "VICTORY IN JESUS",
+    "author": "E.M. Bartlett",
+    "category": "Spiritual Warfare & Victory",
+    "book": "Melodies of Praise",
+    "mopNumber": 120,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "I heard an old, old story, how a Savior came from glory,\nHow He gave His life on Calvary to save a wretch like me;\nI heard about His groaning, of His precious blood’s atoning,\nThen I repented of my sins and won the victory."
+      },
+      {
+        "part": "CHORUS",
+        "text": "O victory in Jesus, my Savior forever!\nHe sought me and bought me with His redeeming blood;\nHe loved me ere I knew Him, and all my love is due Him;\nHe plunged me to victory beneath the cleansing flood."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "I heard about His healing, of His cleansing pow’r revealing,\nHow He made the lame to walk again and caused the blind to see;\nAnd then I cried, 'Dear Jesus, come and heal my broken spirit,'\nAnd somehow Jesus came and brought to me the victory."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "I heard about a mansion He has built for me in glory,\nAnd I heard about the streets of gold beyond the crystal sea;\nAbout the angels singing and the old redemption story,\nAnd some sweet day I’ll sing up there the song of victory."
+      }
+    ]
+  },
+  {
+    "id": "hymn_532",
+    "number": 532,
+    "title": "THERE SHALL BE SHOWERS OF BLESSING",
+    "author": "Daniel W. Whittle",
+    "category": "The Holy Spirit & Revival",
+    "book": "Melodies of Praise",
+    "mopNumber": 72,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "There shall be showers of blessing:\nThis is the promise of love;\nThere shall be seasons refreshing,\nSent from the Savior above."
+      },
+      {
+        "part": "CHORUS",
+        "text": "Showers of blessing, showers of blessing we need:\nMercy drops round us are falling, but for the showers we plead."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "There shall be showers of blessing,\nPrecious reviving again;\nOver the hills and the valleys,\nSound of abundance of rain."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "There shall be showers of blessing;\nSend them upon us, O Lord;\nGrant to us now a refreshing,\nCome and now honor Thy Word."
+      },
+      {
+        "part": "STANZA 4",
+        "text": "There shall be showers of blessing:\nOh, that today they might fall,\nNow as to God we’re confessing,\nNow as on Jesus we call!"
+      }
+    ]
+  },
+  {
+    "id": "hymn_533",
+    "number": 533,
+    "title": "STANDING ON THE PROMISES",
+    "author": "Russell K. Carter",
+    "category": "Faith & Assurance",
+    "book": "Melodies of Praise",
+    "mopNumber": 130,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "Standing on the promises of Christ my King,\nThrough eternal ages let His praises ring;\nGlory in the highest, I will shout and sing,\nStanding on the promises of God."
+      },
+      {
+        "part": "CHORUS",
+        "text": "Standing, standing, standing on the promises of God my Savior;\nStanding, standing, I’m standing on the promises of God."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "Standing on the promises that cannot fail,\nWhen the howling storms of doubt and fear assail,\nBy the living Word of God I shall prevail,\nStanding on the promises of God."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Standing on the promises of Christ the Lord,\nBound to Him eternally by love’s strong cord,\nOvercoming daily with the Spirit’s sword,\nStanding on the promises of God."
+      },
+      {
+        "part": "STANZA 4",
+        "text": "Standing on the promises I cannot fall,\nList’ning every moment to the Spirit’s call,\nResting in my Savior as my all in all,\nStanding on the promises of God."
+      }
+    ]
+  },
+  {
+    "id": "hymn_534",
+    "number": 534,
+    "title": "REVIVE US AGAIN",
+    "author": "William P. Mackay",
+    "category": "The Holy Spirit & Revival",
+    "book": "Melodies of Praise",
+    "mopNumber": 48,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "We praise Thee, O God! for the Son of Thy love,\nFor Jesus who died, and is now gone above."
+      },
+      {
+        "part": "CHORUS",
+        "text": "Hallelujah! Thine the glory; Hallelujah! Amen!\nHallelujah! Thine the glory; revive us again."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "We praise Thee, O God! for Thy Spirit of light,\nWho has shown us our Savior, and scattered our night."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "All glory and praise to the Lamb that was slain,\nWho has borne all our sins, and has cleansed every stain."
+      },
+      {
+        "part": "STANZA 4",
+        "text": "Revive us again; fill each heart with Thy love;\nMay each soul be rekindled with fire from above."
+      }
+    ]
+  },
+  {
+    "id": "hymn_535",
+    "number": 535,
+    "title": "NOTHING BETWEEN",
+    "author": "Charles A. Tindley",
+    "category": "Consecration & Surrender",
+    "book": "Melodies of Praise",
+    "mopNumber": 180,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "Nothing between my soul and the Savior,\nNaught of this world’s delusive dream;\nI have renounced all sinful pleasure;\nJesus is mine, there’s nothing between."
+      },
+      {
+        "part": "CHORUS",
+        "text": "Nothing between my soul and the Savior,\nSo that His blessed face may be seen;\nNothing preventing the least of His favor;\nKeep the way clear! Let nothing between."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "Nothing between, like worldly pleasure;\nHabits of life, though harmless they seem,\nMust not my heart from Him ever sever;\nHe is my all, there’s nothing between."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Nothing between, like pride or station;\nSelf or friends shall not intervene;\nThough it may cost me much tribulation,\nI am resolved! There’s nothing between."
+      },
+      {
+        "part": "STANZA 4",
+        "text": "Nothing between, e’en many hard trials,\nThough the whole world against me convene;\nWatching with prayer and much self-denial,\nI’ll triumph at last, with nothing between!"
+      }
+    ]
+  },
+  {
+    "id": "hymn_536",
+    "number": 536,
+    "title": "HE KEEPS ME SINGING",
+    "author": "Luther B. Bridgers",
+    "category": "Faith & Assurance",
+    "book": "Melodies of Praise",
+    "mopNumber": 90,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "There’s within my heart a melody;\nJesus whispers soft and sweet,\n'Fear not, I am with thee, peace, be still,'\nIn all of life’s ebb and flow."
+      },
+      {
+        "part": "CHORUS",
+        "text": "Jesus, Jesus, Jesus, sweetest name I know,\nFills my every longing, keeps me singing as I go."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "All my life was wrecked by sin and strife,\nDiscord filled my heart with pain;\nJesus swept across the broken strings,\nStirred the slumb’ring chords again."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Feasting on the riches of His grace,\nResting ’neath His shelt’ring wing,\nAlways looking on His smiling face,\nThat is why I shout and sing."
+      },
+      {
+        "part": "STANZA 4",
+        "text": "Soon He’s coming back to welcome me\nFar beyond the starry sky;\nI shall wing my flight to worlds unknown,\nI shall reign with Him on high."
+      }
+    ]
+  },
+  {
+    "id": "hymn_537",
+    "number": 537,
+    "title": "I SHALL NOT BE MOVED",
+    "author": "Traditional Spiritual",
+    "category": "Faith & Assurance",
+    "book": "Melodies of Praise",
+    "mopNumber": 155,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "Jesus is my Savior, I shall not be moved;\nIn His love and favor, I shall not be moved,\nJust like a tree that’s planted by the waters,\nI shall not be moved."
+      },
+      {
+        "part": "CHORUS",
+        "text": "I shall not be, I shall not be moved;\nI shall not be, I shall not be moved;\nJust like a tree that’s planted by the waters,\nI shall not be moved."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "In His love abiding, I shall not be moved;\nAnd in Him confiding, I shall not be moved,\nJust like a tree that’s planted by the waters,\nI shall not be moved."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Though the tempest rages, I shall not be moved;\nOn the Rock of Ages, I shall not be moved,\nJust like a tree that’s planted by the waters,\nI shall not be moved."
+      }
+    ]
+  },
+  {
+    "id": "hymn_538",
+    "number": 538,
+    "title": "SWEET HOUR OF PRAYER",
+    "author": "William W. Walford",
+    "category": "Prayer & Fellowship",
+    "book": "Melodies of Praise",
+    "mopNumber": 33,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "Sweet hour of prayer! sweet hour of prayer!\nThat calls me from a world of care,\nAnd bids me at my Father’s throne\nMake all my wants and wishes known.\nIn seasons of distress and grief,\nMy soul has often found relief,\nAnd oft escaped the tempter’s snare,\nBy thy return, sweet hour of prayer!"
+      },
+      {
+        "part": "STANZA 2",
+        "text": "Sweet hour of prayer! sweet hour of prayer!\nThe joys I feel, the bliss I share,\nOf those whose anxious spirits burn\nWith strong desires for thy return!\nWith such I hasten to the place\nWhere God my Savior shows His face,\nAnd gladly take my station there,\nAnd wait for thee, sweet hour of prayer!"
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Sweet hour of prayer! sweet hour of prayer!\nThy wings shall my petition bear\nTo Him whose truth and faithfulness\nEngage the waiting soul to bless.\nAnd since He bids me seek His face,\nBelieve His Word and trust His grace,\nI’ll cast on Him my every care,\nAnd wait for thee, sweet hour of prayer!"
+      }
+    ]
+  },
+  {
+    "id": "hymn_539",
+    "number": 539,
+    "title": "I AM THINE, O LORD",
+    "author": "Fanny Crosby",
+    "category": "Consecration & Surrender",
+    "book": "Melodies of Praise",
+    "mopNumber": 150,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "I am Thine, O Lord, I have heard Thy voice,\nAnd it told Thy love to me;\nBut I long to rise in the arms of faith\nAnd be closer drawn to Thee."
+      },
+      {
+        "part": "CHORUS",
+        "text": "Draw me nearer, nearer, blessed Lord,\nTo the cross where Thou hast died;\nDraw me nearer, nearer, nearer, blessed Lord,\nTo Thy precious, bleeding side."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "Consecrate me now to Thy service, Lord,\nBy the pow’r of grace divine;\nLet my soul look up with a steadfast hope,\nAnd my will be lost in Thine."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "O the pure delight of a single hour\nThat before Thy throne I spend,\nWhen I kneel in prayer, and with Thee, my God,\nI commune as friend with friend!"
+      }
+    ]
+  },
+  {
+    "id": "hymn_540",
+    "number": 540,
+    "title": "SUNSHINE IN MY SOUL",
+    "author": "Eliza E. Hewitt",
+    "category": "Faith & Assurance",
+    "book": "Melodies of Praise",
+    "mopNumber": 135,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "There is sunshine in my soul today,\nMore glorious and bright\nThan glows in any earthly sky,\nFor Jesus is my light."
+      },
+      {
+        "part": "CHORUS",
+        "text": "O there’s sunshine, blessed sunshine,\nWhile the peaceful, happy moments roll;\nWhen Jesus shows His smiling face,\nThere is sunshine in the soul."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "There is music in my soul today,\nA carol to my King,\nAnd Jesus listening can hear\nThe songs I cannot sing."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "There is gladness in my soul today,\nAnd hope, and praise, and love,\nFor blessings which He gives me now,\nFor greater good above."
+      }
+    ]
+  },
+  {
+    "id": "hymn_541",
+    "number": 541,
+    "title": "WHEN THE ROLL IS CALLED UP YONDER",
+    "author": "James M. Black",
+    "category": "Comfort & Second Coming",
+    "book": "Melodies of Praise",
+    "mopNumber": 235,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "When the trumpet of the Lord shall sound, and time shall be no more,\nAnd the morning breaks, eternal, bright and fair;\nWhen the saved of earth shall gather over on the other shore,\nAnd the roll is called up yonder, I’ll be there."
+      },
+      {
+        "part": "CHORUS",
+        "text": "When the roll is called up yonder,\nWhen the roll is called up yonder,\nWhen the roll is called up yonder,\nWhen the roll is called up yonder, I’ll be there."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "On that bright and cloudless morning when the dead in Christ shall rise,\nAnd the glory of His resurrection share;\nWhen His chosen ones shall gather to their home beyond the skies,\nAnd the roll is called up yonder, I’ll be there."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Let us labor for the Master from the dawn till setting sun,\nLet us talk of all His wondrous love and care;\nThen when all of life is over, and our work on earth is done,\nAnd the roll is called up yonder, I’ll be there."
+      }
+    ]
+  },
+  {
+    "id": "hymn_542",
+    "number": 542,
+    "title": "A NEW NAME IN GLORY",
+    "author": "C. Austin Miles",
+    "category": "Grace & Salvation",
+    "book": "Melodies of Praise",
+    "mopNumber": 105,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "I was once a sinner, but I came\nPardon to receive from my dear Lord;\nThis was freely given, and I found\nThat He wrote my name in His own Word."
+      },
+      {
+        "part": "CHORUS",
+        "text": "There’s a new name written down in glory,\nAnd it’s mine, O yes, it’s mine!\nAnd the white-robed angels sing the story,\n'A sinner has come home!'\nFor there’s a new name written down in glory,\nAnd it’s mine, O yes, it’s mine!\nWith my sins forgiven I am bound for heaven,\nNevermore to roam."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "I was led to wander, far away\nIn the path of sin and darkest night;\nTill the Savior sought me, took my hand,\nLed me to the glorious gospel light."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "In the Book of Life that is up there,\nMy new name is written by His hand;\nWhen the roll is called in heaven bright,\nI shall answer in the glory land."
+      }
+    ]
+  },
+  {
+    "id": "hymn_543",
+    "number": 543,
+    "title": "BLESSED QUIETNESS",
+    "author": "Manie P. Ferguson",
+    "category": "The Holy Spirit & Revival",
+    "book": "Melodies of Praise",
+    "mopNumber": 55,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "Joys are flowing like a river, since the Comforter has come;\nHe abides with us forever, makes the trusting heart His home."
+      },
+      {
+        "part": "CHORUS",
+        "text": "Blessed quietness, holy quietness, what assurance in my soul!\nOn the stormy sea, Jesus speaks to me, and the billows cease to roll."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "Bringing life and radiant gladness, giving peace for every strife;\nBanishing all grief and sadness, breathing everlasting life."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Like the rain that falls from heaven, like the sunlight from above,\nSo the Holy Ghost is given, filling every soul with love."
+      },
+      {
+        "part": "STANZA 4",
+        "text": "See, a fruitful field is growing, where was once a desert land;\nLiving streams of grace are flowing, guided by the Master’s hand."
+      }
+    ]
+  },
+  {
+    "id": "hymn_544",
+    "number": 544,
+    "title": "NO, NOT ONE",
+    "author": "Johnson Oatman Jr.",
+    "category": "Faith & Assurance",
+    "book": "Melodies of Praise",
+    "mopNumber": 125,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "There’s not a friend like the lowly Jesus,\nNo, not one! no, not one!\nNone else could heal all our soul’s diseases,\nNo, not one! no, not one!"
+      },
+      {
+        "part": "CHORUS",
+        "text": "Jesus knows all about our struggles,\nHe will guide till the day is done;\nThere’s not a friend like the lowly Jesus,\nNo, not one! no, not one!"
+      },
+      {
+        "part": "STANZA 2",
+        "text": "No friend like Him is so high and holy,\nNo, not one! no, not one!\nAnd yet no friend is so meek and lowly,\nNo, not one! no, not one!"
+      },
+      {
+        "part": "STANZA 3",
+        "text": "There’s not an hour that He is not near us,\nNo, not one! no, not one!\nNo night so dark but His love can cheer us,\nNo, not one! no, not one!"
+      },
+      {
+        "part": "STANZA 4",
+        "text": "Was e’er a gift like the Savior given?\nNo, not one! no, not one!\nWill He refuse us a home in heaven?\nNo, not one! no, not one!"
+      }
+    ]
+  },
+  {
+    "id": "hymn_545",
+    "number": 545,
+    "title": "AT THE CROSS",
+    "author": "Isaac Watts / Ralph E. Hudson",
+    "category": "The Cross & The Blood",
+    "book": "Melodies of Praise",
+    "mopNumber": 68,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "Alas! and did my Savior bleed, and did my Sovereign die?\nWould He devote that sacred head for such a worm as I?"
+      },
+      {
+        "part": "CHORUS",
+        "text": "At the cross, at the cross where I first saw the light,\nAnd the burden of my heart rolled away,\nIt was there by faith I received my sight,\nAnd now I am happy all the day!"
+      },
+      {
+        "part": "STANZA 2",
+        "text": "Was it for crimes that I have done He groaned upon the tree?\nAmazing pity! grace unknown! and love beyond degree!"
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Well might the sun in darkness hide, and shut his glories in,\nWhen Christ, the mighty Maker, died for man the creature’s sin."
+      },
+      {
+        "part": "STANZA 4",
+        "text": "But drops of grief can ne’er repay the debt of love I owe;\nHere, Lord, I give myself away, ’tis all that I can do."
+      }
+    ]
+  },
+  {
+    "id": "hymn_546",
+    "number": 546,
+    "title": "THE SOLID ROCK",
+    "author": "Edward Mote",
+    "category": "Faith & Assurance",
+    "book": "Melodies of Praise",
+    "mopNumber": 171,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "My hope is built on nothing less\nThan Jesus’ blood and righteousness;\nI dare not trust the sweetest frame,\nBut wholly lean on Jesus’ name."
+      },
+      {
+        "part": "CHORUS",
+        "text": "On Christ, the solid Rock, I stand;\nAll other ground is sinking sand,\nAll other ground is sinking sand."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "When darkness veils His lovely face,\nI rest on His unchanging grace;\nIn every high and stormy gale,\nMy anchor holds within the veil."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "His oath, His covenant, His blood\nSupport me in the whelming flood;\nWhen all around my soul gives way,\nHe then is all my hope and stay."
+      },
+      {
+        "part": "STANZA 4",
+        "text": "When He shall come with trumpet sound,\nOh, may I then in Him be found;\nDressed in His righteousness alone,\nFaultless to stand before the throne."
+      }
+    ]
+  },
+  {
+    "id": "hymn_547",
+    "number": 547,
+    "title": "I SURRENDER ALL",
+    "author": "Judson W. Van DeVenter",
+    "category": "Consecration & Surrender",
+    "book": "Melodies of Praise",
+    "mopNumber": 185,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "All to Jesus I surrender,\nAll to Him I freely give;\nI will ever love and trust Him,\nIn His presence daily live."
+      },
+      {
+        "part": "CHORUS",
+        "text": "I surrender all, I surrender all,\nAll to Thee, my blessed Savior,\nI surrender all."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "All to Jesus I surrender,\nHumbly at His feet I bow,\nWorldly pleasures all forsaken,\nTake me, Jesus, take me now."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "All to Jesus I surrender,\nMake me, Savior, wholly Thine;\nLet me feel the Holy Spirit,\nTruly know that Thou art mine."
+      },
+      {
+        "part": "STANZA 4",
+        "text": "All to Jesus I surrender,\nLord, I give myself to Thee;\nFill me with Thy love and power,\nLet Thy blessing fall on me."
+      }
+    ]
+  },
+  {
+    "id": "hymn_548",
+    "number": 548,
+    "title": "THE COMFORTER HAS COME",
+    "author": "Frank Bottome",
+    "category": "The Holy Spirit & Revival",
+    "book": "Melodies of Praise",
+    "mopNumber": 50,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "O spread the tidings ’round, wherever man is found,\nWherever human hearts and human woes abound;\nLet every Christian tongue proclaim the joyful sound:\nThe Comforter has come!"
+      },
+      {
+        "part": "CHORUS",
+        "text": "The Comforter has come, the Comforter has come!\nThe Holy Ghost from heav’n, the Father’s promise giv’n;\nO spread the tidings ’round, wherever man is found—\nThe Comforter has come!"
+      },
+      {
+        "part": "STANZA 2",
+        "text": "The long, long night is past, the morning breaks at last,\nAnd hushed the dreadful wail and fury of the blast,\nAs o’er the golden hills the day advances fast!\nThe Comforter has come!"
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Lo, the great King of kings, with healing in His wings,\nTo every captive soul a full deliv’rance brings;\nAnd through the vacant cells the song of triumph rings:\nThe Comforter has come!"
+      }
+    ]
+  },
+  {
+    "id": "hymn_549",
+    "number": 549,
+    "title": "TAKE MY LIFE AND LET IT BE",
+    "author": "Frances R. Havergal",
+    "category": "Consecration & Surrender",
+    "book": "Melodies of Praise",
+    "mopNumber": 158,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "Take my life, and let it be\nConsecrated, Lord, to Thee;\nTake my moments and my days,\nLet them flow in ceaseless praise,\nLet them flow in ceaseless praise."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "Take my hands, and let them move\nAt the impulse of Thy love;\nTake my feet, and let them be\nSwift and beautiful for Thee,\nSwift and beautiful for Thee."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Take my voice, and let me sing\nAlways, only, for my King;\nTake my lips, and let them be\nFilled with messages from Thee,\nFilled with messages from Thee."
+      },
+      {
+        "part": "STANZA 4",
+        "text": "Take my silver and my gold;\nNot a mite would I withhold;\nTake my intellect, and use\nEvery power as Thou shalt choose,\nEvery power as Thou shalt choose."
+      },
+      {
+        "part": "STANZA 5",
+        "text": "Take my will, and make it Thine;\nIt shall be no longer mine;\nTake my heart, it is Thine own;\nIt shall be Thy royal throne,\nIt shall be Thy royal throne."
+      }
+    ]
+  },
+  {
+    "id": "hymn_550",
+    "number": 550,
+    "title": "LIVING FOR JESUS",
+    "author": "Thomas O. Chisholm",
+    "category": "Consecration & Surrender",
+    "book": "Melodies of Praise",
+    "mopNumber": 170,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "Living for Jesus a life that is true,\nStriving to please Him in all that I do;\nYielding allegiance, glad-hearted and free,\nThis is the pathway of blessing for me."
+      },
+      {
+        "part": "CHORUS",
+        "text": "O Jesus, Lord and Savior, I give myself to Thee,\nFor Thou, in Thy atonement, didst give Thyself for me;\nI own no other Master, my heart shall be Thy throne;\nMy life I bring, a living gift, to Thee, and Thee alone."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "Living for Jesus who died in my place,\nBearing the penalty, guilt, and disgrace;\nSuch love constrains me to answer His call,\nFollow His leading and give Him my all."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Living for Jesus wherever I am,\nDoing each duty in His holy Name;\nWilling to suffer affliction and loss,\nDeeming each trial a part of the Cross."
+      }
+    ]
+  },
+  {
+    "id": "hymn_551",
+    "number": 551,
+    "title": "OPEN MY EYES, THAT I MAY SEE",
+    "author": "Clara H. Scott",
+    "category": "Prayer & Fellowship",
+    "book": "Melodies of Praise",
+    "mopNumber": 186,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "Open my eyes, that I may see\nGlimpses of truth Thou hast for me;\nPlace in my hands the wonderful key\nThat shall unclasp and set me free."
+      },
+      {
+        "part": "CHORUS",
+        "text": "Silently now I wait for Thee,\nReady, my God, Thy will to see;\nOpen my eyes, illumine me,\nSpirit divine!"
+      },
+      {
+        "part": "STANZA 2",
+        "text": "Open my ears, that I may hear\nVoices of truth Thou sendest clear;\nAnd while the wave-notes fall on my ear,\nEverything false will disappear."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Open my mouth, and let me bear\nGladly the warm truth ev’rywhere;\nOpen my heart, and let me prepare\nLove with Thy children thus to share."
+      }
+    ]
+  },
+  {
+    "id": "hymn_552",
+    "number": 552,
+    "title": "RESCUE THE PERISHING",
+    "author": "Fanny J. Crosby",
+    "category": "Grace & Salvation",
+    "book": "Melodies of Praise",
+    "mopNumber": 193,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "Rescue the perishing, care for the dying,\nSnatch them in pity from sin and the grave;\nWeep o’er the erring one, lift up the fallen,\nTell them of Jesus, the mighty to save."
+      },
+      {
+        "part": "CHORUS",
+        "text": "Rescue the perishing, care for the dying,\nJesus is merciful, Jesus will save."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "Though they are slighting Him, still He is waiting,\nWaiting the penitent child to receive;\nPlead with them earnestly, plead with them gently,\nHe will forgive if they only believe."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Down in the human heart, crushed by the tempter,\nFeelings lie buried that grace can restore;\nTouched by a loving heart, wakened by kindness,\nChords that were broken will vibrate once more."
+      },
+      {
+        "part": "STANZA 4",
+        "text": "Rescue the perishing, duty demands it;\nStrength for thy labor the Lord will provide;\nBack to the narrow way patiently win them,\nTell the poor wand’rer a Savior has died."
+      }
+    ]
+  },
+  {
+    "id": "hymn_553",
+    "number": 553,
+    "title": "BRINGING IN THE SHEAVES",
+    "author": "Knowles Shaw",
+    "category": "Spiritual Warfare & Victory",
+    "book": "Melodies of Praise",
+    "mopNumber": 200,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "Sowing in the morning, sowing seeds of kindness,\nSowing in the noontide and the dewy eve;\nWaiting for the harvest, and the time of reaping,\nWe shall come rejoicing, bringing in the sheaves."
+      },
+      {
+        "part": "CHORUS",
+        "text": "Bringing in the sheaves, bringing in the sheaves,\nWe shall come rejoicing, bringing in the sheaves;\nBringing in the sheaves, bringing in the sheaves,\nWe shall come rejoicing, bringing in the sheaves."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "Sowing in the sunshine, sowing in the shadows,\nFearing neither clouds nor winter’s chilling breeze;\nBy and by the harvest, and the labor ended,\nWe shall come rejoicing, bringing in the sheaves."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Going forth with weeping, sowing for the Master,\nThough the loss sustained our spirit often grieves;\nWhen our weeping’s over, He will bid us welcome,\nWe shall come rejoicing, bringing in the sheaves."
+      }
+    ]
+  },
+  {
+    "id": "hymn_554",
+    "number": 554,
+    "title": "SEND THE LIGHT",
+    "author": "Charles H. Gabriel",
+    "category": "Spiritual Warfare & Victory",
+    "book": "Melodies of Praise",
+    "mopNumber": 203,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "There’s a call comes ringing o’er the restless wave,\n“Send the light! Send the light!”\nThere are souls to rescue, there are souls to save,\nSend the light! Send the light!"
+      },
+      {
+        "part": "CHORUS",
+        "text": "Send the light, the blessed gospel light;\nLet it shine from shore to shore!\nSend the light, the blessed gospel light;\nLet it shine forevermore!"
+      },
+      {
+        "part": "STANZA 2",
+        "text": "We have heard the Macedonian call today,\n“Send the light! Send the light!”\nAnd a golden off’ring at the cross we lay,\nSend the light! Send the light!"
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Let us pray that grace may ev’rywhere abound,\n“Send the light! Send the light!”\nAnd a Christ-like spirit ev’rywhere be found,\nSend the light! Send the light!"
+      },
+      {
+        "part": "STANZA 4",
+        "text": "Let us not grow weary in the work of love,\n“Send the light! Send the light!”\nLet us gather jewels for a crown above,\nSend the light! Send the light!"
+      }
+    ]
+  },
+  {
+    "id": "hymn_555",
+    "number": 555,
+    "title": "I LOVE TO TELL THE STORY",
+    "author": "Katherine Hankey",
+    "category": "Grace & Salvation",
+    "book": "Melodies of Praise",
+    "mopNumber": 210,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "I love to tell the story of unseen things above,\nOf Jesus and His glory, of Jesus and His love.\nI love to tell the story, because I know ’tis true;\nIt satisfies my longings as nothing else can do."
+      },
+      {
+        "part": "CHORUS",
+        "text": "I love to tell the story, ’twill be my theme in glory,\nTo tell the old, old story of Jesus and His love."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "I love to tell the story; more wonderful it seems\nThan all the golden fancies of all our golden dreams.\nI love to tell the story, for some have never heard\nThe message of salvation from God’s own holy Word."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "I love to tell the story, for those who know it best\nSeem hungering and thirsting to hear it like the rest.\nAnd when, in scenes of glory, I sing the new, new song,\n’Twill be the old, old story that I have loved so long."
+      }
+    ]
+  },
+  {
+    "id": "hymn_556",
+    "number": 556,
+    "title": "THE UNCLOUDED DAY",
+    "author": "J.K. Alwood",
+    "category": "Comfort & Second Coming",
+    "book": "Melodies of Praise",
+    "mopNumber": 248,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "O they tell me of a home far beyond the skies,\nO they tell me of a home far away;\nO they tell me of a home where no storm clouds rise,\nO they tell me of an unclouded day."
+      },
+      {
+        "part": "CHORUS",
+        "text": "O the land of cloudless day,\nO the land of an unclouded sky;\nO they tell me of a home where no storm clouds rise,\nO they tell me of an unclouded day."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "O they tell me of a home where my friends have gone,\nO they tell me of that land far away,\nWhere the tree of life in its beauty blooms,\nAnd the waters of life ever flow."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "O they tell me that He smiles on His children there,\nAnd His smile drives their sorrows away;\nAnd they tell me that no tears ever come again\nIn that lovely land of unclouded day."
+      }
+    ]
+  },
+  {
+    "id": "hymn_557",
+    "number": 557,
+    "title": "JUST OVER IN THE GLORY LAND",
+    "author": "James W. Acuff",
+    "category": "Comfort & Second Coming",
+    "book": "Melodies of Praise",
+    "mopNumber": 260,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "I’ve a home prepared where the saints abide,\nJust over in the glory land;\nAnd I long to be by my Savior’s side,\nJust over in the glory land."
+      },
+      {
+        "part": "CHORUS",
+        "text": "Just over in the glory land,\nI’ll join the happy angel band,\nJust over in the glory land;\nJust over in the glory land,\nThere with the mighty host I’ll stand,\nJust over in the glory land."
+      },
+      {
+        "part": "STANZA 2",
+        "text": "I am on my way to those mansions fair,\nJust over in the glory land;\nThere to sing God’s praise and His glory share,\nJust over in the glory land."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "What a joyful thought, that my eyes shall see,\nJust over in the glory land;\nThe eternal King through eternity,\nJust over in the glory land."
+      }
+    ]
+  },
+  {
+    "id": "hymn_558",
+    "number": 558,
+    "title": "PRAISE HIM! PRAISE HIM!",
+    "author": "Fanny J. Crosby",
+    "category": "Praise & Adoration",
+    "book": "Melodies of Praise",
+    "mopNumber": 5,
+    "stanzas": [
+      {
+        "part": "STANZA 1",
+        "text": "Praise Him! praise Him! Jesus, our blessed Redeemer!\nSing, O Earth, His wonderful love proclaim!\nHail Him! hail Him! highest archangels in glory;\nStrength and honor give to His holy Name!\nLike a shepherd, Jesus will guard His children,\nIn His arms He carries them all day long."
+      },
+      {
+        "part": "CHORUS",
+        "text": "Praise Him! praise Him! tell of His excellent greatness;\nPraise Him! praise Him! ever in joyful song!"
+      },
+      {
+        "part": "STANZA 2",
+        "text": "Praise Him! praise Him! Jesus, our blessed Redeemer!\nFor our sins He suffered, and bled, and died;\nHe our Rock, our hope of eternal salvation,\nHail Him! hail Him! Jesus the Crucified.\nLoving Savior, meekly enduring sorrow,\nCrowned with thorns that cruelly pierced His brow."
+      },
+      {
+        "part": "STANZA 3",
+        "text": "Praise Him! praise Him! Jesus, our blessed Redeemer!\nHeav’nly portals loud with hosannas ring!\nJesus, Savior, reigneth forever and ever;\nCrown Him! crown Him! Prophet, and Priest, and King!\nChrist is coming! over the globe victorious,\nPow’r and glory unto the Lord belong."
       }
     ]
   }

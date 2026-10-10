@@ -825,31 +825,45 @@ window.load500HymnsCatalog = async function() {
     }
 };
 
-// Fast O(1) Hymn by Number Lookup
-window.getHymnByNumber = function(num) {
+// Fast O(1) Hymn by Number Lookup (supports standard number and Melodies of Praise number)
+window.getHymnByNumber = function(num, isMop = false) {
     const n = parseInt(num, 10);
-    return window.HYMN_BY_NUMBER_MAP.get(n) || null;
+    if (isNaN(n)) return null;
+    if (isMop) {
+        return (window.FULL_HYMN_CATALOG || []).find(h => h.mopNumber === n) || window.HYMN_BY_NUMBER_MAP.get(n) || null;
+    }
+    return window.HYMN_BY_NUMBER_MAP.get(n) || (window.FULL_HYMN_CATALOG || []).find(h => h.mopNumber === n) || null;
 };
 
-// High-Speed Search across Title, Author, Category, Number and Lyrics
+// High-Speed Search across Title, Author, Category, Number, MOP Index, and Lyrics
 window.searchHymns500 = function(query, category) {
-    let pool = window.FULL_HYMN_CATALOG;
+    let pool = window.FULL_HYMN_CATALOG || [];
     if (category && category !== 'ALL') {
-        pool = pool.filter(h => h.category === category);
+        if (category === 'MELODIES_OF_PRAISE') {
+            pool = pool.filter(h => h.book === 'Melodies of Praise' || (h.mopNumber && h.mopNumber > 0));
+        } else {
+            pool = pool.filter(h => h.category === category);
+        }
     }
 
     if (!query || query.trim() === '') {
-        return pool.slice(0, 30);
+        return pool.slice(0, 40);
     }
 
     const q = query.trim().toUpperCase();
+    const mopMatch = q.match(/^MOP\s*(\d+)$/i);
+    const mopTargetNum = mopMatch ? parseInt(mopMatch[1], 10) : null;
+
     return pool.filter(h => {
+        if (mopTargetNum && h.mopNumber === mopTargetNum) return true;
         return String(h.number) === q ||
+               (h.mopNumber && String(h.mopNumber) === q) ||
                h.title.toUpperCase().includes(q) ||
                (h.author && h.author.toUpperCase().includes(q)) ||
+               (h.book && h.book.toUpperCase().includes(q)) ||
                (h.category && h.category.toUpperCase().includes(q)) ||
                h.stanzas.some(st => st.text.toUpperCase().includes(q));
-    }).slice(0, 30);
+    }).slice(0, 40);
 };
 
 // Custom Hymn Creator & Saver
