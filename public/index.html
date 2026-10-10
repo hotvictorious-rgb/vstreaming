@@ -911,7 +911,7 @@ God in three Persons, blessed Trinity!</textarea>
         </div>
     </div>
 
-    <script src="/js/broadcast-library.js?v=1791632942916"></script>
+    <script src="/js/broadcast-library.js?v=1791633479538"></script>
     <script>
         // =====================================================================
         // CLOSE GUARD & AUTO-SHUTDOWN CONTROLLER
@@ -1745,23 +1745,37 @@ God in three Persons, blessed Trinity!</textarea>
 
             if (typeof window.findScriptures === 'function') {
                 const results = window.findScriptures(val);
-                if (results.length === 0) {
+                if (!results || results.length === 0) {
                     drop.style.display = 'none';
                     return;
                 }
 
+                const selVer = document.getElementById('sel-scripture-version');
+                const ver = selVer ? selVer.value : 'KJV';
+
                 let html = '';
-                results.slice(0, 8).forEach(item => {
-                    const selVer = document.getElementById('sel-scripture-version');
-                    const ver = selVer ? selVer.value : 'KJV';
-                    html += '<div onclick="loadScriptureDirect(\'' + item.ref + '\', \'' + ver + '\')" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background=\'rgba(245, 158, 11, 0.15)\'" onmouseout="this.style.background=\'transparent\'">' +
-                        '<strong style="color: #fbbf24; font-size: 12px;">' + item.ref + '</strong>' +
-                        '<span style="color: #94a3b8; font-size: 10px;">' + (item.category || 'Scripture') + '</span>' +
+                results.slice(0, 8).forEach((item, idx) => {
+                    html += '<div class="scripture-suggestion-item" onclick="selectScriptureSuggestion(\'' + item.ref + '\')" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; transition: background 0.15s;" onmouseover="this.style.background=\'rgba(245, 158, 11, 0.2)\'" onmouseout="this.style.background=\'transparent\'">' +
+                        '<div style="display: flex; align-items: center; gap: 8px;">' +
+                            '<span style="color: #f59e0b; font-size: 11px;">📖</span>' +
+                            '<strong style="color: #fbbf24; font-size: 13px; letter-spacing: 0.3px;">' + item.ref + '</strong>' +
+                        '</div>' +
+                        '<span style="color: #94a3b8; font-size: 11px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">' + (item.desc || item.category || 'Verse') + '</span>' +
                     '</div>';
                 });
                 drop.innerHTML = html;
                 drop.style.display = 'block';
             }
+        }
+
+        function selectScriptureSuggestion(ref) {
+            const drop = document.getElementById('scripture-search-dropdown');
+            if (drop) drop.style.display = 'none';
+            const searchInput = document.getElementById('input-scripture-search');
+            if (searchInput) searchInput.value = ref;
+            const selVer = document.getElementById('sel-scripture-version');
+            const ver = selVer ? selVer.value : 'KJV';
+            loadScriptureDirect(ref, ver, isGraphicOnAir);
         }
 
         function addCurrentScriptureToQueue() {

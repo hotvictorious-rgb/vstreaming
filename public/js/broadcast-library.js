@@ -967,43 +967,165 @@ window.resolveScriptureVerse = function(ref, version, callback) {
 };
 
 
-window.findScriptures = function(query) {
-    if (!query || query.trim() === '') {
-        return Object.values(window.CHURCH_SCRIPTURE_LIBRARY);
-    }
-    const cleanQ = query.trim();
-    const q = cleanQ.toUpperCase();
-    const results = [];
 
-    // Check if query is a direct reference (e.g. Ps 91:1, Rom 8:28, John 3 16)
-    const parsed = window.parseScriptureQuery(cleanQ);
-    if (parsed) {
-        results.push({
-            ref: parsed.ref,
-            book: parsed.book,
-            chapter: parsed.chapter,
-            verse: parsed.verseStart,
-            category: 'Direct Scripture Reference',
-            versions: {},
-            isDirectReference: true
+// =====================================================================
+// SMART SCRIPTURE AUTOCOMPLETE & CHAPTER/VERSE SUGGESTION ENGINE
+// =====================================================================
+window.BIBLE_STRUCTURE_DATA = {"books":{"1":{"id":1,"name":"Genesis","totalChapters":50,"versesPerChapter":[31,25,24,26,32,22,24,22,29,32,32,20,18,24,21,16,27,33,38,18,34,24,20,67,34,35,46,22,35,43,55,32,20,31,29,43,36,30,23,23,57,38,34,34,28,34,31,22,33,26]},"2":{"id":2,"name":"Exodus","totalChapters":40,"versesPerChapter":[22,25,22,31,23,30,25,32,35,29,10,51,22,31,27,36,16,27,25,26,36,31,33,18,40,37,21,43,46,38,18,35,23,35,35,38,29,31,43,38]},"3":{"id":3,"name":"Leviticus","totalChapters":27,"versesPerChapter":[17,16,17,35,19,30,38,36,24,20,47,8,59,57,33,34,16,30,37,27,24,33,44,23,55,46,34]},"4":{"id":4,"name":"Numbers","totalChapters":36,"versesPerChapter":[54,34,51,49,31,27,89,26,23,36,35,16,33,45,41,50,13,32,22,29,35,41,30,25,18,65,23,31,40,16,54,42,56,29,34,13]},"5":{"id":5,"name":"Deuteronomy","totalChapters":34,"versesPerChapter":[46,37,29,49,33,25,26,20,29,22,32,32,18,29,23,22,20,22,21,20,23,30,25,22,19,19,26,68,29,20,30,52,29,12]},"6":{"id":6,"name":"Joshua","totalChapters":24,"versesPerChapter":[18,24,17,24,15,27,26,35,27,43,23,24,33,15,63,10,18,28,51,9,45,34,16,33]},"7":{"id":7,"name":"Judges","totalChapters":21,"versesPerChapter":[36,23,31,24,31,40,25,35,57,18,40,15,25,20,20,31,13,31,30,48,25]},"8":{"id":8,"name":"Ruth","totalChapters":4,"versesPerChapter":[22,23,18,22]},"9":{"id":9,"name":"1 Samuel","totalChapters":31,"versesPerChapter":[28,36,21,22,12,21,17,22,27,27,15,25,23,52,35,23,58,30,24,42,15,23,29,22,44,25,12,25,11,31,13]},"10":{"id":10,"name":"2 Samuel","totalChapters":24,"versesPerChapter":[27,32,39,12,25,23,29,18,13,19,27,31,39,33,37,23,29,33,43,26,22,51,39,25]},"11":{"id":11,"name":"1 Kings","totalChapters":22,"versesPerChapter":[53,46,28,34,18,38,51,66,28,29,43,33,34,31,34,34,24,46,21,43,29,53]},"12":{"id":12,"name":"2 Kings","totalChapters":25,"versesPerChapter":[18,25,27,44,27,33,20,29,37,36,21,21,25,29,38,20,41,37,37,21,26,20,37,20,30]},"13":{"id":13,"name":"1 Chronicles","totalChapters":29,"versesPerChapter":[54,55,24,43,26,81,40,40,44,14,47,40,14,17,29,43,27,17,19,8,30,19,32,31,31,32,34,21,30]},"14":{"id":14,"name":"2 Chronicles","totalChapters":36,"versesPerChapter":[17,18,17,22,14,42,22,18,31,19,23,16,22,15,19,14,19,34,11,37,20,12,21,27,28,23,9,27,36,27,21,33,25,33,27,23]},"15":{"id":15,"name":"Ezra","totalChapters":10,"versesPerChapter":[11,70,13,24,17,22,28,36,15,44]},"16":{"id":16,"name":"Nehemiah","totalChapters":13,"versesPerChapter":[11,20,32,23,19,19,73,18,38,39,36,47,31]},"17":{"id":17,"name":"Esther","totalChapters":10,"versesPerChapter":[22,23,15,17,14,14,10,17,32,3]},"18":{"id":18,"name":"Job","totalChapters":42,"versesPerChapter":[22,13,26,21,27,30,21,22,35,22,20,25,28,22,35,22,16,21,29,29,34,30,17,25,6,14,23,28,25,31,40,22,33,37,16,33,24,41,30,24,34,17]},"19":{"id":19,"name":"Psalms","totalChapters":150,"versesPerChapter":[6,12,8,8,12,10,17,9,20,18,7,8,6,7,5,11,15,50,14,9,13,31,6,10,22,12,14,9,11,12,24,11,22,22,28,12,40,22,13,17,13,11,5,26,17,11,9,14,20,23,19,9,6,7,23,13,11,11,17,12,8,12,11,10,13,20,7,35,36,5,24,20,28,23,10,12,20,72,13,19,16,8,18,12,13,17,7,18,52,17,16,15,5,23,11,13,12,9,9,5,8,28,22,35,45,48,43,13,31,7,10,10,9,8,18,19,2,29,176,7,8,9,4,8,5,6,5,6,8,8,3,18,3,3,21,26,9,8,24,13,10,7,12,15,21,10,20,14,9,6]},"20":{"id":20,"name":"Proverbs","totalChapters":31,"versesPerChapter":[33,22,35,27,23,35,27,36,18,32,31,28,25,35,33,33,28,24,29,30,31,29,35,34,28,28,27,28,27,33,31]},"21":{"id":21,"name":"Ecclesiastes","totalChapters":12,"versesPerChapter":[18,26,22,16,20,12,29,17,18,20,10,14]},"22":{"id":22,"name":"Song of Solomon","totalChapters":8,"versesPerChapter":[17,17,11,16,16,13,13,14]},"23":{"id":23,"name":"Isaiah","totalChapters":66,"versesPerChapter":[31,22,26,6,30,13,25,22,21,34,16,6,22,32,9,14,14,7,25,6,17,25,18,23,12,21,13,29,24,33,9,20,24,17,10,22,38,22,8,31,29,25,28,28,25,13,15,22,26,11,23,15,12,17,13,12,21,14,21,22,11,12,19,12,25,24]},"24":{"id":24,"name":"Jeremiah","totalChapters":52,"versesPerChapter":[19,37,25,31,31,30,34,22,26,25,23,17,27,22,21,21,27,23,15,18,14,30,40,10,38,24,22,17,32,24,40,44,26,22,19,32,21,28,18,16,18,22,13,30,5,28,7,47,39,46,64,34]},"25":{"id":25,"name":"Lamentations","totalChapters":5,"versesPerChapter":[22,22,66,22,22]},"26":{"id":26,"name":"Ezekiel","totalChapters":48,"versesPerChapter":[28,10,27,17,17,14,27,18,11,22,25,28,23,23,8,63,24,32,14,49,32,31,49,27,17,21,36,26,21,26,18,32,33,31,15,38,28,23,29,49,26,20,27,31,25,24,23,35]},"27":{"id":27,"name":"Daniel","totalChapters":12,"versesPerChapter":[21,49,30,37,31,28,28,27,27,21,45,13]},"28":{"id":28,"name":"Hosea","totalChapters":14,"versesPerChapter":[11,23,5,19,15,11,16,14,17,15,12,14,16,9]},"29":{"id":29,"name":"Joel","totalChapters":3,"versesPerChapter":[20,32,21]},"30":{"id":30,"name":"Amos","totalChapters":9,"versesPerChapter":[15,16,15,13,27,14,17,14,15]},"31":{"id":31,"name":"Obadiah","totalChapters":1,"versesPerChapter":[21]},"32":{"id":32,"name":"Jonah","totalChapters":4,"versesPerChapter":[17,10,10,11]},"33":{"id":33,"name":"Micah","totalChapters":7,"versesPerChapter":[16,13,12,13,15,16,20]},"34":{"id":34,"name":"Nahum","totalChapters":3,"versesPerChapter":[15,13,19]},"35":{"id":35,"name":"Habakkuk","totalChapters":3,"versesPerChapter":[17,20,19]},"36":{"id":36,"name":"Zephaniah","totalChapters":3,"versesPerChapter":[18,15,20]},"37":{"id":37,"name":"Haggai","totalChapters":2,"versesPerChapter":[15,23]},"38":{"id":38,"name":"Zechariah","totalChapters":14,"versesPerChapter":[21,13,10,14,11,15,14,23,17,12,17,14,9,21]},"39":{"id":39,"name":"Malachi","totalChapters":4,"versesPerChapter":[14,17,18,6]},"40":{"id":40,"name":"Matthew","totalChapters":28,"versesPerChapter":[25,23,17,25,48,34,29,34,38,42,30,50,58,36,39,28,27,35,30,34,46,46,39,51,46,75,66,20]},"41":{"id":41,"name":"Mark","totalChapters":16,"versesPerChapter":[45,28,35,41,43,56,37,38,50,52,33,44,37,72,47,20]},"42":{"id":42,"name":"Luke","totalChapters":24,"versesPerChapter":[80,52,38,44,39,49,50,56,62,42,54,59,35,35,32,31,37,43,48,47,38,71,56,53]},"43":{"id":43,"name":"John","totalChapters":21,"versesPerChapter":[51,25,36,54,47,71,53,59,41,42,57,50,38,31,27,33,26,40,42,31,25]},"44":{"id":44,"name":"Acts","totalChapters":28,"versesPerChapter":[26,47,26,37,42,15,60,40,43,48,30,25,52,28,41,40,34,28,41,38,40,30,35,27,27,32,44,31]},"45":{"id":45,"name":"Romans","totalChapters":16,"versesPerChapter":[32,29,31,25,21,23,25,39,33,21,36,21,14,23,33,27]},"46":{"id":46,"name":"1 Corinthians","totalChapters":16,"versesPerChapter":[31,16,23,21,13,20,40,13,27,33,34,31,13,40,58,24]},"47":{"id":47,"name":"2 Corinthians","totalChapters":13,"versesPerChapter":[24,17,18,18,21,18,16,24,15,18,33,21,14]},"48":{"id":48,"name":"Galatians","totalChapters":6,"versesPerChapter":[24,21,29,31,26,18]},"49":{"id":49,"name":"Ephesians","totalChapters":6,"versesPerChapter":[23,22,21,32,33,24]},"50":{"id":50,"name":"Philippians","totalChapters":4,"versesPerChapter":[30,30,21,23]},"51":{"id":51,"name":"Colossians","totalChapters":4,"versesPerChapter":[29,23,25,18]},"52":{"id":52,"name":"1 Thessalonians","totalChapters":5,"versesPerChapter":[10,20,13,18,28]},"53":{"id":53,"name":"2 Thessalonians","totalChapters":3,"versesPerChapter":[12,17,18]},"54":{"id":54,"name":"1 Timothy","totalChapters":6,"versesPerChapter":[20,15,16,16,25,21]},"55":{"id":55,"name":"2 Timothy","totalChapters":4,"versesPerChapter":[18,26,17,22]},"56":{"id":56,"name":"Titus","totalChapters":3,"versesPerChapter":[16,15,15]},"57":{"id":57,"name":"Philemon","totalChapters":1,"versesPerChapter":[25]},"58":{"id":58,"name":"Hebrews","totalChapters":13,"versesPerChapter":[14,18,19,16,14,20,28,13,28,39,40,29,25]},"59":{"id":59,"name":"James","totalChapters":5,"versesPerChapter":[27,26,18,17,20]},"60":{"id":60,"name":"1 Peter","totalChapters":5,"versesPerChapter":[25,25,22,19,14]},"61":{"id":61,"name":"2 Peter","totalChapters":3,"versesPerChapter":[21,22,18]},"62":{"id":62,"name":"1 John","totalChapters":5,"versesPerChapter":[10,29,24,21,21]},"63":{"id":63,"name":"2 John","totalChapters":1,"versesPerChapter":[13]},"64":{"id":64,"name":"3 John","totalChapters":1,"versesPerChapter":[14]},"65":{"id":65,"name":"Jude","totalChapters":1,"versesPerChapter":[25]},"66":{"id":66,"name":"Revelation","totalChapters":22,"versesPerChapter":[20,29,22,11,14,17,17,13,21,11,19,17,18,20,8,21,18,24,21,15,27,21]}},"aliases":{"genesis":1,"exodus":2,"leviticus":3,"numbers":4,"deuteronomy":5,"joshua":6,"judges":7,"ruth":8,"1 samuel":9,"1samuel":9,"2 samuel":10,"2samuel":10,"1 kings":11,"1kings":11,"2 kings":12,"2kings":12,"1 chronicles":13,"1chronicles":13,"2 chronicles":14,"2chronicles":14,"ezra":15,"nehemiah":16,"esther":17,"job":18,"psalms":19,"proverbs":20,"ecclesiastes":21,"song of solomon":22,"songofsolomon":22,"isaiah":23,"jeremiah":24,"lamentations":25,"ezekiel":26,"daniel":27,"hosea":28,"joel":29,"amos":30,"obadiah":31,"jonah":32,"micah":33,"nahum":34,"habakkuk":35,"zephaniah":36,"haggai":37,"zechariah":38,"malachi":39,"matthew":40,"mark":41,"luke":42,"john":43,"acts":44,"romans":45,"1 corinthians":46,"1corinthians":46,"2 corinthians":47,"2corinthians":47,"galatians":48,"ephesians":49,"philippians":50,"colossians":51,"1 thessalonians":52,"1thessalonians":52,"2 thessalonians":53,"2thessalonians":53,"1 timothy":54,"1timothy":54,"2 timothy":55,"2timothy":55,"titus":56,"philemon":57,"hebrews":58,"james":59,"1 peter":60,"1peter":60,"2 peter":61,"2peter":61,"1 john":62,"1john":62,"2 john":63,"2john":63,"3 john":64,"3john":64,"jude":65,"revelation":66,"gen":1,"ge":1,"ex":2,"exo":2,"lev":3,"le":3,"num":4,"nu":4,"deut":5,"dt":5,"josh":6,"judg":7,"jdg":7,"ru":8,"1sam":9,"2sam":10,"1kgs":11,"2kgs":12,"1chron":13,"1chr":13,"2chron":14,"2chr":14,"ezr":15,"neh":16,"est":17,"ps":19,"psa":19,"psalm":19,"prov":20,"pr":20,"pro":20,"ecc":21,"eccl":21,"song":22,"sos":22,"isa":23,"jer":24,"lam":25,"ezek":26,"eze":26,"dan":27,"hos":28,"joe":29,"am":30,"ob":31,"jon":32,"mic":33,"nah":34,"hab":35,"zeph":36,"hag":37,"zech":38,"mal":39,"matt":40,"mt":40,"mk":41,"mrk":41,"lk":42,"luk":42,"jn":43,"jhn":43,"act":44,"rom":45,"1cor":46,"2cor":47,"gal":48,"eph":49,"phil":50,"col":51,"1thess":52,"2thess":53,"1tim":54,"2tim":55,"tit":56,"phm":57,"heb":58,"jas":59,"jam":59,"1pet":60,"2pet":61,"1jn":62,"2jn":63,"3jn":64,"jud":65,"rev":66,"solomon":22,"songofsongs":22,"songs":22,"canticles":22,"canticle":22,"revelations":66,"firstcorinthians":46,"secondcorinthians":47,"firstjohn":62,"secondjohn":63,"thirdjohn":64,"firstpeter":60,"secondpeter":61,"firsttimothy":54,"secondtimothy":55,"firstthessalonians":52,"secondthessalonians":53,"firstsamuel":9,"secondsamuel":10,"firstkings":11,"secondkings":12,"firstchronicles":13,"secondchronicles":14}};
+
+const GOLDEN_VERSES_CATALOG = {
+    1: [ { ch: 1, v: 1, desc: 'Creation - In the beginning God created' } ],
+    19: [ 
+        { ch: 23, v: 1, desc: 'The LORD is my shepherd; I shall not want' },
+        { ch: 91, v: 1, desc: 'He that dwelleth in the secret place' },
+        { ch: 100, v: 4, desc: 'Enter into his gates with thanksgiving' },
+        { ch: 121, v: 1, desc: 'I will lift up mine eyes unto the hills' },
+        { ch: 119, v: 105, desc: 'Thy word is a lamp unto my feet' },
+        { ch: 46, v: 1, desc: 'God is our refuge and strength' }
+    ],
+    20: [ { ch: 3, v: 5, desc: 'Trust in the LORD with all thine heart' } ],
+    22: [ 
+        { ch: 2, v: 3, desc: 'As the apple tree among the trees of the wood' },
+        { ch: 2, v: 4, desc: 'His banner over me was love' },
+        { ch: 2, v: 10, desc: 'Rise up, my love, my fair one, and come away' },
+        { ch: 8, v: 6, desc: 'Set me as a seal upon thine heart' },
+        { ch: 1, v: 2, desc: 'Let him kiss me with the kisses of his mouth' }
+    ],
+    23: [ { ch: 40, v: 31, desc: 'They that wait upon the LORD shall renew their strength' }, { ch: 53, v: 5, desc: 'He was wounded for our transgressions' } ],
+    24: [ { ch: 29, v: 11, desc: 'For I know the thoughts that I think toward you' } ],
+    40: [ { ch: 6, v: 33, desc: 'Seek ye first the kingdom of God' }, { ch: 28, v: 19, desc: 'Go ye therefore, and teach all nations' } ],
+    43: [ 
+        { ch: 3, v: 16, desc: 'For God so loved the world' },
+        { ch: 14, v: 6, desc: 'I am the way, the truth, and the life' },
+        { ch: 10, v: 10, desc: 'I am come that they might have life' },
+        { ch: 1, v: 1, desc: 'In the beginning was the Word' }
+    ],
+    45: [ 
+        { ch: 8, v: 28, desc: 'All things work together for good' },
+        { ch: 8, v: 1, desc: 'There is therefore now no condemnation' },
+        { ch: 8, v: 31, desc: 'If God be for us, who can be against us?' },
+        { ch: 12, v: 1, desc: 'Present your bodies a living sacrifice' },
+        { ch: 10, v: 9, desc: 'That if thou shalt confess with thy mouth' },
+        { ch: 3, v: 23, desc: 'For all have sinned, and come short of the glory' }
+    ],
+    46: [ { ch: 13, v: 4, desc: 'Charity suffereth long, and is kind' }, { ch: 13, v: 13, desc: 'Faith, hope, charity, these three' } ],
+    49: [ { ch: 2, v: 8, desc: 'For by grace are ye saved through faith' } ],
+    50: [ { ch: 4, v: 13, desc: 'I can do all things through Christ' }, { ch: 4, v: 19, desc: 'My God shall supply all your need' } ],
+    58: [ { ch: 11, v: 1, desc: 'Now faith is the substance of things hoped for' } ]
+};
+
+window.findScriptures = function(query) {
+    if (!query || !query.trim()) return [];
+    const cleanQ = query.trim().replace(/\s+/g, ' ');
+    const results = [];
+    const seen = new Set();
+    const struct = window.BIBLE_STRUCTURE_DATA || {};
+
+    function addResult(ref, desc, book, ch, v) {
+        const key = ref.toUpperCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        results.push({ ref: key, desc: desc || 'Scripture verse', book, chapter: ch, verse: v });
+    }
+
+    // Direct parser: [book] [ch] [delimiter: : or ; or . or v or space] [versePrefix]
+    const m = cleanQ.match(/^([1-3]?\s*[a-zA-Z\s]+?)(?:\s+(\d+))?(?:[\s:;.,vV]+(\d*))?$/i);
+    if (m && struct.books && struct.aliases) {
+        const rawBook = (m[1] || '').trim().toLowerCase();
+        const rawNoSpace = rawBook.replace(/\s+/g, '');
+        const bookId = struct.aliases[rawBook] || struct.aliases[rawNoSpace];
+        const ch = m[2] ? parseInt(m[2], 10) : null;
+        const vPrefix = m[3] ? m[3].trim() : '';
+
+        if (bookId) {
+            const bookData = struct.books[bookId];
+            const maxChapters = bookData.totalChapters;
+
+            // CASE 1: Book + Chapter specified (e.g. 'solomon 2', 'rom 8', 'ps 23')
+            if (ch && ch >= 1 && ch <= maxChapters) {
+                const maxVerses = bookData.versesPerChapter[ch - 1];
+
+                // If user typed verse digit (e.g. 'rom 8:2' or 'solomon 2;3')
+                if (vPrefix) {
+                    for (let v = 1; v <= maxVerses; v++) {
+                        if (String(v).startsWith(vPrefix)) {
+                            const ref = bookData.name.toUpperCase() + ' ' + ch + ':' + v;
+                            addResult(ref, 'Verse ' + v + ' of ' + maxVerses + ' in ' + bookData.name + ' ' + ch, bookData.name, ch, v);
+                            if (results.length >= 8) break;
+                        }
+                    }
+                } else {
+                    // Suggest golden verses in this chapter first
+                    if (GOLDEN_VERSES_CATALOG[bookId]) {
+                        GOLDEN_VERSES_CATALOG[bookId].filter(g => g.ch === ch).forEach(g => {
+                            const ref = bookData.name.toUpperCase() + ' ' + ch + ':' + g.v;
+                            addResult(ref, g.desc, bookData.name, ch, g.v);
+                        });
+                    }
+
+                    // Then suggest sequential verses in this chapter
+                    for (let v = 1; v <= Math.min(maxVerses, 8); v++) {
+                        const ref = bookData.name.toUpperCase() + ' ' + ch + ':' + v;
+                        addResult(ref, 'Verse ' + v + ' of ' + maxVerses, bookData.name, ch, v);
+                        if (results.length >= 8) break;
+                    }
+                }
+            } 
+            // CASE 2: Book only specified (e.g. 'solomon', 'romans', 'john')
+            else if (!ch) {
+                // Suggest golden verses for this book first
+                if (GOLDEN_VERSES_CATALOG[bookId]) {
+                    GOLDEN_VERSES_CATALOG[bookId].forEach(g => {
+                        const ref = bookData.name.toUpperCase() + ' ' + g.ch + ':' + g.v;
+                        addResult(ref, g.desc, bookData.name, g.ch, g.v);
+                    });
+                }
+                // Suggest chapter 1 verses
+                const ch1Max = bookData.versesPerChapter[0] || 1;
+                for (let v = 1; v <= Math.min(ch1Max, 4); v++) {
+                    const ref = bookData.name.toUpperCase() + ' 1:' + v;
+                    addResult(ref, 'Chapter 1, Verse ' + v, bookData.name, 1, v);
+                    if (results.length >= 8) break;
+                }
+            }
+        }
+    }
+
+    // CASE 3: Prefix search across all 66 books (e.g. typing 'ro', 'sol', 'gen', 'ps')
+    if (results.length < 8 && struct.books) {
+        const qLower = cleanQ.toLowerCase();
+        for (const bId of Object.keys(struct.books)) {
+            const b = struct.books[bId];
+            if (b.name.toLowerCase().startsWith(qLower) || (GOLDEN_VERSES_CATALOG[bId] && b.name.toLowerCase().includes(qLower))) {
+                if (GOLDEN_VERSES_CATALOG[bId]) {
+                    GOLDEN_VERSES_CATALOG[bId].forEach(g => {
+                        const ref = b.name.toUpperCase() + ' ' + g.ch + ':' + g.v;
+                        addResult(ref, g.desc, b.name, g.ch, g.v);
+                    });
+                }
+                const ref = b.name.toUpperCase() + ' 1:1';
+                addResult(ref, 'Start of ' + b.name, b.name, 1, 1);
+                if (results.length >= 8) break;
+            }
+        }
+    }
+
+    // CASE 4: Topic & text matching in CHURCH_SCRIPTURE_LIBRARY
+    if (results.length < 8 && window.CHURCH_SCRIPTURE_LIBRARY) {
+        const qUpper = cleanQ.toUpperCase();
+        Object.values(window.CHURCH_SCRIPTURE_LIBRARY).forEach(s => {
+            const matchRef = s.ref.includes(qUpper);
+            const matchCat = (s.category || '').toUpperCase().includes(qUpper);
+            const matchText = Object.values(s.versions || {}).some(txt => (txt || '').toUpperCase().includes(qUpper));
+            if (matchRef || matchCat || matchText) {
+                addResult(s.ref, s.category || 'Church Standard', s.book, s.chapter, s.verse);
+            }
         });
     }
 
-    // Match across pre-cached church scripture library
-    Object.values(window.CHURCH_SCRIPTURE_LIBRARY).forEach(s => {
-        if (parsed && s.ref === parsed.ref) return; // avoid duplicate
-        const matchRef = s.ref.includes(q);
-        const matchBook = s.book.toUpperCase().includes(q);
-        const matchCat = s.category.toUpperCase().includes(q);
-        const matchText = Object.values(s.versions).some(txt => (txt || '').toUpperCase().includes(q));
-
-        if (matchRef || matchBook || matchCat || matchText) {
-            results.push(s);
-        }
-    });
-
     return results;
 };
+
 
 window.findHymns = function(query) {
     if (!query || query.trim() === '') {
