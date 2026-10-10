@@ -162,107 +162,129 @@
         /* Style A: Lower-Center (Worship leader on camera visible above, lyrics centered below) */
         #graphics-layer.layout-center-slate,
         #graphics-layer.layout-lower-center {
-            justify-content: center;
-            align-items: flex-end;
-            padding-bottom: 50px;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: flex-end !important;
+            padding: 0 0 50px 0 !important;
+            inset: 0 !important;
         }
         #graphics-layer.layout-center-slate .graphic-card,
         #graphics-layer.layout-lower-center .graphic-card {
-            max-width: 1120px;
-            width: 86%;
-            text-align: center;
-            align-items: center;
-            border-left: 1px solid rgba(56, 189, 248, 0.45);
-            border-top: 5px solid #38bdf8;
-            box-shadow: 0 16px 45px rgba(0, 0, 0, 0.85), 0 0 30px rgba(56, 189, 248, 0.3);
-            border-radius: 14px;
-            padding: 18px 32px;
-            transform: translateY(120%);
+            max-width: 1240px !important;
+            width: 88% !important;
+            margin: 0 auto !important;
+            text-align: center !important;
+            align-items: center !important;
+            border-left: 1px solid rgba(56, 189, 248, 0.45) !important;
+            border-top: 5px solid #38bdf8 !important;
+            box-shadow: 0 16px 45px rgba(0, 0, 0, 0.85), 0 0 30px rgba(56, 189, 248, 0.3) !important;
+            border-radius: 14px !important;
+            padding: 22px 36px !important;
+            transform: translateY(120%) !important;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease !important;
         }
         #graphics-layer.layout-center-slate .graphic-card.active,
         #graphics-layer.layout-lower-center .graphic-card.active {
-            transform: translateY(0);
+            transform: translateY(0) !important;
+            opacity: 1 !important;
         }
         #graphics-layer.layout-center-slate .graphic-badge-row,
         #graphics-layer.layout-lower-center .graphic-badge-row {
-            justify-content: center;
+            justify-content: center !important;
         }
         #graphics-layer.layout-center-slate .graphic-content,
         #graphics-layer.layout-lower-center .graphic-content {
-            align-items: center;
-            width: 100%;
+            align-items: center !important;
+            width: 100% !important;
         }
         #graphics-layer.layout-center-slate .graphic-main-text,
         #graphics-layer.layout-lower-center .graphic-main-text {
-            font-size: 26px;
-            line-height: 1.45;
-            text-align: center;
-            white-space: pre-line;
-            width: 100%;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95);
+            font-size: 32px !important;
+            line-height: 1.45 !important;
+            font-weight: 700 !important;
+            text-align: center !important;
+            white-space: pre-line !important;
+            width: 100% !important;
+            letter-spacing: 0.3px !important;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95), 0 0 16px rgba(0, 0, 0, 0.8) !important;
         }
         #graphics-layer.layout-center-slate .graphic-sub-text,
         #graphics-layer.layout-lower-center .graphic-sub-text {
-            text-align: center;
-            white-space: pre-line;
-            width: 100%;
+            text-align: center !important;
+            white-space: pre-line !important;
+            width: 100% !important;
         }
 
         /* Style B: Full-Center (Dead center in the middle of the screen like a sanctuary projector slide) */
         #graphics-layer.layout-full-center {
-            justify-content: center;
-            align-items: center;
-            padding: 0;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            padding: 0 !important;
+            inset: 0 !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
         }
         #graphics-layer.layout-full-center .graphic-card {
-            max-width: 1180px;
-            width: 88%;
-            max-height: 86vh;
-            text-align: center;
-            align-items: center;
-            background: linear-gradient(135deg, rgba(14, 7, 32, 0.96) 0%, rgba(28, 12, 58, 0.94) 100%);
-            border: 1px solid rgba(56, 189, 248, 0.55);
-            border-top: 5px solid #38bdf8;
-            border-bottom: 5px solid #f59e0b;
-            border-radius: 20px;
-            padding: 32px 48px;
-            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95), 0 0 50px rgba(56, 189, 248, 0.35);
-            backdrop-filter: blur(25px);
-            transform: scale(0.92);
-            opacity: 0;
+            max-width: 1320px !important;
+            width: 88% !important;
+            max-height: 86vh !important;
+            margin: auto !important;
+            text-align: center !important;
+            align-items: center !important;
+            background: linear-gradient(135deg, rgba(14, 7, 32, 0.97) 0%, rgba(28, 12, 58, 0.95) 100%) !important;
+            border: 1px solid rgba(56, 189, 248, 0.55) !important;
+            border-top: 6px solid #38bdf8 !important;
+            border-bottom: 6px solid #f59e0b !important;
+            border-left: 1px solid rgba(56, 189, 248, 0.55) !important;
+            border-right: 1px solid rgba(56, 189, 248, 0.55) !important;
+            border-radius: 20px !important;
+            padding: 40px 56px !important;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95), 0 0 50px rgba(56, 189, 248, 0.35) !important;
+            backdrop-filter: blur(25px) !important;
+            transform: scale(0.96) !important;
+            opacity: 0 !important;
+            transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
         #graphics-layer.layout-full-center .graphic-card.active {
-            transform: scale(1);
-            opacity: 1;
+            transform: scale(1) !important;
+            opacity: 1 !important;
+        }
+        #graphics-layer.layout-full-center .graphic-card.hiding {
+            transform: scale(0.96) !important;
+            opacity: 0 !important;
+            transition: opacity 0.2s ease, transform 0.2s ease !important;
         }
         #graphics-layer.layout-full-center .graphic-badge-row {
-            justify-content: center;
-            margin-bottom: 10px;
+            justify-content: center !important;
+            margin-bottom: 12px !important;
         }
         #graphics-layer.layout-full-center .graphic-badge-title {
-            font-size: 16px;
-            letter-spacing: 2px;
+            font-size: 16px !important;
+            letter-spacing: 2px !important;
         }
         #graphics-layer.layout-full-center .graphic-content {
-            align-items: center;
-            width: 100%;
+            align-items: center !important;
+            width: 100% !important;
         }
         #graphics-layer.layout-full-center .graphic-main-text {
-            font-size: 32px;
-            line-height: 1.5;
-            font-weight: 700;
-            text-align: center;
-            white-space: pre-line;
-            width: 100%;
-            letter-spacing: 0.3px;
-            text-shadow: 0 3px 8px rgba(0, 0, 0, 1);
+            font-size: 42px !important;
+            line-height: 1.5 !important;
+            font-weight: 700 !important;
+            text-align: center !important;
+            white-space: pre-line !important;
+            width: 100% !important;
+            letter-spacing: 0.4px !important;
+            text-shadow: 0 3px 10px rgba(0, 0, 0, 1), 0 0 22px rgba(0, 0, 0, 0.85) !important;
         }
         #graphics-layer.layout-full-center .graphic-sub-text {
-            text-align: center;
-            white-space: pre-line;
-            width: 100%;
-            font-size: 18px;
-            margin-top: 8px;
+            text-align: center !important;
+            white-space: pre-line !important;
+            width: 100% !important;
+            font-size: 18px !important;
+            margin-top: 10px !important;
         }
 
         #graphics-layer.layout-ticker {
@@ -369,19 +391,39 @@
             sub.style.display = (payload.template === 'hymn' || !payload.subText) ? 'none' : 'block';
             sub.style.whiteSpace = 'pre-line';
 
-            // Distinct theme borders and font sizing per template type
-            if (payload.template === 'scripture') {
-                card.style.borderLeftColor = '#f59e0b'; // Gold
-                main.style.fontSize = '22px';
-            } else if (payload.template === 'hymn') {
-                card.style.borderLeftColor = '#38bdf8'; // Sky Blue
-                main.style.fontSize = '22px';
-            } else if (payload.template === 'giving') {
-                card.style.borderLeftColor = '#10b981'; // Emerald
-                main.style.fontSize = '24px';
+            // Distinct theme borders and font sizing per template & layout
+            const isFullCenter = (payload.layout === 'full-center');
+            const isLowerCenter = (payload.layout === 'center-slate' || payload.layout === 'lower-center');
+
+            if (isFullCenter) {
+                card.style.borderLeft = '1px solid rgba(56, 189, 248, 0.55)';
+                card.style.borderTop = '6px solid #38bdf8';
+                card.style.borderBottom = '6px solid #f59e0b';
+                card.style.borderRight = '1px solid rgba(56, 189, 248, 0.55)';
+                main.style.fontSize = '42px';
+            } else if (isLowerCenter) {
+                card.style.borderLeft = '1px solid rgba(56, 189, 248, 0.45)';
+                card.style.borderTop = '5px solid #38bdf8';
+                card.style.borderBottom = 'none';
+                card.style.borderRight = 'none';
+                main.style.fontSize = '32px';
             } else {
-                card.style.borderLeftColor = '#f59e0b'; // Gold
-                main.style.fontSize = '26px';
+                card.style.borderTop = 'none';
+                card.style.borderBottom = 'none';
+                card.style.borderRight = 'none';
+                if (payload.template === 'scripture') {
+                    card.style.borderLeft = '6px solid #f59e0b';
+                    main.style.fontSize = '26px';
+                } else if (payload.template === 'hymn') {
+                    card.style.borderLeft = '6px solid #38bdf8';
+                    main.style.fontSize = '28px';
+                } else if (payload.template === 'giving') {
+                    card.style.borderLeft = '6px solid #10b981';
+                    main.style.fontSize = '26px';
+                } else {
+                    card.style.borderLeft = '6px solid #f59e0b';
+                    main.style.fontSize = '26px';
+                }
             }
 
             const isAlreadyActive = card.classList.contains('active');
