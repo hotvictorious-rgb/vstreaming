@@ -402,7 +402,7 @@
                         <div style="display: grid; grid-template-columns: 1fr 180px; gap: 10px; align-items: start;">
                             <!-- Live Autocomplete Search Input (Supports Hymn #, MOP #, Title, and Lyrics) -->
                             <div style="position: relative;">
-                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Search 550+ Hymns (Type #, MOP #, Title, or Lyrics):</label>
+                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Search 730+ Authentic Hymns (Type #, MOP #, Title, or Lyrics):</label>
                                 <input type="text" id="input-hymn-search" placeholder="🔍 Type hymn number (e.g. 142, MOP 84) or title/lyrics (Press Enter to load)..." oninput="onHymnSearch500Input(this.value)" onfocus="onHymnSearch500Input(this.value)" onkeydown="if(event.key==='Enter') selectFirstHymnSearchResult()" style="width: 100%; background: #070314; border: 1px solid rgba(56, 189, 248, 0.5); color: #fff; padding: 7px 12px; border-radius: 6px; font-size: 12px; outline: none;">
                                 <div id="hymn-search-results" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #0a061c; border: 1px solid #38bdf8; border-radius: 6px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.85);"></div>
                             </div>
@@ -411,7 +411,7 @@
                             <div>
                                 <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Category / Hymnal:</label>
                                 <select id="sel-hymn-category-filter" onchange="onHymnCategoryFilterChange(this.value)" style="width: 100%; background: #070314; border: 1px solid rgba(56, 189, 248, 0.4); color: #7dd3fc; padding: 6px 6px; border-radius: 6px; font-size: 11px; cursor: pointer;">
-                                    <option value="ALL">All Songs (550+)</option>
+                                    <option value="ALL">All Songs (730+)</option>
                                     <option value="MELODIES_OF_PRAISE" style="color: #fbbf24; font-weight: bold; background: #1e1b4b;">📕 Melodies of Praise (MOP)</option>
                                     <option value="Praise & Adoration">Praise & Adoration</option>
                                     <option value="The Cross & The Blood">The Cross & The Blood</option>
