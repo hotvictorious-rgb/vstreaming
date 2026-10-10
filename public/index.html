@@ -911,7 +911,7 @@ God in three Persons, blessed Trinity!</textarea>
         </div>
     </div>
 
-    <script src="/js/broadcast-library.js?v=1791631573289"></script>
+    <script src="/js/broadcast-library.js?v=1791632171078"></script>
     <script>
         // =====================================================================
         // CLOSE GUARD & AUTO-SHUTDOWN CONTROLLER
@@ -1666,8 +1666,8 @@ God in three Persons, blessed Trinity!</textarea>
 
             if (searchInput) searchInput.value = ref;
             if (refInput) refInput.value = ref;
-            if (textInput) textInput.value = '⏳ Loading ' + ref + ' [' + version + ']...';
-            updateLiveGraphicPreview();
+            // Do not display "Loading..." to avoid flicker/flash on screen
+            // The previous scripture stays smoothly visible until the new verse text arrives instantaneously
 
             // Parse state
             const parsed = (typeof window.parseScriptureQuery === 'function') ? window.parseScriptureQuery(ref) : null;

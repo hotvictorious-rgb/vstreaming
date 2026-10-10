@@ -982,7 +982,7 @@ window.findScriptures = function(query) {
             chapter: parsed.chapter,
             verse: parsed.verseStart,
             category: 'Direct Scripture Reference',
-            versions: { KJV: 'Loading verse text...' },
+            versions: {},
             isDirectReference: true
         });
     }
