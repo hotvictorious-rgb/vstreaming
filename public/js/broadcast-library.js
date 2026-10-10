@@ -842,83 +842,128 @@ window.resolveScriptureVerse = function(ref, version, callback) {
         if (cached) {
             const parsed = JSON.parse(cached);
             if (parsed && parsed.text) {
-                if (callback) callback({ success: true, ref: parsed.ref || ref, text: parsed.text, version, verses: parsed.verses || [], source: 'cache' });
+                if (callback) callback({ success: true, ref: parsed.ref || ref, text: parsed.text, version, maxVerses: parsed.maxVerses, source: 'cache' });
                 return;
             }
         }
     } catch(e) {}
 
-    // 3. Parse canonical reference for remote API fetch
-    const parsed = window.parseScriptureQuery(ref);
+    // 3. Parse canonical reference
+    const parsed = (typeof window.parseScriptureQuery === 'function') ? window.parseScriptureQuery(ref) : null;
     if (!parsed) {
         if (callback) callback({ success: false, error: 'Invalid reference: ' + ref });
         return;
     }
 
-    const bookId = window.BIBLE_BOOK_IDS[parsed.book] || 1;
-    const isRange = parsed.verseEnd && (parsed.verseEnd > parsed.verseStart);
+    // 4. Query local server offline engine & canonical boundary guard first
+    const localUrl = '/api/bible/verse?book=' + encodeURIComponent(parsed.book) +
+                     '&chapter=' + encodeURIComponent(parsed.chapter) +
+                     '&verse=' + encodeURIComponent(parsed.verseStart) +
+                     '&version=' + encodeURIComponent(version);
 
-    // Primary Provider: Bolls API (Supports 50+ translations: MSG, RSV, NKJV, NLT, ESV, NASB, AMP, etc.)
-    const bollsUrl = isRange
-        ? 'https://bolls.life/get-chapter/' + encodeURIComponent(version) + '/' + bookId + '/' + parsed.chapter + '/'
-        : 'https://bolls.life/get-verse/' + encodeURIComponent(version) + '/' + bookId + '/' + parsed.chapter + '/' + parsed.verseStart + '/';
-
-    fetch(bollsUrl)
-        .then(res => {
-            if (!res.ok) throw new Error('Bolls returned status ' + res.status);
-            return res.json();
-        })
-        .then(data => {
-            if (isRange && Array.isArray(data)) {
-                // Filter verses within requested range
-                const matched = data.filter(v => v.verse >= parsed.verseStart && v.verse <= parsed.verseEnd);
-                if (matched.length === 0) throw new Error('No verses found in chapter');
-                const versesArray = matched.map(v => ({
-                    verse: v.verse,
-                    text: cleanBibleVerseText(v.text)
-                }));
-                const firstText = versesArray[0].text;
-                try {
-                    localStorage.setItem(cacheKey, JSON.stringify({ ref: parsed.ref, text: firstText, version, verses: versesArray }));
-                } catch(e) {}
-                if (callback) callback({ success: true, ref: parsed.ref, text: firstText, version, verses: versesArray, source: 'bolls' });
-            } else if (data && data.text) {
-                const clean = cleanBibleVerseText(data.text);
-                try {
-                    localStorage.setItem(cacheKey, JSON.stringify({ ref: parsed.ref, text: clean, version, verses: [{ verse: parsed.verseStart, text: clean }] }));
-                } catch(e) {}
-                if (callback) callback({ success: true, ref: parsed.ref, text: clean, version, verses: [{ verse: parsed.verseStart, text: clean }], source: 'bolls' });
-            } else {
-                throw new Error('Invalid Bolls format');
+    fetch(localUrl)
+        .then(res => res.json())
+        .then(localData => {
+            // Check for canonical boundary violation (e.g. Romans 8:55)
+            if (localData && localData.outOfBounds) {
+                if (callback) callback({
+                    success: false,
+                    outOfBounds: true,
+                    bookName: localData.bookName || parsed.book,
+                    chapter: localData.chapter || parsed.chapter,
+                    maxVerses: localData.maxVerses,
+                    error: localData.error || (parsed.book + ' ' + parsed.chapter + ' only has ' + localData.maxVerses + ' verses.')
+                });
+                return;
             }
-        })
-        .catch(err => {
-            // Fallback Provider: bible-api.com
-            const fallbackVer = (version === 'WEB') ? 'web' : 'kjv';
-            const fallbackUrl = 'https://bible-api.com/' + encodeURIComponent(parsed.apiQuery) + '?translation=' + fallbackVer;
-            fetch(fallbackUrl)
-                .then(r => r.json())
-                .then(fbData => {
-                    if (fbData && fbData.text) {
-                        const clean = fbData.text.trim().replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
-                        const fbVerses = (fbData.verses && fbData.verses.length > 0)
-                            ? fbData.verses.map(v => ({ verse: v.verse, text: v.text.trim().replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ') }))
-                            : [{ verse: parsed.verseStart, text: clean }];
-                        const firstText = fbVerses[0].text;
+
+            // If local server returned 100% offline text (e.g. KJV)
+            if (localData && localData.success && localData.isOffline && localData.text) {
+                try {
+                    localStorage.setItem(cacheKey, JSON.stringify({
+                        ref: localData.ref,
+                        text: localData.text,
+                        version: 'KJV',
+                        maxVerses: localData.maxVerses
+                    }));
+                } catch(e) {}
+                if (callback) callback({
+                    success: true,
+                    ref: localData.ref,
+                    text: localData.text,
+                    version: 'KJV',
+                    maxVerses: localData.maxVerses,
+                    source: 'offline_local'
+                });
+                return;
+            }
+
+            const maxVerses = (localData && localData.maxVerses) ? localData.maxVerses : null;
+            const bookId = (localData && localData.bookId) ? localData.bookId : (window.BIBLE_BOOK_IDS[parsed.book] || 1);
+
+            // If non-KJV requested, try Bolls API with permanent local caching
+            const bollsUrl = 'https://bolls.life/get-verse/' + encodeURIComponent(version) + '/' + bookId + '/' + parsed.chapter + '/' + parsed.verseStart + '/';
+
+            fetch(bollsUrl)
+                .then(r => {
+                    if (!r.ok) throw new Error('Bolls returned ' + r.status);
+                    return r.json();
+                })
+                .then(bollsData => {
+                    if (bollsData && bollsData.text) {
+                        const clean = (typeof cleanBibleVerseText === 'function') ? cleanBibleVerseText(bollsData.text) : bollsData.text.replace(/<[^>]+>/g, '').trim();
                         try {
-                            localStorage.setItem(cacheKey, JSON.stringify({ ref: fbData.reference || parsed.ref, text: firstText, version, verses: fbVerses }));
+                            localStorage.setItem(cacheKey, JSON.stringify({
+                                ref: parsed.ref,
+                                text: clean,
+                                version: version,
+                                maxVerses: maxVerses
+                            }));
                         } catch(e) {}
-                        if (callback) callback({ success: true, ref: fbData.reference || parsed.ref, text: firstText, version, verses: fbVerses, source: 'fallback' });
+                        if (callback) callback({
+                            success: true,
+                            ref: parsed.ref,
+                            text: clean,
+                            version: version,
+                            maxVerses: maxVerses,
+                            source: 'bolls'
+                        });
                     } else {
-                        if (callback) callback({ success: false, error: err.message, ref });
+                        throw new Error('Invalid bolls response');
                     }
                 })
-                .catch(fbErr => {
-                    console.warn('[Victorious Hub] All scripture fetch providers failed:', fbErr.message);
-                    if (callback) callback({ success: false, error: err.message, ref });
+                .catch(err => {
+                    // Network or offline: Fallback gracefully to offline KJV
+                    console.log('[Victorious Hub] Fetch failed for ' + version + ', falling back to offline KJV:', err.message);
+                    fetch('/api/bible/verse?book=' + encodeURIComponent(parsed.book) + '&chapter=' + encodeURIComponent(parsed.chapter) + '&verse=' + encodeURIComponent(parsed.verseStart) + '&version=KJV')
+                        .then(r => r.json())
+                        .then(fbData => {
+                            if (fbData && fbData.success && fbData.text) {
+                                if (callback) callback({
+                                    success: true,
+                                    ref: fbData.ref,
+                                    text: fbData.text,
+                                    version: 'KJV',
+                                    isFallback: true,
+                                    fallbackFrom: version,
+                                    maxVerses: fbData.maxVerses,
+                                    source: 'offline_fallback'
+                                });
+                            } else {
+                                if (callback) callback({ success: false, error: err.message, ref });
+                            }
+                        })
+                        .catch(fbErr => {
+                            if (callback) callback({ success: false, error: fbErr.message, ref });
+                        });
                 });
+        })
+        .catch(err => {
+            console.warn('[Victorious Hub] Local bible endpoint failed:', err.message);
+            if (callback) callback({ success: false, error: err.message, ref });
         });
 };
+
 
 window.findScriptures = function(query) {
     if (!query || query.trim() === '') {

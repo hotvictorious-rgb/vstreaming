@@ -245,6 +245,116 @@ app.delete('/api/photos/:filename', (req, res) => {
 });
 
 // API: Set Tally Manually
+
+// =====================================================================
+// OFFLINE BIBLE ENGINE & CANONICAL BOUNDARY GUARD
+// =====================================================================
+let offlineKjv = null;
+try {
+    offlineKjv = require('bible-kjv');
+    console.log('[Offline Bible] bible-kjv module loaded successfully (31,102 verses ready offline)!');
+} catch (e) {
+    console.warn('[Offline Bible] bible-kjv failed to load:', e.message);
+}
+
+const bibleStructurePath = path.join(__dirname, 'public', 'data', 'bible-structure.json');
+let bibleStructure = null;
+if (fs.existsSync(bibleStructurePath)) {
+    try {
+        bibleStructure = JSON.parse(fs.readFileSync(bibleStructurePath, 'utf8'));
+    } catch(e) {
+        console.warn('[Offline Bible] Failed to parse bible-structure.json:', e.message);
+    }
+}
+
+app.get('/api/bible/structure', (req, res) => {
+    if (bibleStructure) {
+        return res.json(bibleStructure);
+    }
+    res.status(500).json({ error: 'Structure not loaded' });
+});
+
+app.get('/api/bible/verse', (req, res) => {
+    let { book, chapter, verse, version } = req.query;
+    if (!book || !chapter || !verse) {
+        return res.status(400).json({ success: false, error: 'Missing book, chapter, or verse' });
+    }
+
+    chapter = parseInt(chapter, 10);
+    verse = parseInt(verse, 10);
+    version = (version || 'KJV').toUpperCase();
+
+    if (!bibleStructure) {
+        return res.status(500).json({ success: false, error: 'Bible structure not ready' });
+    }
+
+    const cleanBook = book.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const bookId = bibleStructure.aliases[cleanBook] || bibleStructure.aliases[book.toLowerCase()];
+    if (!bookId) {
+        return res.json({ success: false, error: `Unknown book name: "${book}". Please check spelling.` });
+    }
+
+    const bookData = bibleStructure.books[bookId];
+    if (chapter < 1 || chapter > bookData.totalChapters) {
+        return res.json({
+            success: false,
+            outOfBounds: true,
+            maxChapters: bookData.totalChapters,
+            error: `${bookData.name} has only ${bookData.totalChapters} chapters.`
+        });
+    }
+
+    const maxVerses = bookData.versesPerChapter[chapter - 1];
+    if (verse < 1 || verse > maxVerses) {
+        return res.json({
+            success: false,
+            outOfBounds: true,
+            bookName: bookData.name,
+            chapter,
+            verse,
+            maxVerses,
+            error: `${bookData.name} chapter ${chapter} only has ${maxVerses} verses (Verse 1 to ${maxVerses}).`
+        });
+    }
+
+    const canonicalRef = `${bookData.name.toUpperCase()} ${chapter}:${verse}`;
+
+    // 100% Offline KJV text resolution
+    if (offlineKjv && (version === 'KJV' || version === 'OFFLINE')) {
+        try {
+            let rawText = offlineKjv.getVerse(bookId, chapter, verse);
+            if (rawText) {
+                let cleanText = rawText.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+                return res.json({
+                    success: true,
+                    ref: canonicalRef,
+                    text: cleanText,
+                    version: 'KJV',
+                    maxVerses,
+                    bookId,
+                    chapter,
+                    verse,
+                    isOffline: true
+                });
+            }
+        } catch(e) {
+            console.warn('[Offline Bible Read Error]:', e.message);
+        }
+    }
+
+    // Return structure metadata for other versions
+    return res.json({
+        success: true,
+        ref: canonicalRef,
+        bookId,
+        bookName: bookData.name,
+        chapter,
+        verse,
+        maxVerses,
+        version
+    });
+});
+
 app.post('/api/tally', (req, res) => {
     const { camId, state } = req.body;
     const targetId = parseInt(camId, 10);

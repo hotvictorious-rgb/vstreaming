@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "victorious-streaming-hub",
   "version": "1.0.0",
   "description": "Professional Church Multi-Camera Broadcast Studio Hub for OBS Studio",
@@ -8,6 +8,7 @@
     "serve": "node server.js"
   },
   "dependencies": {
+    "bible-kjv": "^1.1.3",
     "express": "^4.21.2",
     "multer": "^2.4.0",
     "obs-websocket-js": "^5.0.6",
