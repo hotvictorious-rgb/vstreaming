@@ -466,26 +466,18 @@
                             </div>
                         </div>
 
-                        <!-- Editable Hymn Fields -->
-                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px;">
-                            <div>
-                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Hymn Title / Number:</label>
-                                <input type="text" id="input-hymn-title" value="HOLY, HOLY, HOLY • HYMN 1" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(56, 189, 248, 0.5); color: #38bdf8; font-weight: 700; padding: 8px 12px; border-radius: 6px; font-size: 13px;">
-                            </div>
-                            <div>
-                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Stanza / Part:</label>
-                                <select id="sel-hymn-part" onchange="onManualHymnPartChange()" style="width: 100%; background: #0b0717; border: 1px solid rgba(56, 189, 248, 0.5); color: #38bdf8; font-weight: 700; padding: 8px 8px; border-radius: 6px; font-size: 12px; cursor: pointer;">
-                                    <option value="STANZA 1">STANZA 1</option>
-                                    <option value="STANZA 2">STANZA 2</option>
-                                    <option value="STANZA 3">STANZA 3</option>
-                                    <option value="STANZA 4">STANZA 4</option>
-                                    <option value="CHORUS">CHORUS</option>
-                                    <option value="REFRAIN">REFRAIN</option>
-                                </select>
-                            </div>
-                        </div>
+                        <!-- Hidden title & stanza state (Title & Stanza hidden from screen, only lyrics broadcast) -->
+                        <input type="hidden" id="input-hymn-title" value="HOLY, HOLY, HOLY • HYMN 1">
+                        <select id="sel-hymn-part" style="display: none;">
+                            <option value="STANZA 1">STANZA 1</option>
+                            <option value="STANZA 2">STANZA 2</option>
+                            <option value="STANZA 3">STANZA 3</option>
+                            <option value="STANZA 4">STANZA 4</option>
+                            <option value="CHORUS">CHORUS</option>
+                            <option value="REFRAIN">REFRAIN</option>
+                        </select>
                         <div>
-                            <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Hymn Lyrics:</label>
+                            <label style="display: block; font-size: 11px; color: #7dd3fc; margin-bottom: 4px; font-weight: 700;">🎵 Broadcast Lyrics (Only lyrics are broadcast on screen):</label>
                             <textarea id="input-hymn-text" rows="3" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(56, 189, 248, 0.5); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; resize: vertical; line-height: 1.4;">Holy, holy, holy! Lord God Almighty!
 Early in the morning our song shall rise to Thee;
 Holy, holy, holy! Merciful and mighty!
@@ -779,10 +771,6 @@ God in three Persons, blessed Trinity!</textarea>
                     <span>📋</span>
                     <span>Step-by-Step Operator Guide</span>
                 </button>
-                <button class="tab-btn" id="tab-btn-obs" onclick="switchTab('obs')">
-                    <span>📺</span>
-                    <span>OBS Browser Source Links (1-Click Copy)</span>
-                </button>
                 <button class="tab-btn" id="tab-btn-about" onclick="switchTab('about')">
                     <span>ℹ️</span>
                     <span>About & Executive Leadership</span>
@@ -814,60 +802,6 @@ God in three Persons, blessed Trinity!</textarea>
                         <div class="step-number">4</div>
                         <h4 class="step-title">Live Broadcast & Tally</h4>
                         <p class="step-desc">Switch scenes in OBS or use the <strong>"🔴 CUT LIVE"</strong> buttons above. The phone screen pulses <strong>RED</strong> on air and <strong>GREEN</strong> on standby!</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Panel 2: OBS Browser Source Links (Direct 1-Click Copy) -->
-            <div class="tab-panel" id="panel-obs">
-                <div style="background: rgba(19, 11, 41, 0.7); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 12px; padding: 24px;">
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="color: var(--primary-gold); font-size: 18px; margin-bottom: 6px;">OBS Studio Browser Source URLs</h3>
-                        <p style="color: var(--text-muted); font-size: 13px;">Inside OBS Studio: Add Source (+) → <strong>Browser</strong> → Paste the corresponding URL below → Set Width: <strong>1920</strong>, Height: <strong>1080</strong>.</p>
-                    </div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
-                        <div style="background: #0d081c; padding: 14px; border-radius: 8px; border: 1px solid #2d1b54;">
-                            <div style="font-weight: 600; font-size: 13px; color: #f59e0b; margin-bottom: 6px;">Camera  • Pastor / Pulpit</div>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text" readonly id="obs-input-1" value="http://localhost:3000/obs.html?id=1" style="flex: 1; background: #160c2b; border: 1px solid #4a2882; color: #cbd5e1; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-family: monospace;">
-                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="copyObsUrl(1)">Copy</button>
-                            </div>
-                        </div>
-                        <div style="background: #0d081c; padding: 14px; border-radius: 8px; border: 1px solid #2d1b54;">
-                            <div style="font-weight: 600; font-size: 13px; color: #f59e0b; margin-bottom: 6px;">Camera 2 • Choir / Altar</div>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text" readonly id="obs-input-2" value="http://localhost:3000/obs.html?id=2" style="flex: 1; background: #160c2b; border: 1px solid #4a2882; color: #cbd5e1; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-family: monospace;">
-                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="copyObsUrl(2)">Copy</button>
-                            </div>
-                        </div>
-                        <div style="background: #0d081c; padding: 14px; border-radius: 8px; border: 1px solid #2d1b54;">
-                            <div style="font-weight: 600; font-size: 13px; color: #f59e0b; margin-bottom: 6px;">Camera 3 • Congregation / Wide</div>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text" readonly id="obs-input-3" value="http://localhost:3000/obs.html?id=3" style="flex: 1; background: #160c2b; border: 1px solid #4a2882; color: #cbd5e1; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-family: monospace;">
-                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="copyObsUrl(3)">Copy</button>
-                            </div>
-                        </div>
-                        <div style="background: #0d081c; padding: 14px; border-radius: 8px; border: 1px solid #2d1b54;">
-                            <div style="font-weight: 600; font-size: 13px; color: #f59e0b; margin-bottom: 6px;">Camera 4 • Mobile / Roaming 1</div>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text" readonly id="obs-input-4" value="http://localhost:3000/obs.html?id=4" style="flex: 1; background: #160c2b; border: 1px solid #4a2882; color: #cbd5e1; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-family: monospace;">
-                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="copyObsUrl(4)">Copy</button>
-                            </div>
-                        </div>
-                        <div style="background: #0d081c; padding: 14px; border-radius: 8px; border: 1px solid #2d1b54;">
-                            <div style="font-weight: 600; font-size: 13px; color: #f59e0b; margin-bottom: 6px;">Camera 5 • Mobile / Roaming 2</div>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text" readonly id="obs-input-5" value="http://localhost:3000/obs.html?id=5" style="flex: 1; background: #160c2b; border: 1px solid #4a2882; color: #cbd5e1; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-family: monospace;">
-                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="copyObsUrl(5)">Copy</button>
-                            </div>
-                        </div>
-                        <div style="background: #0d081c; padding: 14px; border-radius: 8px; border: 1px solid #2d1b54;">
-                            <div style="font-weight: 600; font-size: 13px; color: #f59e0b; margin-bottom: 6px;">Camera 6 • Guest / Overflow</div>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text" readonly id="obs-input-6" value="http://localhost:3000/obs.html?id=6" style="flex: 1; background: #160c2b; border: 1px solid #4a2882; color: #cbd5e1; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-family: monospace;">
-                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="copyObsUrl(6)">Copy</button>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1306,13 +1240,13 @@ God in three Persons, blessed Trinity!</textarea>
                     layout: currentGraphicLayout
                 };
             } else if (tab === 'hymn') {
-                const part = document.getElementById('sel-hymn-part').value;
-                const title = document.getElementById('input-hymn-title').value.trim();
+                const part = document.getElementById('sel-hymn-part') ? document.getElementById('sel-hymn-part').value : '';
+                const title = document.getElementById('input-hymn-title') ? document.getElementById('input-hymn-title').value.trim() : '';
                 return {
                     template: 'hymn',
-                    icon: '🎵',
-                    badgeTitle: title || 'HYMN',
-                    badgeTag: part,
+                    icon: '',
+                    badgeTitle: '', // Removed from display: only lyrics shown!
+                    badgeTag: '',   // Removed from display: only lyrics shown!
                     mainText: document.getElementById('input-hymn-text').value.trim(),
                     subText: '',
                     layout: currentGraphicLayout
@@ -1387,8 +1321,13 @@ God in three Persons, blessed Trinity!</textarea>
 
                 const headerRow = pBox.firstElementChild;
                 if (headerRow) {
-                    headerRow.style.justifyContent = isCentered ? 'center' : 'flex-start';
-                    headerRow.style.width = '100%';
+                    if (data.template === 'hymn') {
+                        headerRow.style.display = 'none'; // Only lyrics displayed!
+                    } else {
+                        headerRow.style.display = 'flex';
+                        headerRow.style.justifyContent = isCentered ? 'center' : 'flex-start';
+                        headerRow.style.width = '100%';
+                    }
                 }
             }
         }

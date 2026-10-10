@@ -349,17 +349,24 @@
 
             if (!card) return;
 
-            icon.innerText = payload.icon || '🎬';
-            title.innerText = payload.badgeTitle || 'BROADCAST';
-            tag.innerText = payload.badgeTag || '';
-            tag.style.display = payload.badgeTag ? 'inline-block' : 'none';
+            const badgeRow = document.getElementById('graphic-badge-row');
+            if (payload.template === 'hymn') {
+                // Completely hide title and stanza on screen: ONLY LYRICS ARE BROADCAST!
+                if (badgeRow) badgeRow.style.display = 'none';
+            } else {
+                if (badgeRow) badgeRow.style.display = 'flex';
+                icon.innerText = payload.icon || '🎬';
+                title.innerText = payload.badgeTitle || 'BROADCAST';
+                tag.innerText = payload.badgeTag || '';
+                tag.style.display = payload.badgeTag ? 'inline-block' : 'none';
+            }
 
             main.innerText = payload.mainText || '';
             main.style.display = payload.mainText ? 'block' : 'none';
             main.style.whiteSpace = 'pre-line';
 
             sub.innerText = payload.subText || '';
-            sub.style.display = payload.subText ? 'block' : 'none';
+            sub.style.display = (payload.template === 'hymn' || !payload.subText) ? 'none' : 'block';
             sub.style.whiteSpace = 'pre-line';
 
             // Distinct theme borders and font sizing per template type
