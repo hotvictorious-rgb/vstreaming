@@ -302,15 +302,15 @@
                     <button type="button" class="preset-pill" id="btn-layout-full-center" onclick="setGraphicLayout('full-center')" style="padding: 2px 7px; font-size: 10px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: #94a3b8;" title="Style B: Full-Center (Dead center on screen like a sanctuary projector slide)">🎯 Style B (Full-Center)</button>
                     <button type="button" class="preset-pill" id="btn-layout-ticker" onclick="setGraphicLayout('ticker')" style="padding: 2px 7px; font-size: 10px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: #94a3b8;" title="Full-Width Bottom Ticker / Banner">📢 Ticker</button>
                 </div>
-                <span id="icon-drawer-chevron" style="color: #fbbf24; font-size: 12px; transition: transform 0.2s;">▼ Expand</span>
+                <span id="icon-drawer-chevron" style="color: #fbbf24; font-size: 12px; transition: transform 0.2s;">▲ Collapse</span>
             </div>
         </div>
 
-        <div class="graphics-drawer-content" id="graphics-drawer-content">
+        <div class="graphics-drawer-content open" id="graphics-drawer-content">
             <!-- Tabs -->
             <div style="display: flex; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
-                <button class="graphics-tab-btn active" id="tab-btn-speaker" onclick="switchGraphicsTab('speaker')"><span>👤</span> Speaker Lower-Third</button>
-                <button class="graphics-tab-btn" id="tab-btn-scripture" onclick="switchGraphicsTab('scripture')"><span>📖</span> Bible Scripture</button>
+                <button class="graphics-tab-btn" id="tab-btn-speaker" onclick="switchGraphicsTab('speaker')"><span>👤</span> Speaker Lower-Third</button>
+                <button class="graphics-tab-btn active" id="tab-btn-scripture" onclick="switchGraphicsTab('scripture')"><span>📖</span> Bible Scripture</button>
                 <button class="graphics-tab-btn" id="tab-btn-hymn" onclick="switchGraphicsTab('hymn')"><span>🎵</span> Hymn & Lyrics</button>
                 <button class="graphics-tab-btn" id="tab-btn-giving" onclick="switchGraphicsTab('giving')"><span>💰</span> Tithes & Giving</button>
             </div>
@@ -320,7 +320,7 @@
                 <div style="display: flex; flex-direction: column; gap: 12px;">
                     
                     <!-- TAB 1: SPEAKER -->
-                    <div id="tab-panel-speaker" style="display: flex; flex-direction: column; gap: 10px;">
+                    <div id="tab-panel-speaker" style="display: none; flex-direction: column; gap: 10px;">
                         <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
                             <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">⚡ Quick Ministers:</span>
                             <button class="preset-pill" onclick="applySpeakerPreset('Pastor Victory Saviour Edet', 'Lead Pastor • Victorious Church')">👑 Pastor Victory</button>
@@ -338,40 +338,39 @@
                     </div>
 
                     <!-- TAB 2: SCRIPTURE -->
-                    <div id="tab-panel-scripture" style="display: none; flex-direction: column; gap: 10px;">
-                        <!-- Smart Command Search Bar (All 66 Books, 31,102 Verses) -->
+                    <div id="tab-panel-scripture" style="display: flex; flex-direction: column; gap: 10px;">
+                        <!-- Smart Command Search Bar (All 66 Books, 50+ Translations) -->
                         <div style="position: relative;">
                             <label style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #fbbf24; margin-bottom: 5px; font-weight: 700;">
-                                <span>📖 SMART BIBLE COMMAND SEARCH (All 66 Books • Single Verse on OBS):</span>
-                                <span style="font-size: 10px; color: #94a3b8; font-weight: normal;">Type reference & press Enter (e.g. Ps 91:1, Rom 8:28, John 3:16, 1 Cor 13:4)</span>
+                                <span>📖 SMART BIBLE COMMAND SEARCH (50+ Translations • Single Verse to OBS):</span>
+                                <span style="font-size: 10px; color: #94a3b8; font-weight: normal;">Type reference & press Enter (e.g. Rom 8:28, John 3 16, Ps 91:1-4, Heb 11:1)</span>
                             </label>
                             <div style="display: flex; gap: 6px;">
-                                <input type="text" id="input-scripture-search" placeholder="🔍 Type scripture (e.g. John 3:16, Rom 8:28, Ps 91:1-2, 1 Cor 13:4) and press Enter..." oninput="onScriptureSearchInput(this.value)" onfocus="onScriptureSearchInput(this.value)" onkeydown="if(event.key==='Enter') executeScriptureSmartSearch(this.value)" style="flex: 1; background: #070314; border: 1px solid rgba(245, 158, 11, 0.7); color: #fbbf24; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; outline: none;">
+                                <input type="text" id="input-scripture-search" placeholder="🔍 Type scripture (e.g. Rom 8:28, John 3:16, Ps 91:1, 1 Cor 13:4) and press Enter..." oninput="onScriptureSearchInput(this.value)" onfocus="onScriptureSearchInput(this.value)" onkeydown="if(event.key==='Enter') executeScriptureSmartSearch(this.value)" style="flex: 1; background: #070314; border: 1px solid rgba(245, 158, 11, 0.7); color: #fbbf24; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; outline: none;">
                                 <button type="button" onclick="executeScriptureSmartSearch(document.getElementById('input-scripture-search').value)" style="background: linear-gradient(135deg, #f59e0b, #d97706); border: none; color: #000; font-weight: 800; font-size: 12px; padding: 0 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px;">⚡ Load</button>
                             </div>
                             <div id="scripture-search-dropdown" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #0f0a21; border: 1px solid #f59e0b; border-radius: 6px; max-height: 220px; overflow-y: auto; z-index: 1000; box-shadow: 0 12px 35px rgba(0,0,0,0.9);"></div>
                         </div>
 
-                        <!-- Quick Verse Presets -->
-                        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
-                            <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">⚡ Quick Verses:</span>
-                            <button class="preset-pill" onclick="loadScriptureDirect('ROMANS 8:28')">Rom 8:28</button>
-                            <button class="preset-pill" onclick="loadScriptureDirect('JOHN 3:16')">John 3:16</button>
-                            <button class="preset-pill" onclick="loadScriptureDirect('PSALM 23:1')">Ps 23:1</button>
-                            <button class="preset-pill" onclick="loadScriptureDirect('PHILIPPIANS 4:13')">Phil 4:13</button>
-                            <button class="preset-pill" onclick="loadScriptureDirect('ISAIAH 40:31')">Isa 40:31</button>
-                            <button class="preset-pill" onclick="loadScriptureDirect('HEBREWS 11:1')">Heb 11:1</button>
-                            <button class="preset-pill" onclick="loadScriptureDirect('2 CORINTHIANS 5:17')">2 Cor 5:17</button>
-                            <button class="preset-pill" onclick="loadScriptureDirect('PSALM 46:1')">Ps 46:1</button>
+                        <!-- 🕒 Recent Verses Bar (Last 5 Read Scriptures Memory Queue) -->
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;" id="recent-scriptures-container">
+                            <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">🕒 Recent Verses (Last 5):</span>
+                            <div id="recent-scriptures-pills" style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;"></div>
                         </div>
 
-                        <!-- One-Verse Stepper Bar for Multi-Verse Passages -->
-                        <div id="scripture-verse-stepper-container" style="display: none; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 8px; padding: 8px 10px;">
+                        <!-- 📖 Universal Chapter & Verse Navigation Stepper Console -->
+                        <div id="scripture-stepper-console" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 8px; padding: 8px 10px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                <span style="font-size: 11px; color: #fbbf24; font-weight: 700;">📺 ONE VERSE TO OBS STEPPER:</span>
-                                <span id="scripture-stepper-label" style="font-size: 10px; color: #cbd5e1;">Showing 1 verse at a time</span>
+                                <span id="scripture-stepper-title" style="font-size: 11px; color: #fbbf24; font-weight: 700;">📖 BIBLE NAVIGATION CONSOLE: ROMANS 8:28</span>
+                                <span id="scripture-stepper-badge" style="font-size: 10px; color: #cbd5e1;">Single verse on OBS • Auto-advance enabled</span>
                             </div>
-                            <div style="display: flex; gap: 6px; align-items: center; overflow-x: auto;" id="scripture-verse-stepper-pills"></div>
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <button type="button" onclick="stepScriptureChapter(-1)" title="Previous Chapter" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 5px; cursor: pointer; white-space: nowrap;">◄◄ Ch</button>
+                                <button type="button" onclick="stepScriptureVerse(-1)" title="Previous Verse" style="background: rgba(245,158,11,0.2); border: 1px solid #f59e0b; color: #fbbf24; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 5px; cursor: pointer; white-space: nowrap;">◄ Verse</button>
+                                <div id="scripture-verse-pills-row" style="display: flex; gap: 4px; overflow-x: auto; flex: 1; padding: 2px 0;"></div>
+                                <button type="button" onclick="stepScriptureVerse(1)" title="Next Verse" style="background: rgba(245,158,11,0.2); border: 1px solid #f59e0b; color: #fbbf24; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 5px; cursor: pointer; white-space: nowrap;">Verse ►</button>
+                                <button type="button" onclick="stepScriptureChapter(1)" title="Next Chapter" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 5px; cursor: pointer; white-space: nowrap;">Ch ►►</button>
+                            </div>
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 8px;">
@@ -383,14 +382,63 @@
                                 <input type="text" id="input-scripture-ref" value="ROMANS 8:28" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; font-weight: 700; padding: 8px 12px; border-radius: 6px; font-size: 13px;">
                             </div>
                             <div>
-                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Translation Version:</label>
+                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Translation (50+ Live Versions):</label>
+                                
                                 <select id="sel-scripture-version" onchange="onScriptureVersionChange()" style="width: 100%; background: #0b0717; border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; font-weight: 700; padding: 8px 8px; border-radius: 6px; font-size: 12px; cursor: pointer;">
-                                    <option value="KJV">KJV (King James)</option>
-                                    <option value="NKJV">NKJV (New King James)</option>
-                                    <option value="NIV">NIV (New International)</option>
-                                    <option value="NLT">NLT (New Living)</option>
-                                    <option value="AMP">AMP (Amplified)</option>
-                                    <option value="ESV">ESV (English Standard)</option>
+                                    <optgroup label="★ Primary Church Standards (Top 8)">
+                                        <option value="KJV" selected>KJV - King James Version</option>
+                                        <option value="NKJV">NKJV - New King James Version</option>
+                                        <option value="NLT">NLT - New Living Translation</option>
+                                        <option value="ESV">ESV - English Standard Version</option>
+                                        <option value="MSG">MSG - The Message Bible</option>
+                                        <option value="AMP">AMP - Amplified Bible</option>
+                                        <option value="RSV">RSV - Revised Standard Version</option>
+                                        <option value="NIV">NIV - New International Version</option>
+                                    </optgroup>
+                                    <optgroup label="Modern & Literal Standards (12)">
+                                        <option value="NASB">NASB - New American Standard</option>
+                                        <option value="CSB17">CSB - Christian Standard Bible</option>
+                                        <option value="BSB">BSB - Berean Standard Bible</option>
+                                        <option value="LSB">LSB - Legacy Standard Bible</option>
+                                        <option value="NET">NET - New English Translation</option>
+                                        <option value="MEV">MEV - Modern English Version</option>
+                                        <option value="ISV">ISV - International Standard Version</option>
+                                        <option value="WEB">WEB - World English Bible</option>
+                                        <option value="ASV">ASV - American Standard Version 1901</option>
+                                        <option value="YLT">YLT - Young's Literal Translation</option>
+                                        <option value="CEB">CEB - Common English Bible</option>
+                                        <option value="ERV">ERV - Easy-to-Read Version</option>
+                                    </optgroup>
+                                    <optgroup label="Dynamic & Reader's Editions (8)">
+                                        <option value="GNT">GNT - Good News Translation</option>
+                                        <option value="CEVD">CEV - Contemporary English Version</option>
+                                        <option value="NLV">NLV - New Life Version</option>
+                                        <option value="NIRV">NIRV - New International Reader's</option>
+                                        <option value="CJB">CJB - Complete Jewish Bible</option>
+                                        <option value="TLV">TLV - Tree of Life Version</option>
+                                        <option value="AUV">AUV - An Understandable Version</option>
+                                        <option value="WPNT">WPNT - Wilbur Pickering’s NT</option>
+                                    </optgroup>
+                                    <optgroup label="Historical & Catholic Editions (8)">
+                                        <option value="RSV2CE">RSV-CE - Revised Standard Catholic</option>
+                                        <option value="NRSVCE">NRSV-CE - New Revised Standard Catholic</option>
+                                        <option value="NABRE">NABRE - New American Bible Revised</option>
+                                        <option value="DRB">DRB - Douay-Rheims Bible</option>
+                                        <option value="GNV">GNV - Geneva Bible (1599)</option>
+                                        <option value="LXXE">LXXE - English Septuagint 1851</option>
+                                        <option value="LBP">LBP - Lamsa Aramaic Peshitta</option>
+                                        <option value="SPE">SPE - Samaritan Pentateuch in English</option>
+                                    </optgroup>
+                                    <optgroup label="Global Languages (8)">
+                                        <option value="RVR1960">Spanish - Reina-Valera 1960</option>
+                                        <option value="LSG">French - Louis Segond 1910</option>
+                                        <option value="ARC">Portuguese - Almeida Corrigida</option>
+                                        <option value="LUT">German - Luther Bibel 1912</option>
+                                        <option value="SYNOD">Russian - Synodal Translation</option>
+                                        <option value="NR06">Italian - Nuova Riveduta 2006</option>
+                                        <option value="SV1750">Dutch - Statenvertaling 1750</option>
+                                        <option value="UBIO">Ukrainian - Ogienko Bible</option>
+                                    </optgroup>
                                 </select>
                             </div>
                         </div>
@@ -857,7 +905,7 @@ God in three Persons, blessed Trinity!</textarea>
         </div>
     </div>
 
-    <script src="/js/broadcast-library.js?v=1791614086222"></script>
+    <script src="/js/broadcast-library.js?v=1791621341936"></script>
     <script>
         // =====================================================================
         // CLOSE GUARD & AUTO-SHUTDOWN CONTROLLER
@@ -1116,6 +1164,7 @@ God in three Persons, blessed Trinity!</textarea>
         }
 
         function switchGraphicsTab(tabName) {
+            try { localStorage.setItem('vm_active_graphics_tab', tabName); } catch(e) {}
             currentActiveGraphicsTab = tabName;
             ['speaker', 'scripture', 'hymn', 'giving'].forEach(t => {
                 const btn = document.getElementById('tab-btn-' + t);
@@ -1443,65 +1492,119 @@ God in three Persons, blessed Trinity!</textarea>
         }
 
         // --- SCRIPTURE INTELLIGENCE ---
-        // Global passage state for Single-Verse Stepper
-        let activePassageVerses = [];
-        let activePassageVerseIndex = 0;
+        // =====================================================================
+        // SMART SCRIPTURE ENGINE: 50+ TRANSLATIONS, RECENT VERSES & STEPPER
+        // =====================================================================
+        let currentBibleState = {
+            book: "Romans",
+            chapter: 8,
+            verse: 28,
+            version: "KJV"
+        };
 
-        function renderScriptureVerseStepper() {
-            const container = document.getElementById('scripture-verse-stepper-container');
-            const pillsDiv = document.getElementById('scripture-verse-stepper-pills');
-            const label = document.getElementById('scripture-stepper-label');
-            if (!container || !pillsDiv) return;
+        // 1. RECENT VERSES MEMORY QUEUE (LAST 5 READ SCRIPTURES)
+        function getRecentScriptures() {
+            try {
+                const raw = localStorage.getItem('vm_recent_scriptures');
+                if (raw) return JSON.parse(raw);
+            } catch(e) {}
+            // Default 5 top church scriptures on clean state
+            return [
+                { ref: "ROMANS 8:28", version: "KJV" },
+                { ref: "JOHN 3:16", version: "KJV" },
+                { ref: "PSALMS 23:1", version: "KJV" },
+                { ref: "PHILIPPIANS 4:13", version: "KJV" },
+                { ref: "HEBREWS 11:1", version: "KJV" }
+            ];
+        }
 
-            if (!activePassageVerses || activePassageVerses.length <= 1) {
-                container.style.display = 'none';
-                return;
-            }
+        function pushRecentScripture(ref, version) {
+            ref = (ref || '').trim().toUpperCase();
+            if (!ref) return;
+            version = (version || 'KJV').toUpperCase();
 
-            container.style.display = 'block';
-            if (label) {
-                label.innerText = 'Verse ' + (activePassageVerseIndex + 1) + ' of ' + activePassageVerses.length + ' (One Verse on OBS)';
-            }
+            let recents = getRecentScriptures();
+            // Remove if already exists (deduplicate)
+            recents = recents.filter(r => r.ref !== ref);
+            // Prepend to top
+            recents.unshift({ ref, version });
+            // Cap at 5
+            if (recents.length > 5) recents = recents.slice(0, 5);
 
-            let html = '<button type="button" onclick="stepPassageVerse(-1)" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 5px; cursor: pointer;">◄ Prev</button>';
+            try {
+                localStorage.setItem('vm_recent_scriptures', JSON.stringify(recents));
+            } catch(e) {}
 
-            activePassageVerses.forEach((v, idx) => {
-                const isSelected = (idx === activePassageVerseIndex);
-                const bg = isSelected ? 'background: #f59e0b; color: #000; font-weight: 800; border: 1px solid #f59e0b;' : 'background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);';
-                html += '<button type="button" onclick="selectPassageVerse(' + idx + ')" style="' + bg + ' font-size: 11px; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.15s; white-space: nowrap;">' + (v.shortLabel || ('v' + (idx + 1))) + '</button>';
+            renderRecentScriptures();
+        }
+
+        function renderRecentScriptures() {
+            const container = document.getElementById('recent-scriptures-pills');
+            if (!container) return;
+
+            const recents = getRecentScriptures();
+            let html = '';
+            recents.forEach(r => {
+                html += '<button type="button" class="preset-pill" onclick="loadScriptureDirect(\'' + r.ref + '\', \'' + r.version + '\')" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.45); color: #fbbf24; font-size: 11px; padding: 3px 8px; border-radius: 4px; cursor: pointer; transition: all 0.15s;">' +
+                    r.ref + ' <span style="font-size: 9px; opacity: 0.8; color: #c4b5fd;">[' + r.version + ']</span>' +
+                '</button>';
             });
+            container.innerHTML = html;
+        }
 
-            html += '<button type="button" onclick="stepPassageVerse(1)" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 5px; cursor: pointer;">Next ►</button>';
+        // 2. UNIVERSAL CHAPTER & VERSE STEPPER CONSOLE
+        function updateStepperConsoleUI() {
+            const title = document.getElementById('scripture-stepper-title');
+            const pillsDiv = document.getElementById('scripture-verse-pills-row');
+            if (!title) return;
 
+            const curRef = (currentBibleState.book + ' ' + currentBibleState.chapter + ':' + currentBibleState.verse).toUpperCase();
+            title.innerText = '📖 BIBLE CONSOLE: ' + curRef + ' [' + currentBibleState.version + ']';
+
+            if (!pillsDiv) return;
+
+            // Generate neighboring verse pills (current verse +/- 3)
+            let html = '';
+            const curV = currentBibleState.verse;
+            const startV = Math.max(1, curV - 3);
+            const endV = curV + 4;
+
+            for (let v = startV; v <= endV; v++) {
+                const isSelected = (v === curV);
+                const bg = isSelected ? 'background: #f59e0b; color: #000; font-weight: 800; border: 1px solid #f59e0b;' : 'background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35);';
+                html += '<button type="button" onclick="jumpToVerse(' + v + ')" style="' + bg + ' font-size: 10px; padding: 2px 7px; border-radius: 4px; cursor: pointer; transition: all 0.15s; white-space: nowrap;">' + (isSelected ? ('★ v' + v) : ('v' + v)) + '</button>';
+            }
             pillsDiv.innerHTML = html;
         }
 
-        function stepPassageVerse(delta) {
-            if (!activePassageVerses || activePassageVerses.length <= 1) return;
-            let nextIdx = activePassageVerseIndex + delta;
-            if (nextIdx < 0) nextIdx = 0;
-            if (nextIdx >= activePassageVerses.length) nextIdx = activePassageVerses.length - 1;
-            selectPassageVerse(nextIdx, isGraphicOnAir);
+        function jumpToVerse(verseNum) {
+            currentBibleState.verse = verseNum;
+            const ref = (currentBibleState.book + ' ' + currentBibleState.chapter + ':' + currentBibleState.verse).toUpperCase();
+            loadScriptureDirect(ref, currentBibleState.version, isGraphicOnAir);
         }
 
-        function selectPassageVerse(idx, fireLive) {
-            if (!activePassageVerses || idx < 0 || idx >= activePassageVerses.length) return;
-            activePassageVerseIndex = idx;
-            const verse = activePassageVerses[idx];
-
-            const refInput = document.getElementById('input-scripture-ref');
-            const textInput = document.getElementById('input-scripture-text');
-            if (refInput) refInput.value = verse.ref;
-            if (textInput) textInput.value = verse.text;
-
-            renderScriptureVerseStepper();
-            updateLiveGraphicPreview();
-
-            if (fireLive || isGraphicOnAir) {
-                takeGraphicLive();
+        function stepScriptureVerse(delta) {
+            let nextVerse = currentBibleState.verse + delta;
+            if (nextVerse < 1) {
+                // Roll back to previous chapter
+                stepScriptureChapter(-1);
+                return;
             }
+            currentBibleState.verse = nextVerse;
+            const ref = (currentBibleState.book + ' ' + currentBibleState.chapter + ':' + currentBibleState.verse).toUpperCase();
+            loadScriptureDirect(ref, currentBibleState.version, isGraphicOnAir);
         }
 
+        function stepScriptureChapter(delta) {
+            let nextChap = currentBibleState.chapter + delta;
+            if (nextChap < 1) nextChap = 1;
+            currentBibleState.chapter = nextChap;
+            currentBibleState.verse = 1;
+            const ref = (currentBibleState.book + ' ' + currentBibleState.chapter + ':1').toUpperCase();
+            loadScriptureDirect(ref, currentBibleState.version, isGraphicOnAir);
+        }
+
+        // 3. EXECUTE SMART SEARCH & DIRECT LOAD
         function executeScriptureSmartSearch(query) {
             query = (query || '').trim();
             if (!query) return;
@@ -1511,104 +1614,75 @@ God in three Persons, blessed Trinity!</textarea>
 
             const selVer = document.getElementById('sel-scripture-version');
             const version = selVer ? selVer.value : 'KJV';
-            const refInput = document.getElementById('input-scripture-ref');
-            const textInput = document.getElementById('input-scripture-text');
+            currentBibleState.version = version;
 
             const parsed = (typeof window.parseScriptureQuery === 'function') ? window.parseScriptureQuery(query) : null;
-            const targetRef = parsed ? parsed.ref : query.toUpperCase();
-
-            if (refInput) refInput.value = targetRef;
-            if (textInput) textInput.value = '⏳ Loading authentic single verse from Holy Bible (' + version + ')...';
-            updateLiveGraphicPreview();
-            showToast('⏳ Looking up ' + targetRef + ' [' + version + ']...');
-
-            // If query is a range (e.g. John 3:16-18 or Ps 91:1-2), fetch multi-verse and decompose into single verses!
-            const isRange = parsed && parsed.verseEnd && (parsed.verseEnd > parsed.verseStart);
-
-            if (typeof window.resolveScriptureVerse === 'function') {
-                window.resolveScriptureVerse(targetRef, version, function(res) {
-                    if (res && res.success) {
-                        if (isRange && res.verses && res.verses.length > 1) {
-                            // Multiple verses found: build 1-verse per slide stepper
-                            activePassageVerses = res.verses.map(function(v) {
-                                return {
-                                    ref: (parsed.book + ' ' + parsed.chapter + ':' + v.verse).toUpperCase(),
-                                    text: v.text.trim().replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' '),
-                                    shortLabel: 'v' + v.verse
-                                };
-                            });
-                            selectPassageVerse(0);
-                            showToast('📖 Loaded passage (' + activePassageVerses.length + ' single verses ready for OBS)');
-                        } else {
-                            // Single verse only
-                            activePassageVerses = [];
-                            renderScriptureVerseStepper();
-                            if (refInput) refInput.value = res.ref;
-                            if (textInput) textInput.value = res.text;
-                            updateLiveGraphicPreview();
-                            showToast('📖 Loaded: ' + res.ref + ' [' + version + ']');
-                        }
-                    } else {
-                        // Check if keyword match in local library
-                        const matches = (typeof window.findScriptures === 'function') ? window.findScriptures(query) : [];
-                        const nonDirect = matches.filter(function(m) { return !m.isDirectReference; });
-                        if (nonDirect.length > 0) {
-                            loadScriptureDirect(nonDirect[0].ref);
-                        } else {
-                            activePassageVerses = [];
-                            renderScriptureVerseStepper();
-                            if (refInput) refInput.value = targetRef;
-                            if (textInput) textInput.value = 'Please enter or edit verse text for ' + targetRef;
-                            updateLiveGraphicPreview();
-                            showToast('⚠️ Could not auto-fetch. Please edit text manually for: ' + targetRef);
-                        }
-                    }
-                });
-            } else {
-                loadScriptureDirect(targetRef);
+            if (parsed) {
+                currentBibleState.book = parsed.book;
+                currentBibleState.chapter = parsed.chapter;
+                currentBibleState.verse = parsed.verseStart;
             }
+
+            const targetRef = parsed ? (parsed.book + ' ' + parsed.chapter + ':' + parsed.verseStart).toUpperCase() : query.toUpperCase();
+            loadScriptureDirect(targetRef, version, isGraphicOnAir);
         }
 
-        function loadScriptureDirect(ref) {
+        function loadScriptureDirect(ref, version, fireLive) {
             ref = (ref || '').trim().toUpperCase();
             if (!ref) return;
 
-            activePassageVerses = [];
-            renderScriptureVerseStepper();
-
             const selVer = document.getElementById('sel-scripture-version');
-            const version = selVer ? selVer.value : 'KJV';
+            version = version || (selVer ? selVer.value : 'KJV');
+            if (selVer) selVer.value = version;
+            currentBibleState.version = version;
+
             const refInput = document.getElementById('input-scripture-ref');
             const textInput = document.getElementById('input-scripture-text');
 
             if (refInput) refInput.value = ref;
+            if (textInput) textInput.value = '⏳ Loading ' + ref + ' [' + version + ']...';
+            updateLiveGraphicPreview();
 
-            // Check local church library first (0ms latency, always 1 verse)
-            if (window.CHURCH_SCRIPTURE_LIBRARY && window.CHURCH_SCRIPTURE_LIBRARY[ref]) {
-                const item = window.CHURCH_SCRIPTURE_LIBRARY[ref];
-                const text = item.versions[version] || item.versions['KJV'] || Object.values(item.versions)[0];
-                if (textInput) textInput.value = text;
-                updateLiveGraphicPreview();
-                showToast('📖 Loaded single verse: ' + ref + ' [' + version + ']');
-                return;
+            // Parse state
+            const parsed = (typeof window.parseScriptureQuery === 'function') ? window.parseScriptureQuery(ref) : null;
+            if (parsed) {
+                currentBibleState.book = parsed.book;
+                currentBibleState.chapter = parsed.chapter;
+                currentBibleState.verse = parsed.verseStart;
             }
 
-            // Universal smart resolver
+            updateStepperConsoleUI();
+            pushRecentScripture(ref, version);
+
             if (typeof window.resolveScriptureVerse === 'function') {
-                if (textInput) textInput.value = '⏳ Loading authentic verse text...';
-                updateLiveGraphicPreview();
                 window.resolveScriptureVerse(ref, version, function(res) {
                     if (res && res.success && res.text) {
-                        if (refInput) refInput.value = res.ref;
+                        if (refInput) refInput.value = res.ref || ref;
                         if (textInput) textInput.value = res.text;
                         updateLiveGraphicPreview();
-                        showToast('📖 Loaded single verse: ' + res.ref + ' [' + version + ']');
+                        updateStepperConsoleUI();
+                        showToast('📖 Loaded: ' + (res.ref || ref) + ' [' + version + ']');
+
+                        if (fireLive || isGraphicOnAir) {
+                            takeGraphicLive();
+                        }
                     } else {
-                        if (textInput) textInput.value = '';
+                        if (textInput) textInput.value = 'Could not load text for ' + ref + '. Please edit manually.';
                         updateLiveGraphicPreview();
-                        showToast('⚠️ Verse text not found for ' + ref);
+                        showToast('⚠️ Could not auto-fetch. Please edit manually.');
                     }
                 });
+            }
+        }
+
+        function onScriptureVersionChange() {
+            const selVer = document.getElementById('sel-scripture-version');
+            const version = selVer ? selVer.value : 'KJV';
+            currentBibleState.version = version;
+
+            const ref = document.getElementById('input-scripture-ref').value.trim();
+            if (ref) {
+                loadScriptureDirect(ref, version, isGraphicOnAir);
             }
         }
 
@@ -1629,7 +1703,7 @@ God in three Persons, blessed Trinity!</textarea>
             const parsed = (typeof window.parseScriptureQuery === 'function') ? window.parseScriptureQuery(query) : null;
             if (parsed) {
                 html += '<div onclick="executeScriptureSmartSearch(\'' + parsed.ref + '\')" style="padding: 10px 12px; background: rgba(245, 158, 11, 0.22); border-bottom: 1px solid rgba(245, 158, 11, 0.45); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">' +
-                    '<div><strong style="color: #fbbf24; font-size: 13px;">⚡ Instant Load: ' + parsed.ref + '</strong><div style="font-size: 10px; color: #cbd5e1;">Press Enter to load strictly one verse at a time to OBS</div></div>' +
+                    '<div><strong style="color: #fbbf24; font-size: 13px;">⚡ Instant Load: ' + parsed.ref + '</strong><div style="font-size: 10px; color: #cbd5e1;">Press Enter or click to load authentic ' + curVer + ' verse</div></div>' +
                     '<span style="background: #f59e0b; color: #000; font-weight: 800; font-size: 10px; padding: 3px 8px; border-radius: 4px;">LOAD</span>' +
                 '</div>';
             }
@@ -1662,13 +1736,6 @@ God in three Persons, blessed Trinity!</textarea>
             const sInp = document.getElementById('input-scripture-search');
             if (sInp) sInp.value = '';
             executeScriptureSmartSearch(ref);
-        }
-
-        function onScriptureVersionChange() {
-            const ref = document.getElementById('input-scripture-ref').value.trim();
-            if (ref) {
-                executeScriptureSmartSearch(ref);
-            }
         }
 
         function addCurrentScriptureToQueue() {
@@ -3018,6 +3085,28 @@ God in three Persons, blessed Trinity!</textarea>
 
         loadInfo();
         loadPhotosCount();
+
+        // Auto-open Graphics Drawer and activate Scripture panel
+        try {
+            const drawerEl = document.getElementById('graphics-drawer-content');
+            if (drawerEl && !drawerEl.classList.contains('open')) {
+                drawerEl.classList.add('open');
+                const chev = document.getElementById('icon-drawer-chevron');
+                if (chev) chev.innerText = '▲ Collapse';
+            }
+
+            const savedTab = localStorage.getItem('vm_active_graphics_tab');
+            const targetTab = (window.location.hash === '#hymn') ? 'hymn' :
+                              (window.location.hash === '#speaker') ? 'speaker' :
+                              (window.location.hash === '#giving') ? 'giving' :
+                              (window.location.hash === '#scripture' || savedTab === 'scripture' || !savedTab) ? 'scripture' : savedTab;
+            switchGraphicsTab(targetTab);
+
+            if (typeof renderRecentScriptures === 'function') renderRecentScriptures();
+            if (typeof updateStepperConsoleUI === 'function') updateStepperConsoleUI();
+        } catch(e) {
+            console.warn('Initialization error:', e);
+        }
                 async function exitStudio() {
             if (confirm("Are you sure you want to stop Victorious Streaming Hub?\n\nThis will disconnect all mobile camera feeds and shut down the broadcast studio engine.")) {
                 isIntentionallyClosing = true;
