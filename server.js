@@ -1,3 +1,11 @@
+// Server Resilience Guards (Never let an external socket drop kill the church broadcast)
+process.on('uncaughtException', (err) => {
+    console.error('[Server Guard] Caught Uncaught Exception:', err.message);
+});
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[Server Guard] Caught Unhandled Rejection:', reason);
+});
+
 ﻿const fs = require('fs');
 const path = require('path');
 const http = require('http');
@@ -916,6 +924,15 @@ try {
                 console.log('[OBS WebSocket] Connection closed, will retry in 5s...');
                 broadcastToDirectors({ type: 'obs_status', connected: false });
                 setTimeout(connectOBS, 5000);
+            });
+
+            obsClient.on('ConnectionError', (err) => {
+                isObsConnected = false;
+                console.warn('[OBS WebSocket] Connection error:', err.message);
+            });
+
+            obsClient.on('error', (err) => {
+                console.warn('[OBS WebSocket] Error event:', err.message);
             });
         } catch (e) {
             // OBS not running yet, retry in background
