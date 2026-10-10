@@ -1425,7 +1425,8 @@ God in three Persons, blessed Trinity!</textarea>
             }
 
             // IMPENETRABLE AIR-SAFETY GUARD: NEVER PROJECT ERROR MESSAGES TO OBS / STREAM!
-            if (/(could not load|failed to|error|please edit manually|out of bounds|undefined|null)/i.test(payload.mainText)) {
+            const combinedText = `${payload.mainText || ''} ${payload.subText || ''} ${payload.badgeTitle || ''} ${payload.badgeTag || ''}`;
+            if (/(could not load|failed to|error|please edit manually|out of bounds|undefined|null)/i.test(combinedText)) {
                 showToast('🛑 AIR-SAFETY GUARD: Blocked projection of error text! Your live stream was kept safe.');
                 console.warn('[Air Guard] Blocked projection containing error text:', payload.mainText);
                 return;

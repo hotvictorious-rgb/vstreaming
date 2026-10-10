@@ -114,15 +114,36 @@ function getActiveFlierUrl() {
     return '/assets/default_flier.svg';
 }
 
-// Global Camera State
+// Internal Camera Sockets Map (Decoupled from state object to guarantee circular-free JSON)
+const cameraSockets = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
+
+// Global Camera State (Pure JSON Telemetry DTO)
 const cameras = {
-    1: { id: 1, name: 'Pastor / Pulpit', connected: false, tally: 'OFF_AIR', battery: null, charging: null, ws: null, lastSeen: null },
-    2: { id: 2, name: 'Choir / Altar', connected: false, tally: 'OFF_AIR', battery: null, charging: null, ws: null, lastSeen: null },
-    3: { id: 3, name: 'Congregation / Wide', connected: false, tally: 'OFF_AIR', battery: null, charging: null, ws: null, lastSeen: null },
-    4: { id: 4, name: 'Mobile / Roaming 1', connected: false, tally: 'OFF_AIR', battery: null, charging: null, ws: null, lastSeen: null },
-    5: { id: 5, name: 'Mobile / Roaming 2', connected: false, tally: 'OFF_AIR', battery: null, charging: null, ws: null, lastSeen: null },
-    6: { id: 6, name: 'Guest / Overflow', connected: false, tally: 'OFF_AIR', battery: null, charging: null, ws: null, lastSeen: null }
+    1: { id: 1, name: 'Pastor / Pulpit', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null },
+    2: { id: 2, name: 'Choir / Altar', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null },
+    3: { id: 3, name: 'Congregation / Wide', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null },
+    4: { id: 4, name: 'Mobile / Roaming 1', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null },
+    5: { id: 5, name: 'Mobile / Roaming 2', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null },
+    6: { id: 6, name: 'Guest / Overflow', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null }
 };
+
+// Safe Projection: Guarantees 100% clean, non-circular JSON payload for Director HUD & APIs
+function getSanitizedCameras() {
+    const clean = {};
+    for (const [id, cam] of Object.entries(cameras)) {
+        clean[id] = {
+            id: cam.id,
+            name: cam.name,
+            connected: !!cam.connected,
+            suspended: !!cam.suspended,
+            tally: cam.tally || 'OFF_AIR',
+            battery: cam.battery,
+            charging: cam.charging,
+            lastSeen: cam.lastSeen
+        };
+    }
+    return clean;
+}
 
 // API: Server Info & Status (Dynamic IP detection for any Wi-Fi)
 app.get('/api/info', async (req, res) => {
@@ -141,7 +162,7 @@ app.get('/api/info', async (req, res) => {
         localIp: currentIP,
         httpPort: HTTP_PORT,
         httpsPort: HTTPS_PORT,
-        cameras,
+        cameras: getSanitizedCameras(),
         urls,
         programUrl: `http://localhost:${HTTP_PORT}/obs.html?id=program`,
         flierUrl: getActiveFlierUrl(),
@@ -453,8 +474,8 @@ function setupWebSocket(wss) {
                         const isLiveProgramActive = (currentProgramCamId && cameras[currentProgramCamId] && cameras[currentProgramCamId].connected && cameras[currentProgramCamId].tally === 'PROGRAM');
                         console.log(`[Master Program OBS Registered] (ID: ${data.receiverId}), current live is Cam ${isLiveProgramActive ? currentProgramCamId : 'NONE (Flier Active)'}`);
                         ws.send(JSON.stringify({ type: 'program_cut', camId: isLiveProgramActive ? currentProgramCamId : null }));
-                        if (isLiveProgramActive && cameras[currentProgramCamId].ws && cameras[currentProgramCamId].ws.readyState === WebSocket.OPEN) {
-                            cameras[currentProgramCamId].ws.send(JSON.stringify({
+                        if (isLiveProgramActive && cameraSockets[currentProgramCamId] && cameraSockets[currentProgramCamId].readyState === WebSocket.OPEN) {
+                            cameraSockets[currentProgramCamId].send(JSON.stringify({
                                 type: 'receiver_ready',
                                 camId: currentProgramCamId,
                                 receiverId: data.receiverId
@@ -465,7 +486,7 @@ function setupWebSocket(wss) {
 
                     if (peerRole === 'broadcaster' && cameras[peerCamId]) {
                         // Check if another phone is already connected to this camera channel
-                        if (cameras[peerCamId].connected && cameras[peerCamId].ws && cameras[peerCamId].ws !== ws && cameras[peerCamId].ws.readyState === WebSocket.OPEN) {
+                        if (cameras[peerCamId].connected && cameraSockets[peerCamId] && cameraSockets[peerCamId] !== ws && cameraSockets[peerCamId].readyState === WebSocket.OPEN) {
                             console.warn(`[Channel Conflict] A second phone tried to connect to Camera ${peerCamId} which is already active!`);
                             ws.send(JSON.stringify({
                                 type: 'channel_busy',
@@ -478,7 +499,7 @@ function setupWebSocket(wss) {
 
                         cameras[peerCamId].connected = true;
                         cameras[peerCamId].suspended = false;
-                        cameras[peerCamId].ws = ws;
+                        cameraSockets[peerCamId] = ws;
                         cameras[peerCamId].lastSeen = Date.now();
                         // DIRECTOR GATEKEEPER RULE: All newly connected/reconnecting phones enter STANDBY
                         cameras[peerCamId].tally = 'STANDBY';
@@ -498,14 +519,22 @@ function setupWebSocket(wss) {
                         console.log(`[OBS Receiver Registered] For Camera ${peerCamId} (ID: ${data.receiverId}), isLive=${isCamLive}`);
 
                         // Only prompt broadcaster if camera is actually cut to PROGRAM!
-                        if (isCamLive && cameras[peerCamId].ws && cameras[peerCamId].ws.readyState === WebSocket.OPEN) {
-                            cameras[peerCamId].ws.send(JSON.stringify({
+                        if (isCamLive && cameraSockets[peerCamId] && cameraSockets[peerCamId].readyState === WebSocket.OPEN) {
+                            cameraSockets[peerCamId].send(JSON.stringify({
                                 type: 'receiver_ready',
                                 camId: peerCamId,
                                 receiverId: data.receiverId
                             }));
                         }
                     }
+                    return;
+                }
+
+                // Emergency Panic Cut (Hard Cut to Sunday Flier over WebSocket)
+                if (data.type === 'emergency_cut') {
+                    isEmergencyCut = typeof data.active === 'boolean' ? data.active : (typeof data.enabled === 'boolean' ? data.enabled : !isEmergencyCut);
+                    console.log(`[Emergency Slate] WebSocket toggle: Cut state is ${isEmergencyCut ? 'ACTIVE' : 'RESTORED'}`);
+                    broadcastToAll({ type: 'emergency_cut', active: isEmergencyCut, url: getActiveFlierUrl() });
                     return;
                 }
 
@@ -537,7 +566,7 @@ function setupWebSocket(wss) {
                     if (cameras[targetId]) {
                         cameras[targetId].connected = true;
                         cameras[targetId].suspended = false;
-                        cameras[targetId].ws = ws;
+                        cameraSockets[targetId] = ws;
                         cameras[targetId].lastSeen = Date.now();
                         // Waking camera stays in STANDBY until Director explicitly cuts live!
                         cameras[targetId].tally = 'STANDBY';
@@ -703,10 +732,10 @@ function setupWebSocket(wss) {
 
         ws.on('close', () => {
             if (peerRole === 'broadcaster' && peerCamId && cameras[peerCamId]) {
-                if (cameras[peerCamId].ws === ws) {
+                if (cameraSockets[peerCamId] === ws) {
                     cameras[peerCamId].connected = false;
                     cameras[peerCamId].suspended = false;
-                    cameras[peerCamId].ws = null;
+                    cameraSockets[peerCamId] = null;
                     if (currentProgramCamId === peerCamId || cameras[peerCamId].tally === 'PROGRAM') {
                         console.log(`[Program Authority Stripped] Camera ${peerCamId} disconnected -> Resetting Program to Flier`);
                         currentProgramCamId = null;
@@ -764,8 +793,8 @@ function broadcastToProgramReceivers(targetCamId) {
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN && client.isProgramReceiver) {
                 client.send(msg);
-                if (cameras[targetCamId] && cameras[targetCamId].connected && cameras[targetCamId].ws && cameras[targetCamId].ws.readyState === WebSocket.OPEN) {
-                    cameras[targetCamId].ws.send(JSON.stringify({
+                if (cameras[targetCamId] && cameras[targetCamId].connected && cameraSockets[targetCamId] && cameraSockets[targetCamId].readyState === WebSocket.OPEN) {
+                    cameraSockets[targetCamId].send(JSON.stringify({
                         type: 'receiver_ready',
                         camId: targetCamId,
                         receiverId: client.receiverId
@@ -808,14 +837,19 @@ function broadcastTally(camId, state) {
 
 // Broadcast updates to Director dashboards
 function broadcastToDirectors(payload) {
-    const msg = JSON.stringify(payload);
-    [wssHttp, wssHttps].forEach(wss => {
-        wss.clients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN && client.role === 'director') {
-                client.send(msg);
-            }
+    try {
+        const cleanPayload = payload.cameras ? { ...payload, cameras: getSanitizedCameras() } : payload;
+        const msg = JSON.stringify(cleanPayload);
+        [wssHttp, wssHttps].forEach(wss => {
+            wss.clients.forEach(client => {
+                if (client.readyState === WebSocket.OPEN && client.role === 'director') {
+                    client.send(msg);
+                }
+            });
         });
-    });
+    } catch (err) {
+        console.error('[broadcastToDirectors Error]', err.message);
+    }
 }
 
 // Broadcast to all connected clients (Phones, OBS, and Directors)

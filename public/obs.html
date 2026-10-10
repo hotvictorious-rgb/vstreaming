@@ -365,9 +365,10 @@
             // =================================================================
             // IMPENETRABLE AIR-SAFETY SHIELD: NEVER PROJECT ERROR MESSAGES!
             // =================================================================
-            if (payload && payload.mainText) {
-                if (/(could not load|failed to|error|please edit manually|out of bounds|undefined|null)/i.test(payload.mainText)) {
-                    console.warn('[OBS Air Safety] Blocked projection of error text:', payload.mainText);
+            if (payload) {
+                const combined = `${payload.mainText || ''} ${payload.subText || ''} ${payload.badgeTitle || ''} ${payload.badgeTag || ''}`;
+                if (/(could not load|failed to|error|please edit manually|out of bounds|undefined|null)/i.test(combined)) {
+                    console.warn('[OBS Air Safety] Blocked projection containing error text:', combined);
                     hideGraphicOverlay();
                     return;
                 }
@@ -536,8 +537,8 @@
         }
 
                 const urlParams = new URLSearchParams(window.location.search);
-        const idParam = urlParams.get('id') || '1';
-        const isProgramMode = (idParam === 'program' || idParam === 'live');
+        const idParam = urlParams.get('id') || urlParams.get('mode') || urlParams.get('cam') || '1';
+        const isProgramMode = (idParam === 'program' || idParam === 'live' || urlParams.get('mode') === 'program' || urlParams.get('mode') === 'live');
         let camId = isProgramMode ? 'program' : parseInt(idParam, 10);
         let currentProgramCamId = null; // Master Program starts safely on Church Flier
         let activeTallyState = 'OFF_AIR'; // Strict Broadcast Gate: Only 'PROGRAM' is permitted on air
