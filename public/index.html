@@ -1439,19 +1439,91 @@ God in three Persons, blessed Trinity!</textarea>
         }
 
         // --- SCRIPTURE INTELLIGENCE ---
-        function loadScriptureDirect(ref) {
-            if (!window.CHURCH_SCRIPTURE_LIBRARY) return;
-            const item = window.CHURCH_SCRIPTURE_LIBRARY[ref];
-            if (!item) return;
+        function executeScriptureSmartSearch(query) {
+            query = (query || '').trim();
+            if (!query) return;
+
+            const drop = document.getElementById('scripture-search-dropdown');
+            if (drop) drop.style.display = 'none';
 
             const selVer = document.getElementById('sel-scripture-version');
             const version = selVer ? selVer.value : 'KJV';
-            const text = item.versions[version] || item.versions['KJV'] || '';
+            const refInput = document.getElementById('input-scripture-ref');
+            const textInput = document.getElementById('input-scripture-text');
 
-            document.getElementById('input-scripture-ref').value = item.ref;
-            document.getElementById('input-scripture-text').value = text;
+            // Parse canonical reference if query matches reference pattern
+            const parsed = (typeof window.parseScriptureQuery === 'function') ? window.parseScriptureQuery(query) : null;
+            const targetRef = parsed ? parsed.ref : query.toUpperCase();
+
+            if (refInput) refInput.value = targetRef;
+            if (textInput) textInput.value = '⏳ Loading authentic verse text from Holy Bible (' + version + ')...';
             updateLiveGraphicPreview();
-            showToast('📖 Loaded: ' + item.ref + ' [' + version + ']');
+            showToast('⏳ Looking up ' + targetRef + ' [' + version + ']...');
+
+            if (typeof window.resolveScriptureVerse === 'function') {
+                window.resolveScriptureVerse(targetRef, version, function(res) {
+                    if (res && res.success && res.text) {
+                        if (refInput) refInput.value = res.ref;
+                        if (textInput) textInput.value = res.text;
+                        updateLiveGraphicPreview();
+                        showToast('📖 Loaded: ' + res.ref + ' [' + version + ']');
+                    } else {
+                        // Check if keyword match in local library
+                        const matches = (typeof window.findScriptures === 'function') ? window.findScriptures(query) : [];
+                        const nonDirect = matches.filter(function(m) { return !m.isDirectReference; });
+                        if (nonDirect.length > 0) {
+                            loadScriptureDirect(nonDirect[0].ref);
+                        } else {
+                            if (refInput) refInput.value = targetRef;
+                            if (textInput) textInput.value = 'Please enter or edit scripture text for ' + targetRef;
+                            updateLiveGraphicPreview();
+                            showToast('⚠️ Could not auto-fetch. Please edit text manually for: ' + targetRef);
+                        }
+                    }
+                });
+            } else {
+                loadScriptureDirect(targetRef);
+            }
+        }
+
+        function loadScriptureDirect(ref) {
+            ref = (ref || '').trim().toUpperCase();
+            if (!ref) return;
+
+            const selVer = document.getElementById('sel-scripture-version');
+            const version = selVer ? selVer.value : 'KJV';
+            const refInput = document.getElementById('input-scripture-ref');
+            const textInput = document.getElementById('input-scripture-text');
+
+            if (refInput) refInput.value = ref;
+
+            // Check local church library first (0ms latency)
+            if (window.CHURCH_SCRIPTURE_LIBRARY && window.CHURCH_SCRIPTURE_LIBRARY[ref]) {
+                const item = window.CHURCH_SCRIPTURE_LIBRARY[ref];
+                const text = item.versions[version] || item.versions['KJV'] || Object.values(item.versions)[0];
+                if (textInput) textInput.value = text;
+                updateLiveGraphicPreview();
+                showToast('📖 Loaded: ' + ref + ' [' + version + ']');
+                return;
+            }
+
+            // Universal smart resolver
+            if (typeof window.resolveScriptureVerse === 'function') {
+                if (textInput) textInput.value = '⏳ Loading authentic verse text...';
+                updateLiveGraphicPreview();
+                window.resolveScriptureVerse(ref, version, function(res) {
+                    if (res && res.success && res.text) {
+                        if (refInput) refInput.value = res.ref;
+                        if (textInput) textInput.value = res.text;
+                        updateLiveGraphicPreview();
+                        showToast('📖 Loaded: ' + res.ref + ' [' + version + ']');
+                    } else {
+                        if (textInput) textInput.value = '';
+                        updateLiveGraphicPreview();
+                        showToast('⚠️ Verse text not found for ' + ref);
+                    }
+                });
+            }
         }
 
         function onScriptureSearchInput(query) {
@@ -1463,24 +1535,35 @@ God in three Persons, blessed Trinity!</textarea>
             }
 
             const results = (typeof window.findScriptures === 'function') ? window.findScriptures(query) : [];
-            if (results.length === 0) {
-                drop.innerHTML = '<div style="padding: 10px; font-size: 11px; color: #94a3b8; text-align: center;">No matching scriptures found. You can type any custom verse below!</div>';
-                drop.style.display = 'block';
-                return;
-            }
-
             const selVer = document.getElementById('sel-scripture-version');
             const curVer = selVer ? selVer.value : 'KJV';
 
             let html = '';
-            results.slice(0, 8).forEach(s => {
-                const snippet = (s.versions[curVer] || s.versions['KJV'] || '').substring(0, 75) + '...';
+
+            // Direct instant action banner if query parses as valid Scripture reference
+            const parsed = (typeof window.parseScriptureQuery === 'function') ? window.parseScriptureQuery(query) : null;
+            if (parsed) {
+                html += '<div onclick="executeScriptureSmartSearch(\'' + parsed.ref + '\')" style="padding: 10px 12px; background: rgba(245, 158, 11, 0.22); border-bottom: 1px solid rgba(245, 158, 11, 0.45); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">' +
+                    '<div><strong style="color: #fbbf24; font-size: 13px;">⚡ Instant Load: ' + parsed.ref + '</strong><div style="font-size: 10px; color: #cbd5e1;">Press Enter or click to load authentic ' + curVer + ' text</div></div>' +
+                    '<span style="background: #f59e0b; color: #000; font-weight: 800; font-size: 10px; padding: 3px 8px; border-radius: 4px;">LOAD</span>' +
+                '</div>';
+            }
+
+            if (results.length === 0 && !parsed) {
+                drop.innerHTML = '<div style="padding: 12px; font-size: 11px; color: #94a3b8; text-align: center;">Press Enter to search & load any reference (e.g. <em>' + query + '</em>)...</div>';
+                drop.style.display = 'block';
+                return;
+            }
+
+            results.slice(0, 8).forEach(function(s) {
+                if (s.isDirectReference) return;
+                const snippet = s.versions ? ((s.versions[curVer] || s.versions['KJV'] || Object.values(s.versions)[0] || '').substring(0, 75) + '...') : '';
                 html += '<div onclick="selectScriptureResult(\'' + s.ref + '\')" style="padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background=\'rgba(245,158,11,0.15)\'" onmouseout="this.style.background=\'transparent\'">' +
                     '<div style="display: flex; justify-content: space-between; align-items: center;">' +
                     '<strong style="color: #fbbf24; font-size: 12px;">' + s.ref + '</strong>' +
-                    '<span style="font-size: 10px; color: #c4b5fd; background: rgba(124,58,237,0.3); padding: 1px 6px; border-radius: 4px;">' + s.category + '</span>' +
+                    '<span style="font-size: 10px; color: #c4b5fd; background: rgba(124,58,237,0.3); padding: 1px 6px; border-radius: 4px;">' + (s.category || 'Scripture') + '</span>' +
                     '</div>' +
-                    '<div style="font-size: 11px; color: #cbd5e1; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + snippet + '</div>' +
+                    (snippet ? '<div style="font-size: 11px; color: #cbd5e1; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + snippet + '</div>' : '') +
                     '</div>';
             });
 
@@ -1493,26 +1576,16 @@ God in three Persons, blessed Trinity!</textarea>
             if (drop) drop.style.display = 'none';
             const sInp = document.getElementById('input-scripture-search');
             if (sInp) sInp.value = '';
-            loadScriptureDirect(ref);
+            executeScriptureSmartSearch(ref);
         }
 
         function onScriptureVersionChange() {
             const ref = document.getElementById('input-scripture-ref').value.trim();
-            const selVer = document.getElementById('sel-scripture-version');
-            const version = selVer ? selVer.value : 'KJV';
-
-            if (window.CHURCH_SCRIPTURE_LIBRARY && window.CHURCH_SCRIPTURE_LIBRARY[ref]) {
-                const item = window.CHURCH_SCRIPTURE_LIBRARY[ref];
-                const text = item.versions[version] || item.versions['KJV'];
-                if (text) {
-                    document.getElementById('input-scripture-text').value = text;
-                    showToast('Switched to ' + version + ' translation');
-                }
+            if (ref) {
+                loadScriptureDirect(ref);
             }
-            updateLiveGraphicPreview();
         }
 
-        // --- SERMON PLAYLIST / QUEUE ---
         function addCurrentScriptureToQueue() {
             const ref = document.getElementById('input-scripture-ref').value.trim();
             const text = document.getElementById('input-scripture-text').value.trim();
@@ -1890,89 +1963,7 @@ God in three Persons, blessed Trinity!</textarea>
 
 
         
-        // =====================================================================
-        // UNIVERSAL 66-BOOK BIBLE NAVIGATOR CONTROLLER
-        // =====================================================================
-        function initBibleNavigator() {
-            const selBook = document.getElementById('sel-bible-book');
-            if (!selBook || !window.BIBLE_BOOKS_CATALOG) return;
-
-            let html = '<optgroup label="Old Testament (39 Books)">';
-            window.BIBLE_BOOKS_CATALOG.filter(b => b.testament === 'OT').forEach(b => {
-                html += '<option value="' + b.name + '">' + b.name + ' (' + b.chapters + ' ch)</option>';
-            });
-            html += '</optgroup><optgroup label="New Testament (27 Books)">';
-            window.BIBLE_BOOKS_CATALOG.filter(b => b.testament === 'NT').forEach(b => {
-                html += '<option value="' + b.name + '">' + b.name + ' (' + b.chapters + ' ch)</option>';
-            });
-            html += '</optgroup>';
-            selBook.innerHTML = html;
-
-            selBook.value = 'Romans';
-            onBibleBookChange();
-        }
-
-        function onBibleBookChange() {
-            const selBook = document.getElementById('sel-bible-book');
-            const selChap = document.getElementById('sel-bible-chapter');
-            if (!selBook || !selChap || !window.BIBLE_BOOKS_CATALOG) return;
-
-            const book = window.BIBLE_BOOKS_CATALOG.find(b => b.name === selBook.value);
-            if (!book) return;
-
-            let html = '';
-            for (let i = 1; i <= book.chapters; i++) {
-                html += '<option value="' + i + '">Ch ' + i + '</option>';
-            }
-            selChap.innerHTML = html;
-
-            if (book.name === 'Romans') selChap.value = '8';
-            else selChap.value = '1';
-
-            onBibleChapterChange();
-        }
-
-        function onBibleChapterChange() {
-            const selChap = document.getElementById('sel-bible-chapter');
-            const selVerse = document.getElementById('sel-bible-verse');
-            if (!selChap || !selVerse) return;
-
-            let html = '';
-            // Standard verse count bounds (1 to 40)
-            for (let i = 1; i <= 40; i++) {
-                html += '<option value="' + i + '">v ' + i + '</option>';
-            }
-            selVerse.innerHTML = html;
-
-            const selBook = document.getElementById('sel-bible-book');
-            if (selBook && selBook.value === 'Romans' && selChap.value === '8') {
-                selVerse.value = '28';
-            } else {
-                selVerse.value = '1';
-            }
-
-            onBibleVerseChange();
-        }
-
-        function onBibleVerseChange() {
-            const selBook = document.getElementById('sel-bible-book');
-            const selChap = document.getElementById('sel-bible-chapter');
-            const selVerse = document.getElementById('sel-bible-verse');
-            if (!selBook || !selChap || !selVerse) return;
-
-            const ref = (selBook.value + ' ' + selChap.value + ':' + selVerse.value).toUpperCase();
-            document.getElementById('input-scripture-ref').value = ref;
-
-            // If in database, load exact translated verse text
-            if (window.CHURCH_SCRIPTURE_LIBRARY && window.CHURCH_SCRIPTURE_LIBRARY[ref]) {
-                const item = window.CHURCH_SCRIPTURE_LIBRARY[ref];
-                const selVer = document.getElementById('sel-scripture-version');
-                const curVer = selVer ? selVer.value : 'KJV';
-                document.getElementById('input-scripture-text').value = item.versions[curVer] || item.versions['KJV'] || '';
-            }
-
-            updateLiveGraphicPreview();
-        }
+        // (66-Book Bible Cascade Navigator replaced by Unified Smart Command Engine)
 
         // =====================================================================
         // MASTER BROADCAST HOTKEYS MODAL CONTROLLER

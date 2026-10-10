@@ -409,17 +409,65 @@
             if (isFullCenter) {
                 card.style.borderLeft = 'none';
                 card.style.borderRight = 'none';
-                card.style.borderTop = '8px solid #38bdf8';
-                card.style.borderBottom = '8px solid #f59e0b';
                 card.style.borderRadius = '0';
-                main.style.fontSize = '50px';
+                if (payload.template === 'scripture') {
+                    // Biblical Royal Gold top & Imperial Purple bottom
+                    card.style.borderTop = '8px solid #f59e0b';
+                    card.style.borderBottom = '8px solid #7c3aed';
+                } else {
+                    card.style.borderTop = '8px solid #38bdf8';
+                    card.style.borderBottom = '8px solid #f59e0b';
+                }
+
+                // Dynamic Auto-Fit Font Sizing for Full-Screen
+                const charLen = (payload.mainText || '').length;
+                if (payload.template === 'scripture') {
+                    if (charLen <= 130) {
+                        main.style.fontSize = '50px';
+                        main.style.lineHeight = '1.45';
+                    } else if (charLen <= 260) {
+                        main.style.fontSize = '42px';
+                        main.style.lineHeight = '1.45';
+                    } else if (charLen <= 420) {
+                        main.style.fontSize = '35px';
+                        main.style.lineHeight = '1.4';
+                    } else {
+                        main.style.fontSize = '30px';
+                        main.style.lineHeight = '1.35';
+                    }
+                } else {
+                    main.style.fontSize = '50px';
+                    main.style.lineHeight = '1.45';
+                }
             } else if (isLowerCenter) {
-                card.style.borderLeft = '1px solid rgba(56, 189, 248, 0.45)';
-                card.style.borderTop = '5px solid #38bdf8';
                 card.style.borderBottom = 'none';
                 card.style.borderRight = 'none';
                 card.style.borderRadius = '16px';
-                main.style.fontSize = '32px';
+                if (payload.template === 'scripture') {
+                    card.style.borderLeft = '1px solid rgba(245, 158, 11, 0.45)';
+                    card.style.borderTop = '6px solid #f59e0b';
+                } else {
+                    card.style.borderLeft = '1px solid rgba(56, 189, 248, 0.45)';
+                    card.style.borderTop = '5px solid #38bdf8';
+                }
+
+                // Dynamic Auto-Fit Font Sizing for Lower-Center
+                const charLen = (payload.mainText || '').length;
+                if (payload.template === 'scripture') {
+                    if (charLen <= 140) {
+                        main.style.fontSize = '32px';
+                        main.style.lineHeight = '1.4';
+                    } else if (charLen <= 260) {
+                        main.style.fontSize = '27px';
+                        main.style.lineHeight = '1.35';
+                    } else {
+                        main.style.fontSize = '23px';
+                        main.style.lineHeight = '1.3';
+                    }
+                } else {
+                    main.style.fontSize = '32px';
+                    main.style.lineHeight = '1.45';
+                }
             } else {
                 card.style.borderTop = 'none';
                 card.style.borderBottom = 'none';
@@ -427,7 +475,8 @@
                 card.style.borderRadius = '14px';
                 if (payload.template === 'scripture') {
                     card.style.borderLeft = '6px solid #f59e0b';
-                    main.style.fontSize = '26px';
+                    const charLen = (payload.mainText || '').length;
+                    main.style.fontSize = (charLen <= 140) ? '26px' : '22px';
                 } else if (payload.template === 'hymn') {
                     card.style.borderLeft = '6px solid #38bdf8';
                     main.style.fontSize = '28px';

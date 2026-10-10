@@ -629,17 +629,205 @@ window.CHURCH_HYMN_LIBRARY = [
     }
 ];
 
+// =====================================================================
+// SMART SCRIPTURE SEARCH & RESOLVER ENGINE (ALL 66 BOOKS, 31,102 VERSES)
+// =====================================================================
+window.BIBLE_BOOK_ALIASES = {
+    // Old Testament (39 Books)
+    'genesis': 'Genesis', 'gen': 'Genesis', 'ge': 'Genesis', 'gn': 'Genesis',
+    'exodus': 'Exodus', 'exod': 'Exodus', 'exo': 'Exodus', 'ex': 'Exodus',
+    'leviticus': 'Leviticus', 'lev': 'Leviticus', 'le': 'Leviticus', 'lv': 'Leviticus',
+    'numbers': 'Numbers', 'num': 'Numbers', 'nu': 'Numbers', 'nm': 'Numbers', 'nb': 'Numbers',
+    'deuteronomy': 'Deuteronomy', 'deut': 'Deuteronomy', 'deu': 'Deuteronomy', 'dt': 'Deuteronomy', 'de': 'Deuteronomy',
+    'joshua': 'Joshua', 'josh': 'Joshua', 'jos': 'Joshua', 'jsh': 'Joshua',
+    'judges': 'Judges', 'judg': 'Judges', 'jdg': 'Judges', 'jg': 'Judges',
+    'ruth': 'Ruth', 'rut': 'Ruth', 'ru': 'Ruth', 'rth': 'Ruth',
+    '1 samuel': '1 Samuel', '1samuel': '1 Samuel', '1 sam': '1 Samuel', '1sam': '1 Samuel', '1sa': '1 Samuel', '1s': '1 Samuel', '1 sm': '1 Samuel', '1sm': '1 Samuel', 'i samuel': '1 Samuel', 'i sam': '1 Samuel',
+    '2 samuel': '2 Samuel', '2samuel': '2 Samuel', '2 sam': '2 Samuel', '2sam': '2 Samuel', '2sa': '2 Samuel', '2s': '2 Samuel', '2 sm': '2 Samuel', '2sm': '2 Samuel', 'ii samuel': '2 Samuel', 'ii sam': '2 Samuel',
+    '1 kings': '1 Kings', '1kings': '1 Kings', '1 kgs': '1 Kings', '1kgs': '1 Kings', '1 ki': '1 Kings', '1ki': '1 Kings', '1k': '1 Kings', 'i kings': '1 Kings', 'i kgs': '1 Kings',
+    '2 kings': '2 Kings', '2kings': '2 Kings', '2 kgs': '2 Kings', '2kgs': '2 Kings', '2 ki': '2 Kings', '2ki': '2 Kings', '2k': '2 Kings', 'ii kings': '2 Kings', 'ii kgs': '2 Kings',
+    '1 chronicles': '1 Chronicles', '1chronicles': '1 Chronicles', '1 chron': '1 Chronicles', '1chron': '1 Chronicles', '1 chr': '1 Chronicles', '1chr': '1 Chronicles', '1ch': '1 Chronicles', 'i chronicles': '1 Chronicles', 'i chr': '1 Chronicles',
+    '2 chronicles': '2 Chronicles', '2chronicles': '2 Chronicles', '2 chron': '2 Chronicles', '2chron': '2 Chronicles', '2 chr': '2 Chronicles', '2chr': '2 Chronicles', '2ch': '2 Chronicles', 'ii chronicles': '2 Chronicles', 'ii chr': '2 Chronicles',
+    'ezra': 'Ezra', 'ezr': 'Ezra', 'ez': 'Ezra',
+    'nehemiah': 'Nehemiah', 'neh': 'Nehemiah', 'ne': 'Nehemiah',
+    'esther': 'Esther', 'esth': 'Esther', 'es': 'Esther',
+    'job': 'Job', 'jb': 'Job',
+    'psalms': 'Psalms', 'psalm': 'Psalms', 'psa': 'Psalms', 'ps': 'Psalms', 'pss': 'Psalms', 'psm': 'Psalms',
+    'proverbs': 'Proverbs', 'proverb': 'Proverbs', 'prov': 'Proverbs', 'pro': 'Proverbs', 'prv': 'Proverbs', 'pr': 'Proverbs',
+    'ecclesiastes': 'Ecclesiastes', 'ecclesiast': 'Ecclesiastes', 'eccl': 'Ecclesiastes', 'ecc': 'Ecclesiastes', 'ec': 'Ecclesiastes', 'qoh': 'Ecclesiastes',
+    'song of solomon': 'Song of Solomon', 'song of songs': 'Song of Solomon', 'song': 'Song of Solomon', 'sos': 'Song of Solomon', 'songs': 'Song of Solomon', 'canticles': 'Song of Solomon',
+    'isaiah': 'Isaiah', 'isa': 'Isaiah', 'is': 'Isaiah',
+    'jeremiah': 'Jeremiah', 'jer': 'Jeremiah', 'je': 'Jeremiah', 'jr': 'Jeremiah',
+    'lamentations': 'Lamentations', 'lamentation': 'Lamentations', 'lam': 'Lamentations', 'la': 'Lamentations',
+    'ezekiel': 'Ezekiel', 'ezek': 'Ezekiel', 'eze': 'Ezekiel', 'ezk': 'Ezekiel',
+    'daniel': 'Daniel', 'dan': 'Daniel', 'da': 'Daniel', 'dn': 'Daniel',
+    'hosea': 'Hosea', 'hos': 'Hosea', 'ho': 'Hosea',
+    'joel': 'Joel', 'joe': 'Joel', 'jl': 'Joel',
+    'amos': 'Amos', 'amo': 'Amos', 'am': 'Amos',
+    'obadiah': 'Obadiah', 'obad': 'Obadiah', 'oba': 'Obadiah', 'ob': 'Obadiah',
+    'jonah': 'Jonah', 'jon': 'Jonah', 'jnh': 'Jonah',
+    'micah': 'Micah', 'mic': 'Micah', 'mc': 'Micah',
+    'nahum': 'Nahum', 'nah': 'Nahum', 'na': 'Nahum',
+    'habakkuk': 'Habakkuk', 'hab': 'Habakkuk', 'hb': 'Habakkuk',
+    'zephaniah': 'Zephaniah', 'zeph': 'Zephaniah', 'zep': 'Zephaniah', 'zp': 'Zephaniah',
+    'haggai': 'Haggai', 'hag': 'Haggai', 'hg': 'Haggai',
+    'zechariah': 'Zechariah', 'zech': 'Zechariah', 'zec': 'Zechariah', 'zc': 'Zechariah',
+    'malachi': 'Malachi', 'mal': 'Malachi', 'ml': 'Malachi',
+
+    // New Testament (27 Books)
+    'matthew': 'Matthew', 'matt': 'Matthew', 'mat': 'Matthew', 'mt': 'Matthew',
+    'mark': 'Mark', 'mrk': 'Mark', 'mk': 'Mark', 'mr': 'Mark',
+    'luke': 'Luke', 'luk': 'Luke', 'lk': 'Luke', 'lu': 'Luke',
+    'john': 'John', 'joh': 'John', 'jhn': 'John', 'jn': 'John',
+    'acts': 'Acts', 'act': 'Acts', 'ac': 'Acts',
+    'romans': 'Romans', 'roman': 'Romans', 'rom': 'Romans', 'ro': 'Romans', 'rm': 'Romans',
+    '1 corinthians': '1 Corinthians', '1corinthians': '1 Corinthians', '1 cor': '1 Corinthians', '1cor': '1 Corinthians', '1 co': '1 Corinthians', '1co': '1 Corinthians', 'i corinthians': '1 Corinthians', 'i cor': '1 Corinthians',
+    '2 corinthians': '2 Corinthians', '2corinthians': '2 Corinthians', '2 cor': '2 Corinthians', '2cor': '2 Corinthians', '2 co': '2 Corinthians', '2co': '2 Corinthians', 'ii corinthians': '2 Corinthians', 'ii cor': '2 Corinthians',
+    'galatians': 'Galatians', 'galatian': 'Galatians', 'gal': 'Galatians', 'ga': 'Galatians',
+    'ephesians': 'Ephesians', 'ephesian': 'Ephesians', 'eph': 'Ephesians', 'ep': 'Ephesians',
+    'philippians': 'Philippians', 'philippian': 'Philippians', 'phil': 'Philippians', 'php': 'Philippians', 'phi': 'Philippians', 'pp': 'Philippians',
+    'colossians': 'Colossians', 'colossian': 'Colossians', 'col': 'Colossians', 'cl': 'Colossians',
+    '1 thessalonians': '1 Thessalonians', '1thessalonians': '1 Thessalonians', '1 thess': '1 Thessalonians', '1thess': '1 Thessalonians', '1 th': '1 Thessalonians', '1th': '1 Thessalonians', 'i thessalonians': '1 Thessalonians', 'i thess': '1 Thessalonians',
+    '2 thessalonians': '2 Thessalonians', '2thessalonians': '2 Thessalonians', '2 thess': '2 Thessalonians', '2thess': '2 Thessalonians', '2 th': '2 Thessalonians', '2th': '2 Thessalonians', 'ii thessalonians': '2 Thessalonians', 'ii thess': '2 Thessalonians',
+    '1 timothy': '1 Timothy', '1timothy': '1 Timothy', '1 tim': '1 Timothy', '1tim': '1 Timothy', '1 ti': '1 Timothy', '1ti': '1 Timothy', 'i timothy': '1 Timothy', 'i tim': '1 Timothy',
+    '2 timothy': '2 Timothy', '2timothy': '2 Timothy', '2 tim': '2 Timothy', '2tim': '2 Timothy', '2 ti': '2 Timothy', '2ti': '2 Timothy', 'ii timothy': '2 Timothy', 'ii tim': '2 Timothy',
+    'titus': 'Titus', 'tit': 'Titus', 'ti': 'Titus',
+    'philemon': 'Philemon', 'phlm': 'Philemon', 'phm': 'Philemon', 'pm': 'Philemon',
+    'hebrews': 'Hebrews', 'hebrew': 'Hebrews', 'heb': 'Hebrews', 'he': 'Hebrews',
+    'james': 'James', 'jas': 'James', 'jm': 'James', 'ja': 'James',
+    '1 peter': '1 Peter', '1peter': '1 Peter', '1 pet': '1 Peter', '1pet': '1 Peter', '1 pe': '1 Peter', '1pe': '1 Peter', '1 pt': '1 Peter', '1pt': '1 Peter', 'i peter': '1 Peter', 'i pet': '1 Peter',
+    '2 peter': '2 Peter', '2peter': '2 Peter', '2 pet': '2 Peter', '2pet': '2 Peter', '2 pe': '2 Peter', '2pe': '2 Peter', '2 pt': '2 Peter', '2pt': '2 Peter', 'ii peter': '2 Peter', 'ii pet': '2 Peter',
+    '1 john': '1 John', '1john': '1 John', '1 jn': '1 John', '1jn': '1 John', '1 jo': '1 John', '1jo': '1 John', '1 jhn': '1 John', '1jhn': '1 John', 'i john': '1 John', 'i jn': '1 John',
+    '2 john': '2 John', '2john': '2 John', '2 jn': '2 John', '2jn': '2 John', '2 jo': '2 John', '2jo': '2 John', '2 jhn': '2 John', '2jhn': '2 John', 'ii john': '2 John', 'ii jn': '2 John',
+    '3 john': '3 John', '3john': '3 John', '3 jn': '3 John', '3jn': '3 John', '3 jo': '3 John', '3jo': '3 John', '3 jhn': '3 John', '3jhn': '3 John', 'iii john': '3 John', 'iii jn': '3 John',
+    'jude': 'Jude', 'jud': 'Jude', 'jd': 'Jude',
+    'revelation': 'Revelation', 'revelations': 'Revelation', 'rev': 'Revelation', 're': 'Revelation', 'apocalypse': 'Revelation'
+};
+
+window.parseScriptureQuery = function(query) {
+    if (!query || typeof query !== 'string') return null;
+    const clean = query.trim().replace(/\s+/g, ' ');
+    // Match: [Optional Number + Book Name] [Chapter] [: or space or .] [Verse] [optional -VerseEnd]
+    const m = clean.match(/^([1-3]?\s*[a-zA-Z\s]+?)\s*(\d+)[\s:.,]+(\d+)(?:\s*[-–\s]\s*(\d+))?$/i);
+    if (!m) return null;
+
+    const rawBook = m[1].toLowerCase().trim();
+    const rawNoSpace = rawBook.replace(/\s+/g, '');
+    const canonicalBook = window.BIBLE_BOOK_ALIASES[rawBook] || window.BIBLE_BOOK_ALIASES[rawNoSpace];
+    if (!canonicalBook) return null;
+
+    const chapter = parseInt(m[2], 10);
+    const verseStart = parseInt(m[3], 10);
+    const verseEnd = m[4] ? parseInt(m[4], 10) : null;
+    const ref = (canonicalBook + ' ' + chapter + ':' + verseStart + (verseEnd ? '-' + verseEnd : '')).toUpperCase();
+
+    return {
+        book: canonicalBook,
+        chapter,
+        verseStart,
+        verseEnd,
+        ref,
+        apiQuery: (canonicalBook + ' ' + chapter + ':' + verseStart + (verseEnd ? '-' + verseEnd : '')).toLowerCase()
+    };
+};
+
+window.resolveScriptureVerse = function(ref, version, callback) {
+    version = (version || 'KJV').toUpperCase();
+    ref = (ref || '').trim().toUpperCase();
+    if (!ref) {
+        if (callback) callback({ success: false, error: 'Empty reference' });
+        return;
+    }
+
+    // 1. Check local pre-cached church library
+    if (window.CHURCH_SCRIPTURE_LIBRARY && window.CHURCH_SCRIPTURE_LIBRARY[ref]) {
+        const item = window.CHURCH_SCRIPTURE_LIBRARY[ref];
+        const text = item.versions[version] || item.versions['KJV'] || Object.values(item.versions)[0];
+        if (text) {
+            if (callback) callback({ success: true, ref: item.ref, text, version, source: 'local' });
+            return;
+        }
+    }
+
+    // 2. Check localStorage offline cache
+    const cacheKey = 'vm_bible_' + version + '_' + ref.replace(/[^A-Z0-9]/g, '_');
+    try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed && parsed.text) {
+                if (callback) callback({ success: true, ref, text: parsed.text, version, source: 'cache' });
+                return;
+            }
+        }
+    } catch(e) {}
+
+    // 3. Parse canonical reference for remote API fetch
+    const parsed = window.parseScriptureQuery(ref);
+    const queryTerm = parsed ? parsed.apiQuery : ref.toLowerCase();
+    const verCode = (version === 'WEB') ? 'web' : 'kjv';
+
+    const url = 'https://bible-api.com/' + encodeURIComponent(queryTerm) + '?translation=' + verCode;
+    fetch(url)
+        .then(res => {
+            if (!res.ok) throw new Error('API returned status ' + res.status);
+            return res.json();
+        })
+        .then(data => {
+            if (!data || !data.text) throw new Error('No verse text returned');
+            let cleanText = data.text.trim().replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
+            const resolvedRef = (data.reference || ref).toUpperCase();
+
+            // Save to localStorage
+            try {
+                localStorage.setItem(cacheKey, JSON.stringify({ ref: resolvedRef, text: cleanText, version }));
+            } catch(e) {}
+
+            if (callback) callback({ success: true, ref: resolvedRef, text: cleanText, version, source: 'network' });
+        })
+        .catch(err => {
+            console.warn('[Victorious Hub] Scripture fetch error:', err.message);
+            if (callback) callback({ success: false, error: err.message, ref });
+        });
+};
+
 // Helper Functions
 window.findScriptures = function(query) {
     if (!query || query.trim() === '') {
         return Object.values(window.CHURCH_SCRIPTURE_LIBRARY);
     }
-    const q = query.trim().toUpperCase();
-    return Object.values(window.CHURCH_SCRIPTURE_LIBRARY).filter(s => {
-        return s.ref.includes(q) ||
-               s.book.toUpperCase().includes(q) ||
-               s.category.toUpperCase().includes(q);
+    const cleanQ = query.trim();
+    const q = cleanQ.toUpperCase();
+    const results = [];
+
+    // Check if query is a direct reference (e.g. Ps 91:1, Rom 8:28, John 3 16)
+    const parsed = window.parseScriptureQuery(cleanQ);
+    if (parsed) {
+        results.push({
+            ref: parsed.ref,
+            book: parsed.book,
+            chapter: parsed.chapter,
+            verse: parsed.verseStart,
+            category: 'Direct Scripture Reference',
+            versions: { KJV: 'Loading verse text...' },
+            isDirectReference: true
+        });
+    }
+
+    // Match across pre-cached church scripture library
+    Object.values(window.CHURCH_SCRIPTURE_LIBRARY).forEach(s => {
+        if (parsed && s.ref === parsed.ref) return; // avoid duplicate
+        const matchRef = s.ref.includes(q);
+        const matchBook = s.book.toUpperCase().includes(q);
+        const matchCat = s.category.toUpperCase().includes(q);
+        const matchText = Object.values(s.versions).some(txt => (txt || '').toUpperCase().includes(q));
+
+        if (matchRef || matchBook || matchCat || matchText) {
+            results.push(s);
+        }
     });
+
+    return results;
 };
 
 window.findHymns = function(query) {
