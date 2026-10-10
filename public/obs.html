@@ -215,7 +215,7 @@
             width: 100% !important;
         }
 
-        /* Style B: Full-Center (Dead center in the middle of the screen like a sanctuary projector slide) */
+        /* Style B: Full-Center / Full-Screen Edge-to-Edge Sanctuary Worship Slide */
         #graphics-layer.layout-full-center {
             display: flex !important;
             justify-content: center !important;
@@ -226,25 +226,31 @@
             left: 0 !important;
             width: 100vw !important;
             height: 100vh !important;
+            background: transparent !important;
         }
         #graphics-layer.layout-full-center .graphic-card {
-            max-width: 1320px !important;
-            width: 88% !important;
-            max-height: 86vh !important;
-            margin: auto !important;
+            max-width: 100vw !important;
+            width: 100vw !important;
+            min-width: 100vw !important;
+            max-height: 100vh !important;
+            height: 100vh !important;
+            min-height: 100vh !important;
+            margin: 0 !important;
+            inset: 0 !important;
+            border-radius: 0 !important;
             text-align: center !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
             align-items: center !important;
-            background: linear-gradient(135deg, rgba(14, 7, 32, 0.97) 0%, rgba(28, 12, 58, 0.95) 100%) !important;
-            border: 1px solid rgba(56, 189, 248, 0.55) !important;
-            border-top: 6px solid #38bdf8 !important;
-            border-bottom: 6px solid #f59e0b !important;
-            border-left: 1px solid rgba(56, 189, 248, 0.55) !important;
-            border-right: 1px solid rgba(56, 189, 248, 0.55) !important;
-            border-radius: 20px !important;
-            padding: 40px 56px !important;
-            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95), 0 0 50px rgba(56, 189, 248, 0.35) !important;
-            backdrop-filter: blur(25px) !important;
-            transform: scale(0.96) !important;
+            background: linear-gradient(135deg, rgba(8, 4, 20, 0.98) 0%, rgba(20, 9, 44, 0.97) 100%) !important;
+            border: none !important;
+            border-top: 8px solid #38bdf8 !important;
+            border-bottom: 8px solid #f59e0b !important;
+            padding: 60px 100px !important;
+            box-shadow: 0 0 80px rgba(0, 0, 0, 0.95) !important;
+            backdrop-filter: blur(30px) !important;
+            transform: scale(0.98) !important;
             opacity: 0 !important;
             transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
@@ -253,38 +259,43 @@
             opacity: 1 !important;
         }
         #graphics-layer.layout-full-center .graphic-card.hiding {
-            transform: scale(0.96) !important;
+            transform: scale(0.98) !important;
             opacity: 0 !important;
             transition: opacity 0.2s ease, transform 0.2s ease !important;
         }
         #graphics-layer.layout-full-center .graphic-badge-row {
             justify-content: center !important;
-            margin-bottom: 12px !important;
+            margin-bottom: 16px !important;
         }
         #graphics-layer.layout-full-center .graphic-badge-title {
-            font-size: 16px !important;
-            letter-spacing: 2px !important;
+            font-size: 18px !important;
+            letter-spacing: 2.5px !important;
         }
         #graphics-layer.layout-full-center .graphic-content {
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
             align-items: center !important;
             width: 100% !important;
+            max-width: 1540px !important;
+            margin: 0 auto !important;
         }
         #graphics-layer.layout-full-center .graphic-main-text {
-            font-size: 42px !important;
-            line-height: 1.5 !important;
+            font-size: 50px !important;
+            line-height: 1.45 !important;
             font-weight: 700 !important;
             text-align: center !important;
             white-space: pre-line !important;
             width: 100% !important;
-            letter-spacing: 0.4px !important;
-            text-shadow: 0 3px 10px rgba(0, 0, 0, 1), 0 0 22px rgba(0, 0, 0, 0.85) !important;
+            letter-spacing: 0.5px !important;
+            text-shadow: 0 4px 14px rgba(0, 0, 0, 1), 0 0 28px rgba(0, 0, 0, 0.9) !important;
         }
         #graphics-layer.layout-full-center .graphic-sub-text {
             text-align: center !important;
             white-space: pre-line !important;
             width: 100% !important;
-            font-size: 18px !important;
-            margin-top: 10px !important;
+            font-size: 20px !important;
+            margin-top: 14px !important;
         }
 
         #graphics-layer.layout-ticker {
@@ -396,21 +407,24 @@
             const isLowerCenter = (payload.layout === 'center-slate' || payload.layout === 'lower-center');
 
             if (isFullCenter) {
-                card.style.borderLeft = '1px solid rgba(56, 189, 248, 0.55)';
-                card.style.borderTop = '6px solid #38bdf8';
-                card.style.borderBottom = '6px solid #f59e0b';
-                card.style.borderRight = '1px solid rgba(56, 189, 248, 0.55)';
-                main.style.fontSize = '42px';
+                card.style.borderLeft = 'none';
+                card.style.borderRight = 'none';
+                card.style.borderTop = '8px solid #38bdf8';
+                card.style.borderBottom = '8px solid #f59e0b';
+                card.style.borderRadius = '0';
+                main.style.fontSize = '50px';
             } else if (isLowerCenter) {
                 card.style.borderLeft = '1px solid rgba(56, 189, 248, 0.45)';
                 card.style.borderTop = '5px solid #38bdf8';
                 card.style.borderBottom = 'none';
                 card.style.borderRight = 'none';
+                card.style.borderRadius = '16px';
                 main.style.fontSize = '32px';
             } else {
                 card.style.borderTop = 'none';
                 card.style.borderBottom = 'none';
                 card.style.borderRight = 'none';
+                card.style.borderRadius = '14px';
                 if (payload.template === 'scripture') {
                     card.style.borderLeft = '6px solid #f59e0b';
                     main.style.fontSize = '26px';

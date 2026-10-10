@@ -1291,7 +1291,7 @@ God in three Persons, blessed Trinity!</textarea>
                 pMain.style.textAlign = (data.layout === 'center-slate' || data.layout === 'full-center') ? 'center' : 'left';
                 pMain.style.width = '100%';
                 if (data.layout === 'full-center') {
-                    pMain.style.fontSize = '22px';
+                    pMain.style.fontSize = '24px';
                     pMain.style.lineHeight = '1.45';
                     pMain.style.fontWeight = '700';
                 } else if (data.layout === 'center-slate') {
@@ -1316,13 +1316,12 @@ God in three Persons, blessed Trinity!</textarea>
                 pBox.style.textAlign = isCentered ? 'center' : 'left';
 
                 if (data.layout === 'full-center') {
-                    pBox.style.background = 'radial-gradient(circle, rgba(56, 189, 248, 0.16) 0%, rgba(8, 4, 16, 0.98) 100%)';
-                    pBox.style.border = '1px solid #38bdf8';
+                    pBox.style.background = 'linear-gradient(135deg, rgba(8, 4, 20, 0.98) 0%, rgba(20, 9, 44, 0.97) 100%)';
+                    pBox.style.border = 'none';
                     pBox.style.borderTop = '5px solid #38bdf8';
                     pBox.style.borderBottom = '5px solid #f59e0b';
-                    pBox.style.borderLeft = '1px solid #38bdf8';
-                    pBox.style.borderRight = '1px solid #38bdf8';
-                    pBox.style.padding = '20px 24px';
+                    pBox.style.borderRadius = '0';
+                    pBox.style.padding = '22px 28px';
                 } else if (data.layout === 'center-slate') {
                     pBox.style.background = '#080410';
                     pBox.style.border = '1px dashed rgba(56, 189, 248, 0.4)';
@@ -1330,6 +1329,7 @@ God in three Persons, blessed Trinity!</textarea>
                     pBox.style.borderBottom = 'none';
                     pBox.style.borderLeft = '1px dashed rgba(56, 189, 248, 0.4)';
                     pBox.style.borderRight = '1px dashed rgba(56, 189, 248, 0.4)';
+                    pBox.style.borderRadius = '8px';
                     pBox.style.padding = '18px 22px';
                 } else {
                     pBox.style.background = '#080410';
@@ -1337,6 +1337,7 @@ God in three Persons, blessed Trinity!</textarea>
                     pBox.style.borderTop = 'none';
                     pBox.style.borderBottom = 'none';
                     pBox.style.borderRight = 'none';
+                    pBox.style.borderRadius = '8px';
                     if (data.template === 'scripture') pBox.style.borderLeft = '4px solid #f59e0b';
                     else if (data.template === 'hymn') pBox.style.borderLeft = '4px solid #38bdf8';
                     else if (data.template === 'giving') pBox.style.borderLeft = '4px solid #10b981';
