@@ -779,3 +779,104 @@ window.BIBLE_BOOKS_CATALOG = [
     { name: "Jude", testament: "NT", chapters: 1 },
     { name: "Revelation", testament: "NT", chapters: 22 }
 ];
+
+
+// =====================================================================
+// 500+ CHURCH HYMN & WORSHIP SONG ENGINE (PHASE 4 EXPANSION)
+// =====================================================================
+window.FULL_HYMN_CATALOG = window.CHURCH_HYMN_LIBRARY || [];
+window.HYMN_BY_NUMBER_MAP = new Map();
+window.SERVICE_HYMN_QUEUE = [];
+
+// Index base library into map
+window.FULL_HYMN_CATALOG.forEach(h => {
+    window.HYMN_BY_NUMBER_MAP.set(h.number, h);
+});
+
+// Asynchronously load complete 522+ hymns dataset from /data/hymns.json
+window.load500HymnsCatalog = async function() {
+    try {
+        const response = await fetch('/data/hymns.json');
+        if (response.ok) {
+            const data = await response.json();
+            if (Array.isArray(data) && data.length > 0) {
+                // Merge custom hymns from localStorage
+                let customHymns = [];
+                try {
+                    const rawCustom = localStorage.getItem('vstreaming_custom_hymns');
+                    if (rawCustom) customHymns = JSON.parse(rawCustom);
+                } catch(e) {}
+
+                window.FULL_HYMN_CATALOG = [...data, ...customHymns];
+                window.HYMN_BY_NUMBER_MAP.clear();
+                window.FULL_HYMN_CATALOG.forEach(h => {
+                    window.HYMN_BY_NUMBER_MAP.set(h.number, h);
+                });
+                console.log('[Victorious Hub] Loaded ' + window.FULL_HYMN_CATALOG.length + ' complete church hymns & songs into memory!');
+                
+                // If UI is initialized, refresh catalog dropdown
+                if (typeof initHymnCatalogUI === 'function') {
+                    initHymnCatalogUI();
+                }
+            }
+        }
+    } catch(err) {
+        console.warn('[Victorious Hub] Error loading hymns.json, operating on core embedded hymns:', err.message);
+    }
+};
+
+// Fast O(1) Hymn by Number Lookup
+window.getHymnByNumber = function(num) {
+    const n = parseInt(num, 10);
+    return window.HYMN_BY_NUMBER_MAP.get(n) || null;
+};
+
+// High-Speed Search across Title, Author, Category, Number and Lyrics
+window.searchHymns500 = function(query, category) {
+    let pool = window.FULL_HYMN_CATALOG;
+    if (category && category !== 'ALL') {
+        pool = pool.filter(h => h.category === category);
+    }
+
+    if (!query || query.trim() === '') {
+        return pool.slice(0, 30);
+    }
+
+    const q = query.trim().toUpperCase();
+    return pool.filter(h => {
+        return String(h.number) === q ||
+               h.title.toUpperCase().includes(q) ||
+               (h.author && h.author.toUpperCase().includes(q)) ||
+               (h.category && h.category.toUpperCase().includes(q)) ||
+               h.stanzas.some(st => st.text.toUpperCase().includes(q));
+    }).slice(0, 30);
+};
+
+// Custom Hymn Creator & Saver
+window.saveCustomHymn = function(title, author, category, stanzas) {
+    const nextNum = window.FULL_HYMN_CATALOG.length + 1;
+    const newHymn = {
+        id: 'hymn_custom_' + Date.now(),
+        number: nextNum,
+        title: title.trim().toUpperCase(),
+        author: author ? author.trim() : 'Custom Church Worship',
+        category: category || 'Custom Songs',
+        stanzas: stanzas
+    };
+
+    window.FULL_HYMN_CATALOG.push(newHymn);
+    window.HYMN_BY_NUMBER_MAP.set(newHymn.number, newHymn);
+
+    try {
+        let customList = [];
+        const raw = localStorage.getItem('vstreaming_custom_hymns');
+        if (raw) customList = JSON.parse(raw);
+        customList.push(newHymn);
+        localStorage.setItem('vstreaming_custom_hymns', JSON.stringify(customList));
+    } catch(e) {}
+
+    return newHymn;
+};
+
+// Trigger async catalog fetch
+window.load500HymnsCatalog();

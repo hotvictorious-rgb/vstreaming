@@ -395,28 +395,62 @@
                         </div>
                     </div>
 
-                    <!-- TAB 3: HYMN -->
+                    <!-- TAB 3: HYMN & WORSHIP (500+ CATALOG) -->
                     <div id="tab-panel-hymn" style="display: none; flex-direction: column; gap: 10px;">
-                        <!-- Hymn Book Select & Filter -->
-                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px;">
+                        
+                        <!-- Top Controls: Hymn # Direct Jump + 500+ Autocomplete Search -->
+                        <div style="display: grid; grid-template-columns: 140px 1fr 140px; gap: 8px; align-items: start;">
+                            <!-- Direct Hymn # Jump -->
                             <div>
-                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Hymn Book Catalog:</label>
-                                <select id="sel-hymn-catalog" onchange="onHymnCatalogSelect(this.value)" style="width: 100%; background: #0b0717; border: 1px solid rgba(56, 189, 248, 0.6); color: #38bdf8; font-weight: 700; padding: 7px 8px; border-radius: 6px; font-size: 12px; cursor: pointer;"></select>
+                                <label style="display: block; font-size: 11px; color: #7dd3fc; margin-bottom: 4px; font-weight: 700;">⚡ Hymn # Jump:</label>
+                                <div style="display: flex; gap: 4px;">
+                                    <input type="number" id="input-hymn-number" min="1" max="600" placeholder="1-522" onkeydown="if(event.key==='Enter') jumpToHymnNumber(this.value)" style="width: 70px; background: #070314; border: 1px solid rgba(56, 189, 248, 0.6); color: #38bdf8; font-weight: 800; padding: 6px 8px; border-radius: 6px; font-size: 12px; outline: none;">
+                                    <button type="button" onclick="jumpToHymnNumber(document.getElementById('input-hymn-number').value)" class="preset-pill" style="background: #0284c7; border-color: #38bdf8; color: #fff; font-weight: 700; padding: 4px 8px;">Go ⚡</button>
+                                </div>
                             </div>
+
+                            <!-- Live Autocomplete Search Input -->
+                            <div style="position: relative;">
+                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Search 520+ Hymns (Title, Lyrics, Author):</label>
+                                <input type="text" id="input-hymn-search" placeholder="🔍 Search e.g. Amazing Grace, Blood, Peace, Faithfulness, Rock..." oninput="onHymnSearch500Input(this.value)" onfocus="onHymnSearch500Input(this.value)" style="width: 100%; background: #070314; border: 1px solid rgba(56, 189, 248, 0.5); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; outline: none;">
+                                <div id="hymn-search-results" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #0a061c; border: 1px solid #38bdf8; border-radius: 6px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.85);"></div>
+                            </div>
+
+                            <!-- Category Filter & Add Song -->
                             <div>
-                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Quick Filter:</label>
-                                <input type="text" id="input-hymn-search" placeholder="Filter title/number..." oninput="onHymnSearchInput(this.value)" style="width: 100%; background: #0b0717; border: 1px solid rgba(56, 189, 248, 0.4); color: #fff; padding: 7px 10px; border-radius: 6px; font-size: 12px;">
+                                <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Category Filter:</label>
+                                <select id="sel-hymn-category-filter" onchange="onHymnCategoryFilterChange(this.value)" style="width: 100%; background: #070314; border: 1px solid rgba(56, 189, 248, 0.4); color: #7dd3fc; padding: 6px 6px; border-radius: 6px; font-size: 11px; cursor: pointer;">
+                                    <option value="ALL">All Songs (522+)</option>
+                                    <option value="Praise & Adoration">Praise & Adoration</option>
+                                    <option value="The Cross & The Blood">The Cross & The Blood</option>
+                                    <option value="Grace & Salvation">Grace & Salvation</option>
+                                    <option value="Faith & Assurance">Faith & Assurance</option>
+                                    <option value="The Holy Spirit & Revival">The Holy Spirit</option>
+                                    <option value="Prayer & Fellowship">Prayer & Fellowship</option>
+                                    <option value="Consecration & Surrender">Consecration</option>
+                                    <option value="Spiritual Warfare & Victory">Spiritual Warfare</option>
+                                    <option value="Comfort & Second Coming">Second Coming</option>
+                                    <option value="Benediction & Morning/Evening">Benediction</option>
+                                    <option value="Custom Songs">Custom Songs</option>
+                                </select>
                             </div>
                         </div>
 
-                        <!-- Stanza Stepper Toolbar -->
+                        <!-- Stanza Stepper Toolbar with Persistent [CHORUS] Button -->
                         <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 8px 10px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                <span style="font-size: 11px; color: #7dd3fc; font-weight: 700;">🎵 STANZA STEPPER:</span>
-                                <label style="display: flex; align-items: center; gap: 5px; font-size: 11px; color: #94a3b8; cursor: pointer;">
-                                    <input type="checkbox" id="chk-auto-push-hymn" checked style="accent-color: #38bdf8; cursor: pointer;">
-                                    <span>Auto-push live if ON AIR</span>
-                                </label>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 11px; color: #7dd3fc; font-weight: 700;">🎵 STANZA STEPPER:</span>
+                                    <button type="button" onclick="triggerHymnChorus()" id="btn-persistent-chorus" class="preset-pill" style="background: linear-gradient(135deg, #f59e0b, #d97706); border-color: #fbbf24; color: #000; font-weight: 800; box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);" title="Jump Directly to Chorus / Refrain">🎵 CHORUS</button>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <button type="button" onclick="addCurrentHymnToServiceQueue()" style="background: rgba(124, 58, 237, 0.25); border: 1px solid #8b5cf6; color: #c4b5fd; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; cursor: pointer;">📋 + Queue Hymn</button>
+                                    <button type="button" onclick="openCustomSongModal()" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #6ee7b7; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; cursor: pointer;">➕ Add Song</button>
+                                    <label style="display: flex; align-items: center; gap: 5px; font-size: 11px; color: #94a3b8; cursor: pointer; margin-left: 6px;">
+                                        <input type="checkbox" id="chk-auto-push-hymn" checked style="accent-color: #38bdf8; cursor: pointer;">
+                                        <span>Auto-push if ON AIR</span>
+                                    </label>
+                                </div>
                             </div>
                             <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
                                 <div id="hymn-stanza-container" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
@@ -427,10 +461,19 @@
                             </div>
                         </div>
 
+                        <!-- Today's Service Hymns Rundown Queue -->
+                        <div id="service-hymns-queue-tray" style="background: rgba(10, 6, 25, 0.6); border: 1px dashed rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 6px 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <span style="font-size: 10px; font-weight: 700; color: #7dd3fc; text-transform: uppercase;">TODAY'S SERVICE HYMNS:</span>
+                            <div id="service-hymns-queue-list" style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                                <span style="font-size: 10px; color: #64748b; font-style: italic;">No service hymns queued yet. Click "+ Queue Hymn" above.</span>
+                            </div>
+                        </div>
+
+                        <!-- Editable Hymn Fields -->
                         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px;">
                             <div>
                                 <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Hymn Title / Number:</label>
-                                <input type="text" id="input-hymn-title" value="AMAZING GRACE • HYMN 1" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(56, 189, 248, 0.5); color: #38bdf8; font-weight: 700; padding: 8px 12px; border-radius: 6px; font-size: 13px;">
+                                <input type="text" id="input-hymn-title" value="HOLY, HOLY, HOLY • HYMN 1" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(56, 189, 248, 0.5); color: #38bdf8; font-weight: 700; padding: 8px 12px; border-radius: 6px; font-size: 13px;">
                             </div>
                             <div>
                                 <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Stanza / Part:</label>
@@ -446,7 +489,10 @@
                         </div>
                         <div>
                             <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Hymn Lyrics:</label>
-                            <textarea id="input-hymn-text" rows="3" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(56, 189, 248, 0.5); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; resize: vertical; line-height: 1.4;">Amazing grace! how sweet the sound, That saved a wretch like me! I once was lost, but now am found; Was blind, but now I see.</textarea>
+                            <textarea id="input-hymn-text" rows="3" oninput="updateLiveGraphicPreview()" style="width: 100%; background: #0b0717; border: 1px solid rgba(56, 189, 248, 0.5); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; resize: vertical; line-height: 1.4;">Holy, holy, holy! Lord God Almighty!
+Early in the morning our song shall rise to Thee;
+Holy, holy, holy! Merciful and mighty!
+God in three Persons, blessed Trinity!</textarea>
                         </div>
                     </div>
 
@@ -1547,44 +1593,94 @@
             }
         }
 
-        // --- HYMN CATALOG & STANZA STEPPER ---
+        // --- 520+ HYMN CATALOG & LIVE STANZA STEPPER ENGINE ---
         function initHymnCatalogUI() {
-            const sel = document.getElementById('sel-hymn-catalog');
-            if (!sel || !window.CHURCH_HYMN_LIBRARY) return;
-
-            let html = '';
-            window.CHURCH_HYMN_LIBRARY.forEach(h => {
-                html += '<option value="' + h.id + '">' + h.number + '. ' + h.title + '</option>';
+            // Close hymn search dropdown on outside click
+            document.addEventListener('click', function(e) {
+                const drop = document.getElementById('hymn-search-results');
+                const inp = document.getElementById('input-hymn-search');
+                if (drop && inp && !drop.contains(e.target) && e.target !== inp) {
+                    drop.style.display = 'none';
+                }
             });
-            sel.innerHTML = html;
 
-            if (window.CHURCH_HYMN_LIBRARY.length > 0) {
-                onHymnCatalogSelect(window.CHURCH_HYMN_LIBRARY[0].id);
+            // Load Hymn #1 by default
+            jumpToHymnNumber(1, false);
+            renderServiceHymnsQueueUI();
+        }
+
+        function jumpToHymnNumber(num, notify = true) {
+            if (!num) return;
+            const n = parseInt(num, 10);
+            const hymn = (typeof window.getHymnByNumber === 'function') ? window.getHymnByNumber(n) : (window.CHURCH_HYMN_LIBRARY ? window.CHURCH_HYMN_LIBRARY.find(h => h.number === n) : null);
+            if (!hymn) {
+                showToast('⚠️ Hymn #' + n + ' not found in catalog');
+                return;
+            }
+            loadHymnObject(hymn);
+            const numInput = document.getElementById('input-hymn-number');
+            if (numInput) numInput.value = n;
+            if (notify) {
+                showToast('📖 Loaded Hymn #' + n + ': ' + hymn.title);
             }
         }
 
-        function onHymnSearchInput(query) {
-            const sel = document.getElementById('sel-hymn-catalog');
-            if (!sel || !window.CHURCH_HYMN_LIBRARY) return;
+        function onHymnSearch500Input(query) {
+            const drop = document.getElementById('hymn-search-results');
+            if (!drop) return;
+            if (!query || query.trim() === '') {
+                drop.style.display = 'none';
+                return;
+            }
 
-            const filtered = (typeof window.findHymns === 'function') ? window.findHymns(query) : window.CHURCH_HYMN_LIBRARY;
+            const selCat = document.getElementById('sel-hymn-category-filter');
+            const category = selCat ? selCat.value : 'ALL';
+            const matches = (typeof window.searchHymns500 === 'function') ? window.searchHymns500(query, category) : [];
+
+            if (matches.length === 0) {
+                drop.innerHTML = '<div style="padding: 10px; font-size: 11px; color: #94a3b8; text-align: center;">No matching hymns found in ' + category + '. Click "+ Add Song" to add custom lyrics!</div>';
+                drop.style.display = 'block';
+                return;
+            }
+
             let html = '';
-            filtered.forEach(h => {
-                html += '<option value="' + h.id + '">' + h.number + '. ' + h.title + '</option>';
+            matches.slice(0, 15).forEach(h => {
+                const snippet = (h.stanzas[0] ? h.stanzas[0].text.replace(/\n/g, ' ') : '').substring(0, 65) + '...';
+                html += '<div onclick="selectHymnSearchResult(\'' + h.id + '\')" style="padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background=\'rgba(56,189,248,0.15)\'" onmouseout="this.style.background=\'transparent\'">' +
+                    '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+                    '<strong style="color: #38bdf8; font-size: 12px;">#' + h.number + ' • ' + h.title + '</strong>' +
+                    '<span style="font-size: 9px; color: #7dd3fc; background: rgba(56,189,248,0.2); padding: 1px 5px; border-radius: 3px;">' + h.category + '</span>' +
+                    '</div>' +
+                    '<div style="font-size: 11px; color: #cbd5e1; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + snippet + '</div>' +
+                    '</div>';
             });
-            sel.innerHTML = html;
 
-            if (filtered.length > 0) {
-                onHymnCatalogSelect(filtered[0].id);
+            drop.innerHTML = html;
+            drop.style.display = 'block';
+        }
+
+        function selectHymnSearchResult(hymnId) {
+            const drop = document.getElementById('hymn-search-results');
+            if (drop) drop.style.display = 'none';
+            const sInp = document.getElementById('input-hymn-search');
+            if (sInp) sInp.value = '';
+
+            const hymn = (window.FULL_HYMN_CATALOG || []).find(h => h.id === hymnId);
+            if (hymn) {
+                loadHymnObject(hymn);
+                showToast('🎵 Loaded #' + hymn.number + ': ' + hymn.title);
             }
         }
 
-        function onHymnCatalogSelect(hymnId) {
-            if (!window.CHURCH_HYMN_LIBRARY) return;
-            const hymn = window.CHURCH_HYMN_LIBRARY.find(h => h.id === hymnId);
-            if (!hymn) return;
+        function onHymnCategoryFilterChange(cat) {
+            const sInp = document.getElementById('input-hymn-search');
+            if (sInp && sInp.value.trim() !== '') {
+                onHymnSearch500Input(sInp.value);
+            }
+        }
+
+        function loadHymnObject(hymn) {
             currentLoadedHymn = hymn;
-
             const title = hymn.title + ' • HYMN ' + hymn.number;
             document.getElementById('input-hymn-title').value = title;
 
@@ -1596,6 +1692,17 @@
                 const selPart = document.getElementById('sel-hymn-part');
                 if (selPart) selPart.value = hymn.stanzas[0].part;
             }
+
+            // Update persistent chorus button state
+            const hasChorus = hymn.stanzas.some(s => s.part.includes('CHORUS') || s.part.includes('REFRAIN'));
+            const btnChorus = document.getElementById('btn-persistent-chorus');
+            if (btnChorus) {
+                btnChorus.style.display = hasChorus ? 'inline-block' : 'none';
+            }
+
+            const numInp = document.getElementById('input-hymn-number');
+            if (numInp) numInp.value = hymn.number;
+
             updateLiveGraphicPreview();
         }
 
@@ -1606,9 +1713,14 @@
             let html = '';
             hymn.stanzas.forEach(st => {
                 const isActive = (st.part === activePart);
-                const cls = isActive ? 'preset-pill active-pill' : 'preset-pill';
-                const style = isActive ? 'background: #0284c7; border-color: #38bdf8; color: #fff; font-weight: 800;' : 'background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.4); color: #7dd3fc;';
-                html += '<button type="button" class="' + cls + '" style="' + style + '" onclick="selectHymnStanza(\'' + st.part + '\')">' + st.part + '</button>';
+                const isChorus = st.part.includes('CHORUS') || st.part.includes('REFRAIN');
+                let style = '';
+                if (isActive) {
+                    style = isChorus ? 'background: #f59e0b; border-color: #fbbf24; color: #000; font-weight: 800;' : 'background: #0284c7; border-color: #38bdf8; color: #fff; font-weight: 800;';
+                } else {
+                    style = isChorus ? 'background: rgba(245, 158, 11, 0.2); border-color: #f59e0b; color: #fbbf24;' : 'background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.4); color: #7dd3fc;';
+                }
+                html += '<button type="button" class="preset-pill" style="' + style + '" onclick="selectHymnStanza(\'' + st.part + '\')">' + st.part + '</button>';
             });
             container.innerHTML = html;
         }
@@ -1632,6 +1744,16 @@
             }
         }
 
+        function triggerHymnChorus() {
+            if (!currentLoadedHymn) return;
+            const chorus = currentLoadedHymn.stanzas.find(s => s.part.includes('CHORUS') || s.part.includes('REFRAIN'));
+            if (chorus) {
+                selectHymnStanza(chorus.part);
+            } else {
+                showToast('This hymn has no distinct chorus');
+            }
+        }
+
         function stepHymnStanza(delta) {
             if (!currentLoadedHymn || !currentLoadedHymn.stanzas.length) return;
             const selPart = document.getElementById('sel-hymn-part');
@@ -1649,6 +1771,85 @@
             const selPart = document.getElementById('sel-hymn-part');
             if (selPart) {
                 selectHymnStanza(selPart.value);
+            }
+        }
+
+        // --- TODAY'S SERVICE HYMNS RUNDOWN ---
+        function addCurrentHymnToServiceQueue() {
+            if (!currentLoadedHymn) return;
+            if (!window.SERVICE_HYMN_QUEUE) window.SERVICE_HYMN_QUEUE = [];
+
+            if (window.SERVICE_HYMN_QUEUE.some(h => h.id === currentLoadedHymn.id)) {
+                showToast('Hymn #' + currentLoadedHymn.number + ' already in service rundown');
+                return;
+            }
+
+            window.SERVICE_HYMN_QUEUE.push(currentLoadedHymn);
+            renderServiceHymnsQueueUI();
+            showToast('📋 Added Hymn #' + currentLoadedHymn.number + ' to Today\'s Service Hymns');
+        }
+
+        function renderServiceHymnsQueueUI() {
+            const list = document.getElementById('service-hymns-queue-list');
+            if (!list) return;
+            const queue = window.SERVICE_HYMN_QUEUE || [];
+
+            if (queue.length === 0) {
+                list.innerHTML = '<span style="font-size: 10px; color: #64748b; font-style: italic;">No service hymns queued yet. Click "+ Queue Hymn" above.</span>';
+                return;
+            }
+
+            let html = '';
+            queue.forEach((h, idx) => {
+                const isActive = (currentLoadedHymn && currentLoadedHymn.id === h.id);
+                const bg = isActive ? 'background: #0284c7; border-color: #38bdf8; color: #fff;' : 'background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.4); color: #7dd3fc;';
+                html += '<div style="display: flex; align-items: center; gap: 4px; border-radius: 4px; padding: 2px 6px; ' + bg + ' border: 1px solid;">' +
+                    '<span onclick="jumpToHymnNumber(' + h.number + ')" style="cursor: pointer; font-size: 10px; font-weight: 700;">' + (idx + 1) + '. #' + h.number + ' ' + h.title.substring(0, 16) + '</span>' +
+                    '<button onclick="event.stopPropagation(); removeServiceHymnItem(' + idx + ');" style="background: transparent; border: none; color: #fca5a5; font-size: 10px; cursor: pointer; padding: 0 2px;">✕</button>' +
+                    '</div>';
+            });
+            list.innerHTML = html;
+        }
+
+        function removeServiceHymnItem(idx) {
+            if (window.SERVICE_HYMN_QUEUE && idx >= 0 && idx < window.SERVICE_HYMN_QUEUE.length) {
+                window.SERVICE_HYMN_QUEUE.splice(idx, 1);
+                renderServiceHymnsQueueUI();
+            }
+        }
+
+        // --- CUSTOM SONG CREATOR MODAL ---
+        function openCustomSongModal() {
+            const m = document.getElementById('custom-song-modal');
+            if (m) m.style.display = 'flex';
+        }
+
+        function closeCustomSongModal() {
+            const m = document.getElementById('custom-song-modal');
+            if (m) m.style.display = 'none';
+        }
+
+        function saveCustomSongFromModal() {
+            const title = document.getElementById('modal-custom-song-title').value.trim();
+            const author = document.getElementById('modal-custom-song-author').value.trim();
+            const category = document.getElementById('modal-custom-song-category').value.trim();
+            const chorus = document.getElementById('modal-custom-song-chorus').value.trim();
+            const stanza1 = document.getElementById('modal-custom-song-stanza1').value.trim();
+
+            if (!title || (!chorus && !stanza1)) {
+                showToast('⚠️ Please enter title and lyrics');
+                return;
+            }
+
+            const stanzas = [];
+            if (stanza1) stanzas.push({ part: 'STANZA 1', text: stanza1 });
+            if (chorus) stanzas.push({ part: 'CHORUS', text: chorus });
+
+            if (typeof window.saveCustomHymn === 'function') {
+                const newSong = window.saveCustomHymn(title, author, category, stanzas);
+                closeCustomSongModal();
+                loadHymnObject(newSong);
+                showToast('🎉 Saved custom song: ' + newSong.title);
             }
         }
 
@@ -2787,6 +2988,50 @@
 
             <div style="display: flex; justify-content: flex-end;">
                 <button type="button" onclick="closeHotkeysModal()" class="btn" style="background: #7c3aed; border: none; color: #fff; font-size: 12px; font-weight: 700; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Got It</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Custom Church Song / Chorus Creator Modal -->
+    <div id="custom-song-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+        <div style="background: #0d081f; border: 1px solid #38bdf8; border-radius: 14px; width: 560px; max-width: 95vw; padding: 22px; box-shadow: 0 20px 60px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 20px;">🎵</span>
+                    <strong style="color: #38bdf8; font-size: 15px;">ADD CUSTOM CHURCH SONG / CHORUS</strong>
+                </div>
+                <button type="button" onclick="closeCustomSongModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 18px; cursor: pointer;">✕</button>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div>
+                    <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Song Title:</label>
+                    <input type="text" id="modal-custom-song-title" placeholder="e.g. Ancient of Days, Way Maker..." style="width: 100%; background: #070314; border: 1px solid rgba(56, 189, 248, 0.5); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 13px;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <div>
+                        <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Author / Artist:</label>
+                        <input type="text" id="modal-custom-song-author" placeholder="e.g. Worship Team, Sinach..." style="width: 100%; background: #070314; border: 1px solid rgba(56, 189, 248, 0.4); color: #fff; padding: 7px 10px; border-radius: 6px; font-size: 12px;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Category:</label>
+                        <input type="text" id="modal-custom-song-category" value="Custom Songs" style="width: 100%; background: #070314; border: 1px solid rgba(56, 189, 248, 0.4); color: #fff; padding: 7px 10px; border-radius: 6px; font-size: 12px;">
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Chorus Lyrics:</label>
+                    <textarea id="modal-custom-song-chorus" rows="3" placeholder="Enter chorus or main lyrics..." style="width: 100%; background: #070314; border: 1px solid rgba(56, 189, 248, 0.5); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; resize: vertical; line-height: 1.4;"></textarea>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Stanza 1 Lyrics (Optional):</label>
+                    <textarea id="modal-custom-song-stanza1" rows="2" placeholder="Enter stanza 1 if applicable..." style="width: 100%; background: #070314; border: 1px solid rgba(56, 189, 248, 0.3); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; resize: vertical; line-height: 1.4;"></textarea>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button type="button" onclick="closeCustomSongModal()" class="preset-pill" style="padding: 6px 14px;">Cancel</button>
+                <button type="button" onclick="saveCustomSongFromModal()" class="btn" style="background: #0284c7; border: 1px solid #38bdf8; color: #fff; font-size: 12px; font-weight: 700; padding: 6px 16px; border-radius: 6px; cursor: pointer;">Save Song to Catalog</button>
             </div>
         </div>
     </div>
