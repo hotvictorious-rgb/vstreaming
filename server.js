@@ -735,6 +735,14 @@ function setupWebSocket(wss) {
                     const targetId = parseInt(camId, 10);
                     if (cameras[targetId]) {
                         if (state === 'PROGRAM') {
+                            // Pre-Flight Guard: Never cut live to an offline phone camera!
+                            if (!cameras[targetId].connected) {
+                                ws.send(JSON.stringify({
+                                    type: 'notification',
+                                    message: `⚠️ Camera ${targetId} is offline! Connect the phone first before cutting live.`
+                                }));
+                                return;
+                            }
                             if (isEmergencyCut) {
                                 isEmergencyCut = false;
                                 broadcastToAll({ type: 'emergency_cut', active: false, url: getActiveFlierUrl() });
