@@ -570,6 +570,7 @@
 
         let activeChannel = null;   // The channel currently on-air (null if on Church Flier)
         let pendingChannel = null;  // The channel currently pre-connecting in the background
+        let cameraAudioEnabled = {}; // Map of camId -> boolean (Director audio passthrough authorization)
         let isEmergency = false;
         let isStreamActive = false;
         let handshakeTimeout = null;
@@ -687,6 +688,10 @@
             // Elevate incoming channel above the outgoing channel / flier
             incoming.videoEl.style.zIndex = '3';
             incoming.videoEl.classList.add('live');
+
+            // Apply Audio Muting / Passthrough based on Director authorization
+            const audioAllowed = !!cameraAudioEnabled[incoming.camId];
+            incoming.videoEl.muted = !audioAllowed;
 
             activeChannel = incoming;
             pendingChannel = null;
@@ -918,6 +923,16 @@
                             await queueOrAddCandidate(pendingChannel, data.candidate);
                         } else if (activeChannel && (data.receiverId === activeChannel.receiverId)) {
                             await queueOrAddCandidate(activeChannel, data.candidate);
+                        }
+                    }
+
+                    // Director Audio Passthrough to OBS Toggle
+                    if (data.type === 'set_obs_audio') {
+                        const targetId = parseInt(data.camId, 10);
+                        cameraAudioEnabled[targetId] = !!data.enabled;
+                        console.log(`[OBS Audio] Camera ${targetId} audio passthrough set to: ${cameraAudioEnabled[targetId] ? 'LIVE' : 'MUTED'}`);
+                        if (activeChannel && activeChannel.camId === targetId) {
+                            activeChannel.videoEl.muted = !cameraAudioEnabled[targetId];
                         }
                     }
 

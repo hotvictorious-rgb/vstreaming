@@ -126,6 +126,67 @@
                 transform: translateX(-50%);
             }
         }
+
+        /* Landscape Orientation Lock Prompt */
+        .landscape-prompt {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(11, 7, 23, 0.94);
+            backdrop-filter: blur(14px);
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            text-align: center;
+            color: #ffffff;
+            box-sizing: border-box;
+            animation: fadeIn 0.3s ease;
+        }
+        .landscape-phone-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: rotatePhone 2.5s infinite ease-in-out;
+        }
+        @keyframes rotatePhone {
+            0%, 20% { transform: rotate(0deg); }
+            50%, 70% { transform: rotate(-90deg); }
+            90%, 100% { transform: rotate(0deg); }
+        }
+        .landscape-prompt h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--primary-gold, #f59e0b);
+            margin: 0 0 10px 0;
+            letter-spacing: 0.5px;
+        }
+        .landscape-prompt p {
+            font-size: 14px;
+            color: #cbd5e1;
+            line-height: 1.5;
+            max-width: 320px;
+            margin: 0 0 24px 0;
+        }
+        .landscape-dismiss-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .landscape-dismiss-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
     </style>
 </head>
 <body class="mobile-cam-body">
@@ -162,8 +223,10 @@
                 <div class="hud-btn" id="lbl-cam-name">Camera 1</div>
             </div>
 
-            <!-- Right Top: Flash, Dimmer & Battery (Lens hidden) -->
+            <!-- Right Top: Resolution, Mic, Flash, Dimmer & Battery -->
             <div class="hud-cluster hud-right">
+                <button class="hud-btn" id="btn-res-toggle" onclick="toggleResolutionProfile()" title="Toggle Video Quality (1080p HQ / 720p Fast)" style="font-weight: 700; border-color: var(--primary-gold);">💎 1080p</button>
+                <button class="hud-btn" id="btn-mic-toggle" onclick="toggleMicStreaming()" title="Toggle Phone Microphone for OBS" style="font-weight: 700;">🎤 Mic Off</button>
                 <div class="intercom-pill" id="intercom-pill" title="Intercom Volume">
                     <button id="btn-intercom-test" onclick="testIntercomSound()" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #34d399; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 6px; cursor: pointer;" title="Tap to test and unlock intercom sound">🔔 Test</button>
                     <button id="btn-intercom-mute" onclick="toggleIntercomMute()" style="background: none; border: none; color: #10b981; font-size: 14px; cursor: pointer; padding: 0;" title="Mute/Unmute Director Voice">🔊</button>
@@ -199,6 +262,14 @@
             <button onclick="switchCameraChannel(5)" style="padding: 12px; background: #1e1338; border: 1px solid #7c3aed; color: #fff; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Cam 5 • Roaming 2</button>
             <button onclick="switchCameraChannel(6)" style="padding: 12px; background: #1e1338; border: 1px solid #7c3aed; color: #fff; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Cam 6 • Overflow</button>
         </div>
+    </div>
+
+    <!-- Mobile Landscape Lock Prompt (Appears if operator holds phone in portrait) -->
+    <div id="landscape-prompt" class="landscape-prompt">
+        <div class="landscape-phone-icon">📱</div>
+        <h2>Rotate to Landscape</h2>
+        <p>Victorious Church Studio broadcasts in 16:9 widescreen format. Please rotate your phone sideways for the best framing.</p>
+        <button class="landscape-dismiss-btn" onclick="dismissLandscapePrompt()">Keep Portrait Anyway</button>
     </div>
 
     <script>
@@ -549,29 +620,158 @@
             }
         }
 
-        // Start Camera (1080p Landscape)
+        // Quality Profile, Mic Streaming, & Orientation State
+        let currentProfile = '1080p'; // '1080p' (HQ) or '720p' (Fast/Low-Bandwidth)
+        let micStream = null;
+        let isMicStreaming = false;
+        let landscapeDismissed = false;
+
+        function checkOrientation() {
+            const prompt = document.getElementById('landscape-prompt');
+            if (!prompt) return;
+            const isPortrait = window.innerHeight > window.innerWidth;
+            if (isPortrait && !landscapeDismissed) {
+                prompt.style.display = 'flex';
+            } else {
+                prompt.style.display = 'none';
+            }
+        }
+
+        function dismissLandscapePrompt() {
+            landscapeDismissed = true;
+            const prompt = document.getElementById('landscape-prompt');
+            if (prompt) prompt.style.display = 'none';
+            showHudToast('Portrait framing active');
+        }
+
+        window.addEventListener('resize', checkOrientation);
+        window.addEventListener('orientationchange', checkOrientation);
+
+        async function toggleResolutionProfile() {
+            currentProfile = (currentProfile === '1080p') ? '720p' : '1080p';
+            const btn = document.getElementById('btn-res-toggle');
+            if (btn) {
+                btn.innerText = (currentProfile === '1080p') ? '💎 1080p' : '⚡ 720p';
+                btn.style.borderColor = (currentProfile === '1080p') ? 'var(--primary-gold)' : '#38bdf8';
+                btn.style.color = (currentProfile === '1080p') ? '#fff' : '#38bdf8';
+            }
+            if (localStream) {
+                const track = localStream.getVideoTracks()[0];
+                if (track) {
+                    const isLandscape = window.innerWidth > window.innerHeight;
+                    const targetW = currentProfile === '1080p' ? (isLandscape ? 1920 : 1080) : (isLandscape ? 1280 : 720);
+                    const targetH = currentProfile === '1080p' ? (isLandscape ? 1080 : 1920) : (isLandscape ? 720 : 1280);
+                    try {
+                        await track.applyConstraints({
+                            width: { ideal: targetW },
+                            height: { ideal: targetH },
+                            frameRate: { ideal: 30 }
+                        });
+                        showHudToast(`Quality: ${currentProfile === '1080p' ? '💎 1080p Full HD' : '⚡ 720p Fast HD'}`);
+                    } catch (e) {
+                        console.warn('Dynamic constraint adaptation failed, restarting camera:', e);
+                        startCamera();
+                    }
+                }
+            }
+        }
+
+        async function toggleMicStreaming() {
+            const btn = document.getElementById('btn-mic-toggle');
+            if (!isMicStreaming) {
+                try {
+                    micStream = await navigator.mediaDevices.getUserMedia({
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true
+                        }
+                    });
+                    const audioTrack = micStream.getAudioTracks()[0];
+                    if (audioTrack) {
+                        if (localStream) {
+                            localStream.addTrack(audioTrack);
+                        }
+                        for (const receiverId in peerConnections) {
+                            const pc = peerConnections[receiverId];
+                            if (pc) {
+                                try { pc.addTrack(audioTrack, localStream); } catch (e) {}
+                            }
+                        }
+                        isMicStreaming = true;
+                        if (btn) {
+                            btn.innerText = '🎙️ Mic ON';
+                            btn.style.background = 'rgba(16, 185, 129, 0.3)';
+                            btn.style.borderColor = '#10b981';
+                            btn.style.color = '#34d399';
+                        }
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            ws.send(JSON.stringify({ type: 'cam_mic_status', camId, active: true }));
+                        }
+                        showHudToast('🎙️ Phone Microphone Active');
+                    }
+                } catch (err) {
+                    alert('Could not access microphone: ' + err.message);
+                }
+            } else {
+                if (micStream) {
+                    micStream.getTracks().forEach(t => t.stop());
+                    if (localStream) {
+                        const audioTracks = localStream.getAudioTracks();
+                        audioTracks.forEach(t => {
+                            try { localStream.removeTrack(t); } catch (e) {}
+                            t.stop();
+                        });
+                    }
+                    micStream = null;
+                }
+                isMicStreaming = false;
+                if (btn) {
+                    btn.innerText = '🎤 Mic Off';
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                }
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'cam_mic_status', camId, active: false }));
+                }
+                showHudToast('🎤 Phone Mic Muted');
+            }
+        }
+
+        // Start Camera (1080p / 720p Landscape)
         async function startCamera() {
             if (localStream) {
-                localStream.getTracks().forEach(t => t.stop());
+                localStream.getVideoTracks().forEach(t => t.stop());
             }
 
             const isLandscape = window.innerWidth > window.innerHeight;
+            const targetW = currentProfile === '1080p' ? (isLandscape ? 1920 : 1080) : (isLandscape ? 1280 : 720);
+            const targetH = currentProfile === '1080p' ? (isLandscape ? 1080 : 1920) : (isLandscape ? 720 : 1280);
             const constraints = {
-                audio: false, // PC mixer feeds audio to OBS directly
+                audio: false, // Mic is added dynamically via toggleMicStreaming()
                 video: {
                     facingMode: currentFacingMode,
                     aspectRatio: { ideal: 1.7777777778 },
-                    width: { ideal: isLandscape ? 1920 : 1080, min: 1280 },
-                    height: { ideal: isLandscape ? 1080 : 1920, min: 720 },
+                    width: { ideal: targetW, min: 640 },
+                    height: { ideal: targetH, min: 480 },
                     frameRate: { ideal: 30, min: 24 }
                 }
             };
 
             try {
-                localStream = await navigator.mediaDevices.getUserMedia(constraints);
+                const videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+                if (localStream && isMicStreaming && micStream) {
+                    const audioTrack = micStream.getAudioTracks()[0];
+                    if (audioTrack) videoStream.addTrack(audioTrack);
+                }
+                localStream = videoStream;
                 videoEl.srcObject = localStream;
                 initZoomCapabilities();
-                initWebSocket();
+                checkOrientation();
+                if (!ws) {
+                    initWebSocket();
+                }
             } catch (e) {
                 alert('Could not start camera: ' + e.message + '\n\nMake sure camera permissions are allowed in your browser.');
             }
@@ -586,6 +786,9 @@
 
             ws.onopen = () => {
                 ws.send(JSON.stringify({ type: 'register', role: 'broadcaster', camId, pin }));
+                if (isMicStreaming) {
+                    ws.send(JSON.stringify({ type: 'cam_mic_status', camId, active: true }));
+                }
                 sendTelemetry();
             };
 

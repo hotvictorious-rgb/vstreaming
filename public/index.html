@@ -84,6 +84,35 @@
             to { box-shadow: 0 0 20px rgba(239, 68, 68, 1); }
         }
 
+        /* Camera Audio to OBS Control */
+        .btn-audio-obs {
+            background: rgba(148, 163, 184, 0.12);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-audio-obs:hover {
+            background: rgba(148, 163, 184, 0.25);
+            color: #cbd5e1;
+        }
+        .btn-audio-obs.active {
+            background: rgba(16, 185, 129, 0.25) !important;
+            border-color: #10b981 !important;
+            color: #34d399 !important;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+        }
+        .btn-audio-obs.mic-live {
+            border-color: #38bdf8;
+        }
+
         /* =====================================================================
            LIVE GRAPHICS & LOWER-THIRDS CONSOLE (DIRECTOR DRAWER)
            ===================================================================== */
@@ -270,9 +299,13 @@
                     <option value="6">🔒 Cam 6 (Backup)</option>
                 </select>
             </div>
-            <div class="badge">
+            <div class="badge" style="display: flex; align-items: center; gap: 6px;">
                 <span class="badge-dot active" id="dot-hub"></span>
-                <span>Hub Local: <strong id="lbl-ip">Loading...</strong></span>
+                <span style="font-size: 11px; color: #94a3b8;">🌐 Adapter:</span>
+                <select id="sel-network-adapter" onchange="switchNetworkAdapter(this.value)" style="background: #150d28; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px; font-size: 11px; font-weight: 700; padding: 4px 6px; cursor: pointer; max-width: 175px;" title="Active Wi-Fi/Ethernet Network for Phone QR Codes">
+                    <option value="">Detecting...</option>
+                </select>
+                <span id="lbl-ip" style="display: none;"></span>
             </div>
             <div class="badge">
                 <span class="badge-dot" id="dot-obs"></span>
@@ -654,7 +687,8 @@ God in three Persons, blessed Trinity!</textarea>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(1)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(1)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(1)">📋 OBS Link</button>
-                        <button class="btn btn-talk-cam" id="btn-talk-cam-1" class="btn btn-talk-cam" onclick="toggleCamTalk(1)" title="Click to Talk / Click to Stop privately with Camera 1">🎙️ Talk</button>
+                        <button class="btn btn-audio-obs" id="btn-audio-obs-1" onclick="toggleObsAudio(1)" title="Toggle Camera Microphone into OBS Studio (Safety Muted by Default)">🔇 OBS Mic Off</button>
+                        <button class="btn btn-talk-cam" id="btn-talk-cam-1" onclick="toggleCamTalk(1)" title="Click to Talk / Click to Stop privately with Camera 1">🎙️ Talk</button>
                         <button class="btn btn-ping-cam" onclick="sendReadyToStreamAlert(1)" title="Alert Camera 1 specifically: 'Camera 1, get ready to stream!'" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">🔔 Ready</button>
                     </div>
                 </div>
@@ -682,7 +716,8 @@ God in three Persons, blessed Trinity!</textarea>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(2)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(2)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(2)">📋 OBS Link</button>
-                        <button class="btn btn-talk-cam" id="btn-talk-cam-2" class="btn btn-talk-cam" onclick="toggleCamTalk(2)" title="Click to Talk / Click to Stop privately with Camera 2">🎙️ Talk</button>
+                        <button class="btn btn-audio-obs" id="btn-audio-obs-2" onclick="toggleObsAudio(2)" title="Toggle Camera Microphone into OBS Studio (Safety Muted by Default)">🔇 OBS Mic Off</button>
+                        <button class="btn btn-talk-cam" id="btn-talk-cam-2" onclick="toggleCamTalk(2)" title="Click to Talk / Click to Stop privately with Camera 2">🎙️ Talk</button>
                         <button class="btn btn-ping-cam" onclick="sendReadyToStreamAlert(2)" title="Alert Camera 2 specifically: 'Camera 2, get ready to stream!'" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">🔔 Ready</button>
                     </div>
                 </div>
@@ -710,7 +745,8 @@ God in three Persons, blessed Trinity!</textarea>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(3)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(3)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(3)">📋 OBS Link</button>
-                        <button class="btn btn-talk-cam" id="btn-talk-cam-3" class="btn btn-talk-cam" onclick="toggleCamTalk(3)" title="Click to Talk / Click to Stop privately with Camera 3">🎙️ Talk</button>
+                        <button class="btn btn-audio-obs" id="btn-audio-obs-3" onclick="toggleObsAudio(3)" title="Toggle Camera Microphone into OBS Studio (Safety Muted by Default)">🔇 OBS Mic Off</button>
+                        <button class="btn btn-talk-cam" id="btn-talk-cam-3" onclick="toggleCamTalk(3)" title="Click to Talk / Click to Stop privately with Camera 3">🎙️ Talk</button>
                         <button class="btn btn-ping-cam" onclick="sendReadyToStreamAlert(3)" title="Alert Camera 3 specifically: 'Camera 3, get ready to stream!'" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">🔔 Ready</button>
                     </div>
                 </div>
@@ -738,7 +774,8 @@ God in three Persons, blessed Trinity!</textarea>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(4)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(4)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(4)">📋 OBS Link</button>
-                        <button class="btn btn-talk-cam" id="btn-talk-cam-4" class="btn btn-talk-cam" onclick="toggleCamTalk(4)" title="Click to Talk / Click to Stop privately with Camera 4">🎙️ Talk</button>
+                        <button class="btn btn-audio-obs" id="btn-audio-obs-4" onclick="toggleObsAudio(4)" title="Toggle Camera Microphone into OBS Studio (Safety Muted by Default)">🔇 OBS Mic Off</button>
+                        <button class="btn btn-talk-cam" id="btn-talk-cam-4" onclick="toggleCamTalk(4)" title="Click to Talk / Click to Stop privately with Camera 4">🎙️ Talk</button>
                         <button class="btn btn-ping-cam" onclick="sendReadyToStreamAlert(4)" title="Alert Camera 4 specifically: 'Camera 4, get ready to stream!'" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">🔔 Ready</button>
                     </div>
                 </div>
@@ -766,7 +803,8 @@ God in three Persons, blessed Trinity!</textarea>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(5)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(5)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(5)">📋 OBS Link</button>
-                        <button class="btn btn-talk-cam" id="btn-talk-cam-5" class="btn btn-talk-cam" onclick="toggleCamTalk(5)" title="Click to Talk / Click to Stop privately with Camera 5">🎙️ Talk</button>
+                        <button class="btn btn-audio-obs" id="btn-audio-obs-5" onclick="toggleObsAudio(5)" title="Toggle Camera Microphone into OBS Studio (Safety Muted by Default)">🔇 OBS Mic Off</button>
+                        <button class="btn btn-talk-cam" id="btn-talk-cam-5" onclick="toggleCamTalk(5)" title="Click to Talk / Click to Stop privately with Camera 5">🎙️ Talk</button>
                         <button class="btn btn-ping-cam" onclick="sendReadyToStreamAlert(5)" title="Alert Camera 5 specifically: 'Camera 5, get ready to stream!'" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">🔔 Ready</button>
                     </div>
                 </div>
@@ -794,7 +832,8 @@ God in three Persons, blessed Trinity!</textarea>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(6)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(6)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(6)">📋 OBS Link</button>
-                        <button class="btn btn-talk-cam" id="btn-talk-cam-6" class="btn btn-talk-cam" onclick="toggleCamTalk(6)" title="Click to Talk / Click to Stop privately with Camera 6">🎙️ Talk</button>
+                        <button class="btn btn-audio-obs" id="btn-audio-obs-6" onclick="toggleObsAudio(6)" title="Toggle Camera Microphone into OBS Studio (Safety Muted by Default)">🔇 OBS Mic Off</button>
+                        <button class="btn btn-talk-cam" id="btn-talk-cam-6" onclick="toggleCamTalk(6)" title="Click to Talk / Click to Stop privately with Camera 6">🎙️ Talk</button>
                         <button class="btn btn-ping-cam" onclick="sendReadyToStreamAlert(6)" title="Alert Camera 6 specifically: 'Camera 6, get ready to stream!'" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">🔔 Ready</button>
                     </div>
                 </div>
@@ -906,11 +945,37 @@ God in three Persons, blessed Trinity!</textarea>
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3 id="modal-title" style="color: var(--primary-gold); font-size: 18px;">Connect Camera</h3>
             <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px;">Scan with phone camera or open the link below on the phone:</p>
+            
+            <!-- Network Adapter Selector for QR Code -->
+            <div style="margin: 12px 0 8px 0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; color: #94a3b8; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 6px 12px; border-radius: 6px;">
+                <span>🌐 Wi-Fi Network:</span>
+                <select id="modal-network-select" onchange="switchNetworkAdapter(this.value)" style="background: #150d28; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 4px 8px; cursor: pointer; max-width: 210px;">
+                    <option value="">Detecting...</option>
+                </select>
+            </div>
+
             <img class="qr-image" id="modal-qr-img" src="" alt="QR Code">
             <div class="qr-link-box" id="modal-link-box">https://...</div>
-            <div style="display: flex; gap: 10px; justify-content: center;">
+            <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 12px;">
                 <button class="btn btn-primary" onclick="copyModalLink()">📋 Copy Phone Link</button>
                 <button class="btn btn-secondary" onclick="document.getElementById('qr-modal').classList.remove('open')">Close</button>
+            </div>
+
+            <!-- Volunteer First-Time SSL Guide (Local HTTPS) -->
+            <div style="background: rgba(30, 27, 75, 0.75); border: 1px solid rgba(99, 102, 241, 0.4); border-radius: 8px; padding: 12px 14px; text-align: left;">
+                <div style="display: flex; align-items: center; gap: 6px; color: #a5b4fc; font-weight: 700; font-size: 12px; margin-bottom: 6px;">
+                    <span>🔒</span> <span>Volunteer First-Time SSL Guide (Local HTTPS):</span>
+                </div>
+                <div style="font-size: 11px; color: #cbd5e1; line-height: 1.5;">
+                    <div style="display: flex; gap: 6px; margin-bottom: 5px;">
+                        <span style="background: #4f46e5; color: #fff; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0;">1</span>
+                        <span>Ensure phone is connected to church Wi-Fi and scan QR code above.</span>
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <span style="background: #4f46e5; color: #fff; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0;">2</span>
+                        <span>When browser displays <em>"Connection not private"</em>, tap <strong>"Advanced"</strong> &rarr; <strong>"Proceed to ... (unsafe)"</strong> to allow camera streaming.</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -963,6 +1028,9 @@ God in three Persons, blessed Trinity!</textarea>
                 const res = await fetch('/api/info');
                 serverInfo = await res.json();
                 document.getElementById('lbl-ip').innerText = `${serverInfo.localIp}:${serverInfo.httpPort}`;
+                if (serverInfo.networkInterfaces) {
+                    populateNetworkAdapters(serverInfo.networkInterfaces, serverInfo.selectedInterface || serverInfo.localIp);
+                }
                 if (serverInfo.pin && document.getElementById('lbl-studio-pin')) {
                     document.getElementById('lbl-studio-pin').innerText = serverInfo.pin;
                 }
@@ -1011,6 +1079,12 @@ God in three Persons, blessed Trinity!</textarea>
                         serverInfo.cameras[data.camId].tally = data.state;
                     }
                     updateTallyBadge(data.camId, data.state);
+                }
+                if (data.type === 'cam_mic_status') {
+                    updateMicStatusUI(data.camId, data.active);
+                }
+                if (data.type === 'obs_audio_status') {
+                    updateObsAudioButton(data.camId, data.enabled);
                 }
                 if (data.type === 'emergency_cut') {
                     if (serverInfo) serverInfo.isEmergencyCut = data.active;
@@ -2788,6 +2862,13 @@ God in three Persons, blessed Trinity!</textarea>
                     }
                 }
                 updateTallyBadge(id, cam.tally, cam.connected);
+                if (typeof cam.micActive !== 'undefined') {
+                    cameraMicStatus[id] = !!cam.micActive;
+                }
+                if (typeof cam.obsAudio !== 'undefined') {
+                    cameraObsAudio[id] = !!cam.obsAudio;
+                }
+                updateObsAudioButton(id, !!cameraObsAudio[id]);
                 if (cam.battery !== null) {
                     updateTelemetry(id, cam.battery, cam.charging);
                 }
@@ -2962,13 +3043,113 @@ God in three Persons, blessed Trinity!</textarea>
             }
         });
 
+        let currentModalCamId = 1;
+        let cameraObsAudio = {}; // camId -> boolean
+        let cameraMicStatus = {}; // camId -> boolean
+
+        function populateNetworkAdapters(interfaces, selectedIp) {
+            ['sel-network-adapter', 'modal-network-select'].forEach(selectId => {
+                const sel = document.getElementById(selectId);
+                if (!sel) return;
+                sel.innerHTML = '';
+                interfaces.forEach(iface => {
+                    const opt = document.createElement('option');
+                    opt.value = iface.address;
+                    const tag = iface.priority < 100 ? '⚡ ' : '🌐 ';
+                    opt.innerText = `${tag}${iface.name} (${iface.address})`;
+                    if (iface.address === selectedIp) opt.selected = true;
+                    sel.appendChild(opt);
+                });
+            });
+        }
+
+        async function switchNetworkAdapter(newIp) {
+            if (!newIp) return;
+            try {
+                const res = await fetch('/api/select-network', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ip: newIp })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    if (serverInfo) {
+                        serverInfo.localIp = data.selectedInterface;
+                        serverInfo.selectedInterface = data.selectedInterface;
+                        serverInfo.urls = data.urls;
+                    }
+                    ['sel-network-adapter', 'modal-network-select'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.value = data.selectedInterface;
+                    });
+                    showToast(`🌐 Switched to network adapter: ${data.selectedInterface}`);
+                    const qrModal = document.getElementById('qr-modal');
+                    if (qrModal && qrModal.classList.contains('open')) {
+                        openQrModal(currentModalCamId);
+                    }
+                }
+            } catch (err) {
+                console.error('Error switching network adapter:', err);
+            }
+        }
+
+        function toggleObsAudio(camId) {
+            const nextState = !cameraObsAudio[camId];
+            cameraObsAudio[camId] = nextState;
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'set_obs_audio',
+                    camId: parseInt(camId, 10),
+                    enabled: nextState
+                }));
+            }
+            updateObsAudioButton(camId, nextState);
+            showToast(nextState
+                ? `🔊 Camera ${camId} mic will now play into OBS Studio!`
+                : `🔇 Camera ${camId} mic is now safety-muted in OBS.`);
+        }
+
+        function updateObsAudioButton(camId, enabled) {
+            cameraObsAudio[camId] = enabled;
+            const btn = document.getElementById(`btn-audio-obs-${camId}`);
+            if (!btn) return;
+            const hasMic = !!cameraMicStatus[camId];
+            if (enabled) {
+                btn.className = 'btn btn-audio-obs active' + (hasMic ? ' mic-live' : '');
+                btn.innerText = hasMic ? '🔊 OBS Mic ON' : '🔊 OBS Audio ON';
+                btn.title = `Camera ${camId} audio is unmuted in OBS`;
+            } else {
+                btn.className = 'btn btn-audio-obs' + (hasMic ? ' mic-live' : '');
+                btn.innerText = hasMic ? '🎙️ Mic Ready (Muted)' : '🔇 OBS Mic Off';
+                btn.title = hasMic
+                    ? `Phone mic is active on Camera ${camId}, but safety-muted in OBS. Click to unmute into OBS!`
+                    : `Camera ${camId} audio is safety-muted in OBS.`;
+            }
+        }
+
+        function updateMicStatusUI(camId, active) {
+            cameraMicStatus[camId] = active;
+            updateObsAudioButton(camId, !!cameraObsAudio[camId]);
+            if (active) {
+                showToast(`🎙️ Camera ${camId} phone mic is streaming!\nTap [🔇 OBS Mic Off] on Camera ${camId} to bring it into OBS.`);
+            }
+        }
+
         // Open QR Modal
         function openQrModal(camId) {
-            if (!serverInfo) return;
+            if (!serverInfo || !serverInfo.urls) return;
+            currentModalCamId = camId;
             const camData = serverInfo.urls[camId];
-            document.getElementById('modal-title').innerText = `Connect Camera ${camId} (${serverInfo.cameras[camId].name})`;
+            if (!camData) return;
+            const camName = serverInfo.cameras && serverInfo.cameras[camId] ? serverInfo.cameras[camId].name : `Camera ${camId}`;
+            document.getElementById('modal-title').innerText = `Connect Camera ${camId} (${camName})`;
             document.getElementById('modal-qr-img').src = camData.qrCode;
             document.getElementById('modal-link-box').innerText = camData.camUrl;
+            const modalSel = document.getElementById('modal-network-select');
+            if (modalSel && (serverInfo.selectedInterface || serverInfo.localIp)) {
+                modalSel.value = serverInfo.selectedInterface || serverInfo.localIp;
+            }
             document.getElementById('qr-modal').classList.add('open');
         }
 

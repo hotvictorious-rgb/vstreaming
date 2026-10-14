@@ -26,19 +26,50 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Detect Local LAN IP (Wi-Fi or Ethernet)
-function getLocalIP() {
+// Smart Local LAN IP & Network Interface Detection
+let selectedInterfaceName = null;
+
+function getAvailableNetworkInterfaces() {
     const interfaces = os.networkInterfaces();
+    const result = [];
+    const virtualKeywords = ['virtual', 'vbox', 'vmnet', 'vethernet', 'wsl', 'docker', 'hyper-v', 'tailscale', 'zerotier', 'hamachi', 'loopback', 'teredo', 'npcap'];
+
     for (const name of Object.keys(interfaces)) {
         for (const iface of interfaces[name]) {
             if (iface.family === 'IPv4' && !iface.internal) {
-                if (iface.address.startsWith('192.168.') || iface.address.startsWith('10.') || iface.address.startsWith('172.')) {
-                    return iface.address;
-                }
+                const lowerName = name.toLowerCase();
+                const isVirtual = virtualKeywords.some(kw => lowerName.includes(kw));
+                const isWireless = lowerName.includes('wi-fi') || lowerName.includes('wireless') || lowerName.includes('wlan') || lowerName.includes('802.11');
+                const isEthernet = lowerName.includes('ethernet') || lowerName.includes('lan') || lowerName.includes('eth');
+
+                result.push({
+                    name,
+                    address: iface.address,
+                    isVirtual,
+                    isWireless,
+                    isEthernet,
+                    displayName: `${name} (${iface.address})${isWireless ? ' [Wi-Fi]' : (isVirtual ? ' [Virtual]' : '')}`,
+                    priority: isWireless ? 1 : (isEthernet && !isVirtual ? 2 : (isVirtual ? 9 : 3))
+                });
             }
         }
     }
-    return '127.0.0.1';
+
+    result.sort((a, b) => a.priority - b.priority);
+    return result;
+}
+
+function getLocalIP(requestedIp = null) {
+    const available = getAvailableNetworkInterfaces();
+    if (requestedIp) {
+        const found = available.find(i => i.address === requestedIp || i.name === requestedIp);
+        if (found) return found.address;
+    }
+    if (selectedInterfaceName) {
+        const found = available.find(i => i.address === selectedInterfaceName || i.name === selectedInterfaceName);
+        if (found) return found.address;
+    }
+    return available.length > 0 ? available[0].address : '127.0.0.1';
 }
 
 const LOCAL_IP = getLocalIP();
@@ -205,7 +236,9 @@ function getSanitizedCameras() {
             tally: cam.tally || 'OFF_AIR',
             battery: cam.battery,
             charging: cam.charging,
-            lastSeen: cam.lastSeen
+            lastSeen: cam.lastSeen,
+            micActive: !!cam.micActive,
+            obsAudio: !!cam.obsAudio
         };
     }
     return clean;
@@ -213,7 +246,9 @@ function getSanitizedCameras() {
 
 // API: Server Info & Status (Dynamic IP detection & QR Codes with embedded Session PIN)
 app.get('/api/info', async (req, res) => {
-    const currentIP = getLocalIP();
+    const requestedIp = req.query.ip || null;
+    const currentIP = getLocalIP(requestedIp);
+    const availableInterfaces = getAvailableNetworkInterfaces();
     const urls = {};
     for (let i = 1; i <= 6; i++) {
         const camUrl = `https://${currentIP}:${HTTPS_PORT}/cam.html?id=${i}&pin=${SESSION_PIN}`;
@@ -226,6 +261,8 @@ app.get('/api/info', async (req, res) => {
     res.json({
         name: 'Victorious Streaming Hub',
         localIp: currentIP,
+        networkInterfaces: availableInterfaces,
+        selectedInterface: selectedInterfaceName || currentIP,
         httpPort: HTTP_PORT,
         httpsPort: HTTPS_PORT,
         pin: SESSION_PIN,
@@ -236,6 +273,18 @@ app.get('/api/info', async (req, res) => {
         isEmergencyCut,
         currentProgramCamId
     });
+});
+
+// API: Select Active Network Adapter for QR Codes
+app.post('/api/select-network', express.json(), (req, res) => {
+    const { name, ip } = req.body || {};
+    if (name || ip) {
+        selectedInterfaceName = ip || name;
+        console.log(`[Victorious Hub] Active network adapter changed to: ${selectedInterfaceName} (${getLocalIP()})`);
+        res.json({ success: true, localIp: getLocalIP() });
+    } else {
+        res.status(400).json({ error: 'Missing name or ip' });
+    }
 });
 
 // API: Upload Sunday Church Flier (Secured)
@@ -694,6 +743,28 @@ function setupWebSocket(wss) {
                             }
                         });
                     });
+                    return;
+                }
+
+                // Camera Microphone Streaming Status (From Phone)
+                if (data.type === 'cam_mic_status') {
+                    const targetId = parseInt(data.camId || peerCamId, 10);
+                    if (cameras[targetId]) {
+                        cameras[targetId].micActive = !!data.micActive;
+                        broadcastToDirectors({ type: 'cam_mic_status', camId: targetId, micActive: !!data.micActive });
+                        broadcastToReceivers(targetId, { type: 'cam_mic_status', camId: targetId, micActive: !!data.micActive });
+                    }
+                    return;
+                }
+
+                // Director Audio Passthrough to OBS Toggle (From Director Hub)
+                if (data.type === 'set_obs_audio') {
+                    const targetId = parseInt(data.camId, 10);
+                    if (cameras[targetId]) {
+                        cameras[targetId].obsAudio = !!data.enabled;
+                        broadcastToReceivers(targetId, { type: 'set_obs_audio', camId: targetId, enabled: !!data.enabled });
+                        broadcastToDirectors({ type: 'obs_audio_status', camId: targetId, enabled: !!data.enabled });
+                    }
                     return;
                 }
 
