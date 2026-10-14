@@ -9,7 +9,8 @@ echo ===================================================================
 echo.
 
 echo [*] Requesting clean shutdown of Victorious Streaming Studio...
-taskkill /IM "Victorious Streaming Studio.exe" >nul 2>&1
+curl -s -X POST http://localhost:3000/api/shutdown >nul 2>&1
+taskkill /IM "Victorious Streaming Studio.exe" /F >nul 2>&1
 
 echo.
 echo [OK] Victorious Streaming Studio stopped and ports released safely.

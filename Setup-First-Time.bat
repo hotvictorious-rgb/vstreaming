@@ -27,6 +27,11 @@ if exist "runtime\node\node.exe" (
     echo [OK] System runtime detected.
 )
 
+if not exist "Victorious Streaming Studio.exe" (
+    echo [*] Compiling native Windows Studio executable...
+    C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /nologo /target:winexe /win32icon:app.ico /win32manifest:app.manifest /out:"Victorious Streaming Studio.exe" Launcher.cs >nul 2>&1
+)
+
 echo.
 echo [2/3] Configuring Windows Defender Firewall for local camera devices...
 netsh advfirewall firewall add rule name="Victorious Streaming Studio (HTTP)" dir=in action=allow protocol=TCP localport=3000-3010 profile=private >nul 2>&1
