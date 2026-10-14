@@ -18,7 +18,7 @@
             background: #000;
             position: relative;
         }
-        /* Fallback Flier Layer - Permanently Anchored Base (Rock-Solid, ZERO Blinking) */
+        /* Fallback Flier Layer - Permanently Anchored Base (Revealed on true disconnect) */
         #flier-slate {
             position: absolute;
             top: 0;
@@ -30,10 +30,25 @@
             background-size: cover;
             background-position: center;
             z-index: 1;
-            opacity: 1; /* Always 100% visible, never toggles opacity, never blinks */
+            opacity: 1; /* Always 100% visible base underneath, revealed on true disconnect */
             pointer-events: none;
         }
-        /* Live Video Stream Layer - Floats directly on top of Flier Slate */
+        /* Seamless Camera Transition Freeze Buffer (Covers Flier during intentional camera cuts) */
+        #freeze-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 2;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #freeze-canvas.active {
+            opacity: 1;
+        }
+        /* Live Video Stream Layer - Floats directly on top of Freeze Buffer & Flier */
         #obs-video {
             position: absolute;
             top: 0;
@@ -42,9 +57,9 @@
             height: 100%;
             object-fit: cover;
             display: block;
-            z-index: 2;
+            z-index: 3;
             opacity: 0;
-            transition: opacity 0.2s ease-out;
+            transition: opacity 0.1s ease-out;
         }
         #obs-video.instant-cut {
             transition: none !important;
@@ -333,10 +348,13 @@
     </style>
 </head>
 <body>
-    <!-- Permanent Church Flier Slate (Base Layer) -->
+    <!-- Permanent Church Flier Slate (Base Layer - z-index: 1) -->
     <div id="flier-slate"></div>
 
-    <!-- Live Video Stream Layer (Overlays Flier when Active & Authorized by Tally) -->
+    <!-- Seamless Camera Transition Hold Buffer (z-index: 2) -->
+    <canvas id="freeze-canvas"></canvas>
+
+    <!-- Live Video Stream Layer (Overlays Freeze Buffer & Flier - z-index: 3) -->
     <video id="obs-video" autoplay playsinline muted></video>
 
     <!-- Live Broadcast Graphics & Lower-Third Layer (Layer 10) -->
@@ -553,6 +571,70 @@
 
         const videoEl = document.getElementById('obs-video');
         const flierSlate = document.getElementById('flier-slate');
+        const freezeCanvas = document.getElementById('freeze-canvas');
+        const freezeCtx = freezeCanvas ? freezeCanvas.getContext('2d') : null;
+        let isFreezeActive = false;
+        let isSwitchingCamera = false;
+        let switchWatchdog = null;
+
+        // Cleanly and gracefully dismantle previous WebRTC peer connection
+        // without firing disconnect listeners that would falsely trigger fallbackToFlier()
+        function teardownPeerConnection() {
+            if (pc) {
+                try {
+                    pc.oniceconnectionstatechange = null;
+                    pc.ontrack = null;
+                    pc.onicecandidate = null;
+                    pc.close();
+                } catch (e) {}
+                pc = null;
+            }
+            if (videoEl && videoEl.srcObject) {
+                try {
+                    const stream = videoEl.srcObject;
+                    stream.getTracks().forEach(track => {
+                        track.onended = null;
+                        track.onmute = null;
+                        track.onunmute = null;
+                        track.stop();
+                    });
+                } catch (e) {}
+                videoEl.srcObject = null;
+            }
+        }
+
+        // Capture last frame of previous camera to hold across intentional cuts
+        function captureFreezeFrame() {
+            try {
+                if (videoEl && videoEl.videoWidth > 0 && videoEl.videoHeight > 0 && !isEmergency) {
+                    freezeCanvas.width = videoEl.videoWidth;
+                    freezeCanvas.height = videoEl.videoHeight;
+                    freezeCtx.drawImage(videoEl, 0, 0, freezeCanvas.width, freezeCanvas.height);
+                    freezeCanvas.classList.add('active');
+                    isFreezeActive = true;
+                    return true;
+                }
+            } catch (e) {
+                console.warn('[Freeze Frame Error]', e);
+            }
+            return false;
+        }
+
+        // Drop the freeze frame immediately (used on true disconnect, emergency cut, or once new camera is active)
+        function clearFreezeFrame() {
+            if (switchWatchdog) {
+                clearTimeout(switchWatchdog);
+                switchWatchdog = null;
+            }
+            isSwitchingCamera = false;
+            isFreezeActive = false;
+            if (freezeCanvas) {
+                freezeCanvas.classList.remove('active');
+                try {
+                    freezeCtx.clearRect(0, 0, freezeCanvas.width, freezeCanvas.height);
+                } catch (e) {}
+            }
+        }
 
         // Robust RTC Configuration with STUN for LAN/Wi-Fi mDNS discovery
         const rtcConfig = {
@@ -580,9 +662,11 @@
         }
         loadFlier();
 
-        // Reveal the permanent flier by hiding the top video layer
+        // Reveal the permanent flier by hiding video and clearing any freeze frame
         function fallbackToFlier(immediate = false) {
             isStreamActive = false;
+            isSwitchingCamera = false;
+            clearFreezeFrame(); // Drop hold frame immediately: reveals church flier slate
             if (immediate) {
                 videoEl.classList.add('instant-cut');
                 videoEl.classList.remove('live');
@@ -594,7 +678,7 @@
             }
         }
 
-        // Restore video layer over the flier ONLY IF authorized by Tally
+        // Restore live video layer over the freeze canvas / flier ONLY IF authorized by Tally
         function restoreLiveVideo() {
             if (isEmergency) return;
             // STRICT BROADCAST GATE: Never reveal video if camera is in STANDBY or OFF_AIR!
@@ -607,12 +691,26 @@
                 fallbackToFlier(true);
                 return;
             }
+
             isStreamActive = true;
+            isSwitchingCamera = false;
+            if (switchWatchdog) {
+                clearTimeout(switchWatchdog);
+                switchWatchdog = null;
+            }
+
+            // Reveal live video on top of freeze canvas
             videoEl.classList.add('live');
+
+            // Once new live video is safely rendering on screen, clear the freeze frame buffer
+            setTimeout(() => {
+                clearFreezeFrame();
+            }, 80);
         }
 
         function setEmergency(active, immediate = true) {
             isEmergency = active;
+            clearFreezeFrame();
             if (active) {
                 fallbackToFlier(immediate);
             } else if (isStreamActive && activeTallyState === 'PROGRAM') {
@@ -681,6 +779,7 @@
                     // Emergency Panic Cut (Instant Hard Cut to Flier)
                     if (data.type === 'emergency_cut') {
                         if (data.url) flierSlate.style.backgroundImage = `url("${data.url}")`;
+                        clearFreezeFrame();
                         setEmergency(data.active, true);
                         if (data.active) {
                             hideGraphicOverlay();
@@ -690,41 +789,76 @@
                         }
                     }
 
-                    // Master Program Cut Event (Director explicitly pressed CUT LIVE)
+                    // Master Program Cut Event (Director pressed CUT LIVE or server signaled program switch)
                     if (data.type === 'program_cut' && isProgramMode) {
-                        if (!data.camId) {
+                        const nextCamId = data.camId ? parseInt(data.camId, 10) : null;
+
+                        // Case 1: Program taken off-air or active camera dropped -> Cut straight to Church Flier!
+                        if (!nextCamId) {
+                            console.log('[OBS Master Program] Program off-air -> Showing Church Flier slate');
                             currentProgramCamId = null;
                             activeTallyState = 'OFF_AIR';
-                            if (pc) { try { pc.close(); } catch (e) {} pc = null; }
-                            videoEl.srcObject = null;
+                            teardownPeerConnection();
+                            clearFreezeFrame();
                             fallbackToFlier(true);
                             return;
                         }
-                        currentProgramCamId = parseInt(data.camId, 10);
-                        activeTallyState = 'PROGRAM'; // Authoritative CUT LIVE command!
-                        console.log(`[Master Program OBS] Cut Live to Camera ${currentProgramCamId}`);
+
+                        // Case 2: Intentional Switch between cameras (Cam A -> Cam B across Cam 1..6)
+                        if (currentProgramCamId && currentProgramCamId !== nextCamId && isStreamActive && videoEl.videoWidth > 0) {
+                            console.log(`[OBS Master Program] Seamless Cut from Cam ${currentProgramCamId} -> Cam ${nextCamId}: Freezing hold frame`);
+                            captureFreezeFrame();
+                            isSwitchingCamera = true;
+
+                            // Watchdog: If Cam B fails to connect within 4 seconds, drop freeze and reveal flier
+                            if (switchWatchdog) clearTimeout(switchWatchdog);
+                            switchWatchdog = setTimeout(() => {
+                                if (isSwitchingCamera && (!isStreamActive || activeTallyState !== 'PROGRAM')) {
+                                    console.warn(`[OBS Watchdog] Camera ${nextCamId} connection timed out -> Revealing Church Flier`);
+                                    clearFreezeFrame();
+                                    fallbackToFlier(true);
+                                }
+                            }, 4000);
+                        } else if (!currentProgramCamId) {
+                            // Cutting from Church Flier to camera: clear freeze canvas so flier remains visible until Cam connects
+                            clearFreezeFrame();
+                        }
+
+                        currentProgramCamId = nextCamId;
+                        activeTallyState = 'PROGRAM';
+                        console.log(`[OBS Master Program] Cut Live to Camera ${currentProgramCamId}`);
+
+                        // Teardown previous stream cleanly (freeze canvas stays visible to audience!)
+                        teardownPeerConnection();
+                        videoEl.classList.remove('live');
+
                         requestStream(currentProgramCamId);
                     }
 
                     // Direct Tally Update from Director
                     if (data.type === 'tally_update') {
-                        const targetCam = isProgramMode ? currentProgramCamId : camId;
-                        if (parseInt(data.camId, 10) === targetCam) {
-                            activeTallyState = data.state;
-                            if (activeTallyState === 'PROGRAM') {
-                                console.log(`[OBS Receiver] Camera ${data.camId} cut to PROGRAM!`);
-                                if (videoEl.videoWidth > 0 && !isEmergency) {
-                                    restoreLiveVideo();
+                        const updateCam = parseInt(data.camId, 10);
+                        if (!isProgramMode) {
+                            // Dedicated single-camera ingest mode (e.g. obs.html?id=1)
+                            if (updateCam === camId) {
+                                activeTallyState = data.state;
+                                if (activeTallyState === 'PROGRAM') {
+                                    console.log(`[OBS Receiver] Camera ${data.camId} cut to PROGRAM!`);
+                                    if (videoEl.videoWidth > 0 && !isEmergency) {
+                                        restoreLiveVideo();
+                                    } else {
+                                        requestStream(data.camId);
+                                    }
                                 } else {
-                                    requestStream(data.camId);
+                                    console.log(`[OBS Receiver] Camera ${data.camId} demoted to ${data.state} -> Revealing Church Flier`);
+                                    teardownPeerConnection();
+                                    clearFreezeFrame();
+                                    fallbackToFlier(true);
                                 }
-                            } else {
-                                console.log(`[OBS Receiver] Camera ${data.camId} demoted to ${data.state} -> Revealing Church Flier`);
-                                if (pc) { try { pc.close(); } catch (e) {} pc = null; }
-                                videoEl.srcObject = null;
-                                fallbackToFlier(true);
                             }
                         }
+                        // Note: in isProgramMode, camera cuts are driven strictly by 'program_cut' above,
+                        // preventing race conditions where old camera's STANDBY demotion flashed the flier!
                     }
 
                     // Broadcaster Came Online
@@ -735,15 +869,16 @@
                         }
                     }
 
-                    // Broadcaster Suspended or Went Offline
+                    // Broadcaster Suspended or Went Offline (Phone locked, signal dropped, app closed, battery dead)
                     if (data.type === 'broadcaster_offline' || data.type === 'broadcaster_suspended') {
                         const targetId = parseInt(data.camId, 10);
                         if ((!isProgramMode && targetId === camId) || (isProgramMode && targetId === currentProgramCamId)) {
-                            console.warn(`[OBS Receiver] Camera ${targetId} suspended/offline -> Revealing static flier slate`);
+                            console.warn(`[OBS Receiver] Active Camera ${targetId} lost signal / went offline -> Instant Fallback to Church Flier`);
                             activeTallyState = 'OFF_AIR';
                             if (isProgramMode) currentProgramCamId = null;
-                            if (pc) { try { pc.close(); } catch (e) {} pc = null; }
-                            videoEl.srcObject = null;
+                            teardownPeerConnection();
+                            // Genuine disconnect: destroy any hold buffer immediately!
+                            clearFreezeFrame();
                             fallbackToFlier(true);
                         }
                     }
@@ -765,6 +900,7 @@
             };
 
             ws.onclose = () => {
+                clearFreezeFrame();
                 fallbackToFlier(true);
                 setTimeout(initWebSocket, 2000);
             };
@@ -794,9 +930,7 @@
                 return;
             }
 
-            if (pc) {
-                try { pc.close(); } catch (e) {}
-            }
+            teardownPeerConnection();
 
             candidateQueue = [];
             pc = new RTCPeerConnection(rtcConfig);
@@ -807,7 +941,13 @@
                 clearTimeout(muteTimeout);
                 console.log(`[OBS Receiver] Video playback active, checking Tally authorization: ${activeTallyState}`);
                 if (!isEmergency && activeTallyState === 'PROGRAM' && (!isProgramMode || currentProgramCamId)) {
-                    restoreLiveVideo();
+                    if ('requestVideoFrameCallback' in videoEl) {
+                        videoEl.requestVideoFrameCallback(() => {
+                            restoreLiveVideo();
+                        });
+                    } else {
+                        setTimeout(restoreLiveVideo, 50);
+                    }
                 } else {
                     fallbackToFlier(true);
                 }
@@ -827,15 +967,19 @@
                 event.streams[0].getVideoTracks().forEach(track => {
                     track.onended = () => {
                         console.log('[OBS Track Ended]');
-                        fallbackToFlier(true);
+                        if (!isSwitchingCamera) {
+                            clearFreezeFrame();
+                            fallbackToFlier(true);
+                        }
                     };
 
                     // Clean signal loss debounce: reveals flier if track pauses
                     track.onmute = () => {
                         clearTimeout(muteTimeout);
                         muteTimeout = setTimeout(() => {
-                            if (track.readyState === 'ended' || track.muted) {
+                            if ((track.readyState === 'ended' || track.muted) && !isSwitchingCamera) {
                                 console.warn('[OBS] Track muted -> Revealing static flier slate');
+                                clearFreezeFrame();
                                 fallbackToFlier(false);
                             }
                         }, 600);
@@ -855,7 +999,11 @@
             pc.oniceconnectionstatechange = () => {
                 console.log(`[OBS ICE State] ${pc.iceConnectionState}`);
                 if (['disconnected', 'failed', 'closed'].includes(pc.iceConnectionState)) {
-                    fallbackToFlier(true);
+                    if (!isSwitchingCamera) {
+                        console.warn('[OBS] ICE connection dropped -> Revealing Church Flier');
+                        clearFreezeFrame();
+                        fallbackToFlier(true);
+                    }
                 } else if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
                     if (!isEmergency && videoEl.videoWidth > 0 && activeTallyState === 'PROGRAM' && (!isProgramMode || currentProgramCamId)) {
                         restoreLiveVideo();
