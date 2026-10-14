@@ -6,16 +6,20 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('[Server Guard] Caught Unhandled Rejection:', reason);
 });
 
-﻿const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const https = require('https');
+const net = require('net');
 const express = require('express');
 const { WebSocketServer, WebSocket } = require('ws');
 const selfsigned = require('selfsigned');
 const qrcode = require('qrcode');
 const os = require('os');
 const multer = require('multer');
+
+// Session Security PIN (Generated per session or via env variable)
+const SESSION_PIN = process.env.STUDIO_PIN || Math.floor(1000 + Math.random() * 9000).toString();
 
 // Initialize Express App
 const app = express();
@@ -38,8 +42,44 @@ function getLocalIP() {
 }
 
 const LOCAL_IP = getLocalIP();
-const HTTP_PORT = 3000;
-const HTTPS_PORT = 3443;
+let HTTP_PORT = parseInt(process.env.PORT || '3000', 10);
+let HTTPS_PORT = parseInt(process.env.HTTPS_PORT || '3443', 10);
+
+// Helper: Dynamically find free TCP port
+function findAvailablePort(startPort) {
+    return new Promise((resolve, reject) => {
+        const tester = net.createServer();
+        tester.unref();
+        tester.on('error', (err) => {
+            if (err.code === 'EADDRINUSE') {
+                resolve(findAvailablePort(startPort + 1));
+            } else {
+                reject(err);
+            }
+        });
+        tester.listen(startPort, () => {
+            const port = tester.address().port;
+            tester.close(() => resolve(port));
+        });
+    });
+}
+
+// Security Middleware: Validate PIN for remote LAN callers
+function requirePin(req, res, next) {
+    const clientIp = req.socket.remoteAddress || '';
+    const isLoopback = clientIp === '127.0.0.1' || clientIp === '::1' || clientIp === '::ffff:127.0.0.1';
+    
+    // Allow local director on the same computer without prompt
+    if (isLoopback) return next();
+
+    const clientPin = req.query.pin || req.headers['x-studio-pin'] || (req.body && req.body.pin);
+    if (clientPin && clientPin.toString() === SESSION_PIN.toString()) {
+        return next();
+    }
+
+    console.warn(`[Security Alert] Unauthorized access attempt from ${clientIp} to ${req.originalUrl}`);
+    return res.status(401).json({ error: 'Unauthorized: Valid Studio PIN required for remote access.' });
+}
 
 // Ensure SSL Certificate exists for HTTPS
 const certDir = path.join(__dirname, '.cert');
@@ -77,6 +117,17 @@ if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
     sslOptions = { cert: pems.cert, key: pems.private };
 }
 
+// Strict File Upload Filter (CWE-434 Hardening)
+const imageFileFilter = (req, file, cb) => {
+    const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.svg'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowed.includes(ext)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Security check: Only standard image files (.jpg, .png, .webp, .svg) are allowed.'), false);
+    }
+};
+
 // Assets Directory for Church Fliers
 const assetsDir = path.join(__dirname, 'public', 'assets');
 if (!fs.existsSync(assetsDir)) fs.mkdirSync(assetsDir, { recursive: true });
@@ -88,7 +139,11 @@ const storage = multer.diskStorage({
         cb(null, 'church_flier' + ext);
     }
 });
-const upload = multer({ storage });
+const upload = multer({
+    storage,
+    fileFilter: imageFileFilter,
+    limits: { fileSize: 20 * 1024 * 1024 } // 20MB limit
+});
 
 // High-Resolution Church Service Photo Storage
 const photosDir = path.join(__dirname, 'photos');
@@ -105,10 +160,14 @@ const photoStorage = multer.diskStorage({
         cb(null, `Sunday_Church_Photo_Cam${camId}_${dateStr}${ext}`);
     }
 });
-const photoUpload = multer({ storage: photoStorage });
+const photoUpload = multer({
+    storage: photoStorage,
+    fileFilter: imageFileFilter,
+    limits: { fileSize: 25 * 1024 * 1024 }
+});
 
 let isEmergencyCut = false;
-let currentProgramCamId = null; // Master Program starts safely on Sunday Church Flier until Director cuts live
+let currentProgramCamId = null;
 
 // Get Active Flier URL (Custom uploaded or Default SVG)
 function getActiveFlierUrl() {
@@ -122,10 +181,10 @@ function getActiveFlierUrl() {
     return '/assets/default_flier.svg';
 }
 
-// Internal Camera Sockets Map (Decoupled from state object to guarantee circular-free JSON)
+// Internal Camera Sockets Map
 const cameraSockets = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
 
-// Global Camera State (Pure JSON Telemetry DTO)
+// Global Camera State
 const cameras = {
     1: { id: 1, name: 'Pastor / Pulpit', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null },
     2: { id: 2, name: 'Choir / Altar', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null },
@@ -135,7 +194,6 @@ const cameras = {
     6: { id: 6, name: 'Guest / Overflow', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null }
 };
 
-// Safe Projection: Guarantees 100% clean, non-circular JSON payload for Director HUD & APIs
 function getSanitizedCameras() {
     const clean = {};
     for (const [id, cam] of Object.entries(cameras)) {
@@ -153,12 +211,12 @@ function getSanitizedCameras() {
     return clean;
 }
 
-// API: Server Info & Status (Dynamic IP detection for any Wi-Fi)
+// API: Server Info & Status (Dynamic IP detection & QR Codes with embedded Session PIN)
 app.get('/api/info', async (req, res) => {
     const currentIP = getLocalIP();
     const urls = {};
     for (let i = 1; i <= 6; i++) {
-        const camUrl = `https://${currentIP}:${HTTPS_PORT}/cam.html?id=${i}`;
+        const camUrl = `https://${currentIP}:${HTTPS_PORT}/cam.html?id=${i}&pin=${SESSION_PIN}`;
         urls[i] = {
             camUrl,
             obsUrl: `http://localhost:${HTTP_PORT}/obs.html?id=${i}`,
@@ -170,6 +228,7 @@ app.get('/api/info', async (req, res) => {
         localIp: currentIP,
         httpPort: HTTP_PORT,
         httpsPort: HTTPS_PORT,
+        pin: SESSION_PIN,
         cameras: getSanitizedCameras(),
         urls,
         programUrl: `http://localhost:${HTTP_PORT}/obs.html?id=program`,
@@ -179,8 +238,8 @@ app.get('/api/info', async (req, res) => {
     });
 });
 
-// API: Upload Sunday Church Flier
-app.post('/api/upload-flier', upload.single('flier'), (req, res) => {
+// API: Upload Sunday Church Flier (Secured)
+app.post('/api/upload-flier', requirePin, upload.single('flier'), (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     const flierUrl = getActiveFlierUrl();
     console.log(`[Victorious Hub] New Church Flier Uploaded: ${req.file.filename}`);
@@ -196,16 +255,17 @@ app.get('/api/flier-status', (req, res) => {
     });
 });
 
-// API: Toggle Panic Emergency Cut
-// API: Graceful Shutdown Endpoint for Standalone App
-app.post('/api/shutdown', (req, res) => {
+// API: Graceful Shutdown Endpoint for Standalone App (Secured)
+app.post('/api/shutdown', requirePin, (req, res) => {
     res.json({ success: true, message: 'Studio engine shutting down gracefully.' });
     console.log('[Victorious Hub] Studio exit requested. Shutting down gracefully...');
     setTimeout(() => {
-        process.exit(0);
+        cleanupAndExit(0);
     }, 500);
 });
-app.post('/api/emergency-cut', (req, res) => {
+
+// API: Emergency Cut (Secured)
+app.post('/api/emergency-cut', requirePin, (req, res) => {
     const { active } = req.body;
     isEmergencyCut = typeof active === 'boolean' ? active : !isEmergencyCut;
     console.log(`[Emergency Slate] Cut state: ${isEmergencyCut ? 'ACTIVE' : 'RESTORED'}`);
@@ -213,8 +273,8 @@ app.post('/api/emergency-cut', (req, res) => {
     res.json({ success: true, isEmergencyCut });
 });
 
-// API: Upload Captured Photo from Camera Phone or Director Laptop
-app.post('/api/upload-photo', photoUpload.single('photo'), (req, res) => {
+// API: Upload Captured Photo (Secured)
+app.post('/api/upload-photo', requirePin, photoUpload.single('photo'), (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No photo uploaded' });
     const camId = parseInt(req.query.camId || req.body.camId || '1', 10);
     const photoUrl = `/photos/${req.file.filename}`;
@@ -233,7 +293,7 @@ app.post('/api/upload-photo', photoUpload.single('photo'), (req, res) => {
 app.get('/api/photos', (req, res) => {
     try {
         const files = fs.readdirSync(photosDir);
-        const photos = files.filter(f => f.match(/\.(jpg|jpeg|png)$/i)).map(f => {
+        const photos = files.filter(f => f.match(/\.(jpg|jpeg|png|webp)$/i)).map(f => {
             const stat = fs.statSync(path.join(photosDir, f));
             const match = f.match(/Cam(\d+)/i);
             const camId = match ? parseInt(match[1], 10) : 1;
@@ -255,8 +315,8 @@ app.get('/api/photos', (req, res) => {
     }
 });
 
-// API: Delete a Saved Church Photo
-app.delete('/api/photos/:filename', (req, res) => {
+// API: Delete a Saved Church Photo (Secured)
+app.delete('/api/photos/:filename', requirePin, (req, res) => {
     try {
         const filename = path.basename(req.params.filename);
         const filePath = path.join(photosDir, filename);
@@ -272,8 +332,6 @@ app.delete('/api/photos/:filename', (req, res) => {
         return res.status(500).json({ error: e.message });
     }
 });
-
-// API: Set Tally Manually
 
 // =====================================================================
 // OFFLINE BIBLE ENGINE & CANONICAL BOUNDARY GUARD
@@ -348,7 +406,6 @@ app.get('/api/bible/verse', (req, res) => {
 
     const canonicalRef = `${bookData.name.toUpperCase()} ${chapter}:${verse}`;
 
-    // 100% Offline KJV text resolution
     if (offlineKjv && (version === 'KJV' || version === 'OFFLINE')) {
         try {
             let rawText = offlineKjv.getVerse(bookId, chapter, verse);
@@ -371,7 +428,6 @@ app.get('/api/bible/verse', (req, res) => {
         }
     }
 
-    // Return structure metadata for other versions
     return res.json({
         success: true,
         ref: canonicalRef,
@@ -384,7 +440,8 @@ app.get('/api/bible/verse', (req, res) => {
     });
 });
 
-app.post('/api/tally', (req, res) => {
+// API: Set Tally Manually (Secured)
+app.post('/api/tally', requirePin, (req, res) => {
     const { camId, state } = req.body;
     const targetId = parseInt(camId, 10);
     if (cameras[targetId]) {
@@ -417,7 +474,6 @@ app.post('/api/tally', (req, res) => {
     }
 });
 
-
 // Create HTTP & HTTPS Servers
 const httpServer = http.createServer(app);
 const httpsServer = https.createServer(sslOptions, app);
@@ -432,13 +488,10 @@ function triggerOffersForCamera(camId, broadcasterWs) {
     [wssHttp, wssHttps].forEach(wss => {
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
-                // Strict Broadcast Rule: Program OBS is ONLY prompted if this camera is actively cut to PROGRAM
                 if (client.isProgramReceiver && currentProgramCamId === camId && cameras[camId] && cameras[camId].tally === 'PROGRAM' && client.receiverId) {
-                    console.log(`[Broadcaster Connect] Prompting Camera ${camId} for active Program OBS (${client.receiverId})`);
                     broadcasterWs.send(JSON.stringify({ type: 'receiver_ready', camId, receiverId: client.receiverId }));
                 } else if (client.role === 'receiver' && client.camId === camId && client.receiverId) {
                     if (cameras[camId] && cameras[camId].tally === 'PROGRAM') {
-                        console.log(`[Broadcaster Connect] Prompting Camera ${camId} for active OBS receiver (${client.receiverId})`);
                         broadcasterWs.send(JSON.stringify({ type: 'receiver_ready', camId, receiverId: client.receiverId }));
                     }
                 } else if (client.role === 'director') {
@@ -457,7 +510,7 @@ function triggerOffersForCamera(camId, broadcasterWs) {
 
 function setupWebSocket(wss) {
     wss.on('connection', (ws, req) => {
-        let peerRole = null; // 'broadcaster', 'receiver', 'director'
+        let peerRole = null;
         let peerCamId = null;
 
         ws.isAlive = true;
@@ -480,7 +533,6 @@ function setupWebSocket(wss) {
 
                     if (ws.isProgramReceiver) {
                         const isLiveProgramActive = (currentProgramCamId && cameras[currentProgramCamId] && cameras[currentProgramCamId].connected && cameras[currentProgramCamId].tally === 'PROGRAM');
-                        console.log(`[Master Program OBS Registered] (ID: ${data.receiverId}), current live is Cam ${isLiveProgramActive ? currentProgramCamId : 'NONE (Flier Active)'}`);
                         ws.send(JSON.stringify({ type: 'program_cut', camId: isLiveProgramActive ? currentProgramCamId : null }));
                         if (isLiveProgramActive && cameraSockets[currentProgramCamId] && cameraSockets[currentProgramCamId].readyState === WebSocket.OPEN) {
                             cameraSockets[currentProgramCamId].send(JSON.stringify({
@@ -493,14 +545,12 @@ function setupWebSocket(wss) {
                     }
 
                     if (peerRole === 'broadcaster' && cameras[peerCamId]) {
-                        // Check if another phone is already connected to this camera channel
                         if (cameras[peerCamId].connected && cameraSockets[peerCamId] && cameraSockets[peerCamId] !== ws && cameraSockets[peerCamId].readyState === WebSocket.OPEN) {
-                            console.warn(`[Channel Conflict] A second phone tried to connect to Camera ${peerCamId} which is already active!`);
                             ws.send(JSON.stringify({
                                 type: 'channel_busy',
                                 camId: peerCamId,
                                 camName: cameras[peerCamId].name,
-                                message: `Camera ${peerCamId} (${cameras[peerCamId].name}) is already in use by another phone.`
+                                message: `Camera ${peerCamId} is already in use by another device.`
                             }));
                             return;
                         }
@@ -509,24 +559,15 @@ function setupWebSocket(wss) {
                         cameras[peerCamId].suspended = false;
                         cameraSockets[peerCamId] = ws;
                         cameras[peerCamId].lastSeen = Date.now();
-                        // DIRECTOR GATEKEEPER RULE: All newly connected/reconnecting phones enter STANDBY
                         cameras[peerCamId].tally = 'STANDBY';
-                        console.log(`[Broadcaster Connected] Camera ${peerCamId} (${cameras[peerCamId].name}) -> Standby (Director Preview Only)`);
                         broadcastToDirectors({ type: 'camera_update', cameras });
                         ws.send(JSON.stringify({ type: 'tally', state: 'STANDBY' }));
-
-                        // Immediately prompt broadcaster to create offers for Director preview only
                         triggerOffersForCamera(peerCamId, ws);
-
-                        // Notify any waiting OBS receivers or director previews that this camera is online!
                         broadcastToReceivers(peerCamId, { type: 'broadcaster_online', camId: peerCamId });
                     }
 
                     if (peerRole === 'receiver' && peerCamId) {
                         const isCamLive = (cameras[peerCamId] && cameras[peerCamId].connected && cameras[peerCamId].tally === 'PROGRAM');
-                        console.log(`[OBS Receiver Registered] For Camera ${peerCamId} (ID: ${data.receiverId}), isLive=${isCamLive}`);
-
-                        // Only prompt broadcaster if camera is actually cut to PROGRAM!
                         if (isCamLive && cameraSockets[peerCamId] && cameraSockets[peerCamId].readyState === WebSocket.OPEN) {
                             cameraSockets[peerCamId].send(JSON.stringify({
                                 type: 'receiver_ready',
@@ -538,37 +579,33 @@ function setupWebSocket(wss) {
                     return;
                 }
 
-                // Emergency Panic Cut (Hard Cut to Sunday Flier over WebSocket)
+                // Emergency Panic Cut
                 if (data.type === 'emergency_cut') {
                     isEmergencyCut = typeof data.active === 'boolean' ? data.active : (typeof data.enabled === 'boolean' ? data.enabled : !isEmergencyCut);
-                    console.log(`[Emergency Slate] WebSocket toggle: Cut state is ${isEmergencyCut ? 'ACTIVE' : 'RESTORED'}`);
                     broadcastToAll({ type: 'emergency_cut', active: isEmergencyCut, url: getActiveFlierUrl() });
                     return;
                 }
 
-                // Operator phone screen locked or app minimized
+                // Camera Suspended
                 if (data.type === 'camera_suspended') {
                     const targetId = parseInt(data.camId || peerCamId, 10);
                     if (cameras[targetId]) {
                         cameras[targetId].connected = false;
                         cameras[targetId].suspended = true;
-                        // Strip PROGRAM authority if this camera was live
                         if (currentProgramCamId === targetId || cameras[targetId].tally === 'PROGRAM') {
-                            console.log(`[Program Authority Stripped] Camera ${targetId} was LIVE but suspended -> Resetting Program to Flier`);
                             currentProgramCamId = null;
                             cameras[targetId].tally = 'OFF_AIR';
                             broadcastToProgramReceivers(null);
                         } else {
                             cameras[targetId].tally = 'OFF_AIR';
                         }
-                        console.log(`[Broadcaster Suspended] Camera ${targetId} screen locked or backgrounded -> Instant failover`);
                         broadcastToDirectors({ type: 'camera_update', cameras });
                         broadcastToReceivers(targetId, { type: 'broadcaster_suspended', camId: targetId });
                     }
                     return;
                 }
 
-                // Operator phone screen unlocked or app foregrounded
+                // Camera Resumed
                 if (data.type === 'camera_resumed') {
                     const targetId = parseInt(data.camId || peerCamId, 10);
                     if (cameras[targetId]) {
@@ -576,9 +613,7 @@ function setupWebSocket(wss) {
                         cameras[targetId].suspended = false;
                         cameraSockets[targetId] = ws;
                         cameras[targetId].lastSeen = Date.now();
-                        // Waking camera stays in STANDBY until Director explicitly cuts live!
                         cameras[targetId].tally = 'STANDBY';
-                        console.log(`[Broadcaster Resumed] Camera ${targetId} restored in STANDBY (Awaiting Director Cut Live)`);
                         broadcastToDirectors({ type: 'camera_update', cameras });
                         ws.send(JSON.stringify({ type: 'tally', state: 'STANDBY' }));
                         broadcastToReceivers(targetId, { type: 'broadcaster_online', camId: targetId });
@@ -587,7 +622,7 @@ function setupWebSocket(wss) {
                     return;
                 }
 
-                // Battery & Telemetry from Phone
+                // Telemetry
                 if (data.type === 'telemetry') {
                     if (peerCamId && cameras[peerCamId]) {
                         cameras[peerCamId].battery = data.battery;
@@ -598,11 +633,10 @@ function setupWebSocket(wss) {
                     return;
                 }
 
-                // Cameraman Voluntary Handoff to Church Flier Slate
+                // Cameraman Voluntary Handoff
                 if (data.type === 'cameraman_handoff') {
                     const targetId = parseInt(data.camId || peerCamId, 10);
                     if (cameras[targetId]) {
-                        console.log(`[Cameraman Handoff] Camera ${targetId} (${cameras[targetId].name}) voluntarily yielded live broadcast to Church Flier`);
                         if (currentProgramCamId === targetId || cameras[targetId].tally === 'PROGRAM') {
                             currentProgramCamId = null;
                             cameras[targetId].tally = 'STANDBY';
@@ -615,7 +649,7 @@ function setupWebSocket(wss) {
                         broadcastToDirectors({
                             type: 'camera_update',
                             cameras,
-                            notification: `ðŸ•Šï¸ Camera ${targetId} (${cameras[targetId].name}) handed off live broadcast to Church Flier.`
+                            notification: `Camera ${targetId} handed off live broadcast to Church Flier.`
                         });
                         broadcastToReceivers(targetId, { type: 'tally_update', camId: targetId, state: 'STANDBY' });
                     }
@@ -627,7 +661,7 @@ function setupWebSocket(wss) {
                     ws.receiverIds.add(data.receiverId);
                 }
 
-                // Intercom Audio Alerts & Crew Pings (Targeted / Isolated to specific Camera or All)
+                // Intercom Audio Alerts
                 if (data.type === 'intercom_ping') {
                     const target = data.target || 'all';
                     [wssHttp, wssHttps].forEach(wss => {
@@ -642,18 +676,19 @@ function setupWebSocket(wss) {
                     return;
                 }
 
-                // Live Broadcast Graphics & Lower-Thirds Overlay Commands (OBS Layer)
+                // Live Broadcast Graphics
                 if (['overlay_show', 'overlay_hide'].includes(data.type)) {
                     broadcastToAll(data);
                     return;
                 }
 
-                // Intercom Talkback: Director speaking to all or specific camera phone
+                // Intercom Talkback
                 if (data.type === 'intercom_active') {
+                    const target = data.target || 'all';
                     [wssHttp, wssHttps].forEach(wss => {
                         wss.clients.forEach(client => {
                             if (client.readyState === WebSocket.OPEN && client.role === 'broadcaster') {
-                                if (data.target === 'all' || client.camId === parseInt(data.target, 10)) {
+                                if (target === 'all' || client.camId === parseInt(target, 10)) {
                                     client.send(JSON.stringify(data));
                                 }
                             }
@@ -662,7 +697,7 @@ function setupWebSocket(wss) {
                     return;
                 }
 
-                // WebRTC Signaling: Forward receiver_ready, offer, answer, ice-candidate
+                // WebRTC Signaling
                 if (['receiver_ready', 'offer', 'answer', 'ice-candidate', 'intercom_offer', 'intercom_answer', 'intercom_ice'].includes(data.type)) {
                     let targetCamId = parseInt(data.camId || ws.camId, 10);
                     if (isNaN(targetCamId) || data.camId === 'program') {
@@ -672,7 +707,6 @@ function setupWebSocket(wss) {
                         wss.clients.forEach(client => {
                             if (client !== ws && client.readyState === WebSocket.OPEN) {
                                 if (ws.role === 'broadcaster') {
-                                    // Broadcaster sending to specific receiver (OBS or specific Director session)
                                     if (data.directorId && client.role === 'director') {
                                         client.send(JSON.stringify(data));
                                     } else if (data.receiverId) {
@@ -685,7 +719,6 @@ function setupWebSocket(wss) {
                                         client.send(JSON.stringify(data));
                                     }
                                 } else {
-                                    // Receiver or Director sending to Broadcaster
                                     if (client.role === 'broadcaster' && client.camId === targetCamId) {
                                         client.send(JSON.stringify(data));
                                     }
@@ -696,7 +729,7 @@ function setupWebSocket(wss) {
                     return;
                 }
 
-                // Director Tally Change & OBS Live Scene Switching (Exclusive Single Live Rule)
+                // Director Tally Change
                 if (data.type === 'set_tally') {
                     const { camId, state } = data;
                     const targetId = parseInt(camId, 10);
@@ -704,11 +737,9 @@ function setupWebSocket(wss) {
                         if (state === 'PROGRAM') {
                             if (isEmergencyCut) {
                                 isEmergencyCut = false;
-                                console.log(`[Emergency Disengaged] Cutting Camera ${targetId} live auto-cleared emergency cut`);
                                 broadcastToAll({ type: 'emergency_cut', active: false, url: getActiveFlierUrl() });
                             }
                             currentProgramCamId = targetId;
-                            // EXCLUSIVE PROGRAM RULE: Only ONE camera can be LIVE on air!
                             for (let id = 1; id <= 6; id++) {
                                 if (id === targetId) {
                                     cameras[id].tally = 'PROGRAM';
@@ -722,7 +753,6 @@ function setupWebSocket(wss) {
                             broadcastToProgramReceivers(targetId);
                             switchOBSScene(targetId, true);
                         } else if (state === 'PREVIEW') {
-                            // Set Preview on this camera without cutting Program
                             cameras[targetId].tally = 'PREVIEW';
                             broadcastTally(targetId, 'PREVIEW');
                             switchOBSScene(targetId, false);
@@ -745,14 +775,12 @@ function setupWebSocket(wss) {
                     cameras[peerCamId].suspended = false;
                     cameraSockets[peerCamId] = null;
                     if (currentProgramCamId === peerCamId || cameras[peerCamId].tally === 'PROGRAM') {
-                        console.log(`[Program Authority Stripped] Camera ${peerCamId} disconnected -> Resetting Program to Flier`);
                         currentProgramCamId = null;
                         cameras[peerCamId].tally = 'OFF_AIR';
                         broadcastToProgramReceivers(null);
                     } else {
                         cameras[peerCamId].tally = 'OFF_AIR';
                     }
-                    console.log(`[Broadcaster Disconnected] Camera ${peerCamId}`);
                     broadcastToDirectors({ type: 'camera_update', cameras });
                     broadcastToReceivers(peerCamId, { type: 'broadcaster_offline', camId: peerCamId });
                 }
@@ -761,12 +789,11 @@ function setupWebSocket(wss) {
     });
 }
 
-// Reliable WebSocket Heartbeat (Ping every 4000ms; terminates dead sockets cleanly)
-setInterval(() => {
+// WebSocket Heartbeat
+const heartbeatInterval = setInterval(() => {
     [wssHttp, wssHttps].forEach(wss => {
         wss.clients.forEach(ws => {
             if (ws.isAlive === false) {
-                console.warn(`[Heartbeat Timeout] Terminating inactive socket for role=${ws.role}, camId=${ws.camId}`);
                 return ws.terminate();
             }
             ws.isAlive = false;
@@ -778,23 +805,6 @@ setInterval(() => {
 setupWebSocket(wssHttp);
 setupWebSocket(wssHttps);
 
-// Broadcast signaling messages between broadcaster and receiver for a camera
-function broadcastSignaling(senderWs, data) {
-    const targetCamId = senderWs.camId;
-    const targetRole = senderWs.role === 'broadcaster' ? 'receiver' : 'broadcaster';
-
-    [wssHttp, wssHttps].forEach(wss => {
-        wss.clients.forEach(client => {
-            if (client !== senderWs && client.readyState === WebSocket.OPEN && client.camId === targetCamId) {
-                if (client.role === targetRole || client.role === 'director') {
-                    client.send(JSON.stringify(data));
-                }
-            }
-        });
-    });
-}
-
-// Broadcast to Master Program receivers (Cut Live on ?id=program)
 function broadcastToProgramReceivers(targetCamId) {
     const msg = JSON.stringify({ type: 'program_cut', camId: targetCamId });
     [wssHttp, wssHttps].forEach(wss => {
@@ -813,7 +823,6 @@ function broadcastToProgramReceivers(targetCamId) {
     });
 }
 
-// Broadcast to OBS receivers for a specific camera
 function broadcastToReceivers(camId, payload) {
     const msg = JSON.stringify(payload);
     [wssHttp, wssHttps].forEach(wss => {
@@ -827,7 +836,6 @@ function broadcastToReceivers(camId, payload) {
     });
 }
 
-// Broadcast Tally State to Phone Broadcaster & Director
 function broadcastTally(camId, state) {
     [wssHttp, wssHttps].forEach(wss => {
         wss.clients.forEach(client => {
@@ -843,7 +851,6 @@ function broadcastTally(camId, state) {
     });
 }
 
-// Broadcast updates to Director dashboards
 function broadcastToDirectors(payload) {
     try {
         const cleanPayload = payload.cameras ? { ...payload, cameras: getSanitizedCameras() } : payload;
@@ -855,12 +862,9 @@ function broadcastToDirectors(payload) {
                 }
             });
         });
-    } catch (err) {
-        console.error('[broadcastToDirectors Error]', err.message);
-    }
+    } catch (err) {}
 }
 
-// Broadcast to all connected clients (Phones, OBS, and Directors)
 function broadcastToAll(payload) {
     const msg = JSON.stringify(payload);
     [wssHttp, wssHttps].forEach(wss => {
@@ -872,11 +876,10 @@ function broadcastToAll(payload) {
     });
 }
 
-// Optional: OBS WebSocket Auto-Connect & Scene Switching
+// OBS Studio Integration
 let obsClient = null;
 let isObsConnected = false;
 
-// Function to switch scene in OBS Studio from Director Dashboard
 async function switchOBSScene(camId, isProgram = true) {
     if (!obsClient || !isObsConnected) return;
     try {
@@ -892,15 +895,11 @@ async function switchOBSScene(camId, isProgram = true) {
         if (matching) {
             if (isProgram) {
                 await obsClient.call('SetCurrentProgramScene', { sceneName: matching.sceneName });
-                console.log(`[OBS Switcher] Switched Live Program to Scene: "${matching.sceneName}"`);
             } else {
                 await obsClient.call('SetCurrentPreviewScene', { sceneName: matching.sceneName });
-                console.log(`[OBS Switcher] Switched Preview to Scene: "${matching.sceneName}"`);
             }
         }
-    } catch (e) {
-        console.warn('[OBS Switch Error]:', e.message);
-    }
+    } catch (e) {}
 }
 
 try {
@@ -911,48 +910,65 @@ try {
         try {
             await obsClient.connect('ws://localhost:4455');
             isObsConnected = true;
-            console.log('[Victorious Hub] Successfully connected to OBS Studio WebSocket (Port 4455)!');
             broadcastToDirectors({ type: 'obs_status', connected: true });
-
-            obsClient.on('CurrentProgramSceneChanged', (event) => {
-                const sceneName = (event.sceneName || '');
-                console.log(`[OBS Scene Sync] Active scene in OBS Studio: "${sceneName}" (Director Command Center remains SSOT for tallies)`);
-            });
 
             obsClient.on('ConnectionClosed', () => {
                 isObsConnected = false;
-                console.log('[OBS WebSocket] Connection closed, will retry in 5s...');
                 broadcastToDirectors({ type: 'obs_status', connected: false });
                 setTimeout(connectOBS, 5000);
             });
-
-            obsClient.on('ConnectionError', (err) => {
+            obsClient.on('ConnectionError', () => {
                 isObsConnected = false;
-                console.warn('[OBS WebSocket] Connection error:', err.message);
             });
-
-            obsClient.on('error', (err) => {
-                console.warn('[OBS WebSocket] Error event:', err.message);
-            });
+            obsClient.on('error', () => {});
         } catch (e) {
-            // OBS not running yet, retry in background
             setTimeout(connectOBS, 8000);
         }
     }
     connectOBS();
-} catch (e) {
-    console.log('[Victorious Hub] OBS WebSocket client module ready for live linking.');
+} catch (e) {}
+
+// Safe Exit Cleanup
+function cleanupAndExit(code = 0) {
+    clearInterval(heartbeatInterval);
+    wssHttp.close();
+    wssHttps.close();
+    httpServer.close();
+    httpsServer.close();
+    setTimeout(() => {
+        process.exit(code);
+    }, 200);
 }
 
-// Start Listening
-httpServer.listen(HTTP_PORT, () => {
-    console.log(`\n=============================================================`);
-    console.log(`   VICTORIOUS STREAMING HUB - CHURCH BROADCAST STUDIO       `);
-    console.log(`=============================================================`);
-    console.log(`[Director Dashboard]  http://localhost:${HTTP_PORT}`);
-    console.log(`[Mobile Cameras URL]  https://${LOCAL_IP}:${HTTPS_PORT}/cam.html?id=1`);
-    console.log(`[OBS Browser Source]  http://localhost:${HTTP_PORT}/obs.html?id=1`);
-    console.log(`=============================================================\n`);
+process.on('SIGINT', () => cleanupAndExit(0));
+process.on('SIGTERM', () => cleanupAndExit(0));
+process.on('message', (msg) => {
+    if (msg === 'shutdown') cleanupAndExit(0);
 });
 
-httpsServer.listen(HTTPS_PORT);
+// Dynamic Port Startup
+async function startStudioServer() {
+    HTTP_PORT = await findAvailablePort(HTTP_PORT);
+    HTTPS_PORT = await findAvailablePort(HTTPS_PORT);
+
+    httpServer.listen(HTTP_PORT, () => {
+        httpsServer.listen(HTTPS_PORT, () => {
+            console.log(`\n=============================================================`);
+            console.log(`   VICTORIOUS STREAMING STUDIO - ENTERPRISE BROADCAST ENGINE  `);
+            console.log(`=============================================================`);
+            console.log(`[STUDIO_SERVER_READY] HTTP=${HTTP_PORT} HTTPS=${HTTPS_PORT} IP=${LOCAL_IP} PIN=${SESSION_PIN}`);
+            console.log(`[Director Dashboard]  http://localhost:${HTTP_PORT}?pin=${SESSION_PIN}`);
+            console.log(`[Mobile Cameras URL]  https://${LOCAL_IP}:${HTTPS_PORT}/cam.html?id=1&pin=${SESSION_PIN}`);
+            console.log(`[OBS Browser Source]  http://localhost:${HTTP_PORT}/obs.html?id=program`);
+            console.log(`[Session PIN Gate]    ${SESSION_PIN} (Automatic on QR Scan)`);
+            console.log(`=============================================================\n`);
+        });
+    });
+}
+
+startStudioServer().catch((err) => {
+    console.error('[Startup Error]:', err);
+    process.exit(1);
+});
+
+module.exports = { app, httpServer, httpsServer };

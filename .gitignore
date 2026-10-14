@@ -1,5 +1,6 @@
-﻿# Dependencies
+# Dependencies & Runtime
 node_modules/
+runtime/
 
 # Edge isolated browser profile
 .profile/
@@ -18,3 +19,4 @@ yarn-debug.log*
 yarn-error.log*
 .DS_Store
 Thumbs.db
+*.bak

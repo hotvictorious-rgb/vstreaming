@@ -580,10 +580,12 @@
         // Connect WebSocket Signaling to Local Hub
         function initWebSocket() {
             const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const urlParams = new URLSearchParams(window.location.search);
+            const pin = urlParams.get('pin') || '';
             ws = new WebSocket(`${proto}//${window.location.host}`);
 
             ws.onopen = () => {
-                ws.send(JSON.stringify({ type: 'register', role: 'broadcaster', camId }));
+                ws.send(JSON.stringify({ type: 'register', role: 'broadcaster', camId, pin }));
                 sendTelemetry();
             };
 
@@ -932,7 +934,8 @@
                 formData.append('photo', blob, `Church_Photo_Cam${camId}.jpg`);
                 formData.append('camId', camId);
 
-                const res = await fetch(`/api/upload-photo?camId=${camId}`, {
+                const pinParam = pin ? `&pin=${encodeURIComponent(pin)}` : '';
+                const res = await fetch(`/api/upload-photo?camId=${camId}${pinParam}`, {
                     method: 'POST',
                     body: formData
                 });

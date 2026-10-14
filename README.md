@@ -1,4 +1,4 @@
-﻿# 👑 Victorious Streaming Hub
+# 👑 Victorious Streaming Hub
 
 > **Professional Church Multi-Camera Broadcast Studio for OBS Studio**  
 > *Architected and Engineered under the leadership of **Victory Saviour Edet**, CEO of VICTORIOUS MARKET.*
@@ -49,55 +49,55 @@ For the smoothest broadcast performance in sanctuary lighting conditions:
 
 ## 🚀 Quick Start Guide
 
-### 1. First-Time Setup
-Double-click Setup-First-Time.bat as Administrator. This will:
-- Install all required Node.js dependencies (
-pm install).
-- Configure Windows Firewall rules for Ports 3000 (HTTP), 3443 (HTTPS), and 4455 (OBS WebSocket).
-- Automatically generate desktop shortcuts.
+### 1. Launch the Studio (1-Click Native App)
+Double-click **`Victorious Streaming Studio.exe`** (or `Start-Sunday-Studio.bat`).
+- The self-contained engine starts automatically with zero external dependencies.
+- Dynamic ports and a session PIN are generated instantly.
+- The Director Command Center opens directly in app mode.
+- A native System Tray icon provides quick access to links, PINs, and safe shutdown.
 
-### 2. Launch the Studio
-Double-click the desktop shortcut **Victorious Streaming Hub** (or run Launch-Studio.vbs).
-- The background server will start automatically.
-- The standalone Command Center interface will open immediately.
-
-### 3. Connect Mobile Cameras
+### 2. Connect Mobile Cameras (Zero Setup)
 1. Ensure your camera smartphones are connected to the same Wi-Fi router.
 2. In the Command Center, click **📲 Connect** under any camera slot to reveal the QR code.
-3. Open the camera app on the phone and scan the QR code (or type the HTTPS link https://<YOUR-IP>:3443/cam.html?id=1).
-4. Accept the local security prompt and tap **Start Camera**. The live video feed will appear instantly on the director multiview screen.
+3. Open the camera app on the phone and scan the QR code.
+4. The QR code automatically embeds the secure session PIN (`?pin=XXXX`).
+5. Accept the local security prompt and tap **Start Camera**. The live video feed appears instantly on the director multiview screen.
 
-### 4. Connect OBS Studio
+### 3. Connect OBS Studio
 1. Open OBS Studio.
 2. Enable WebSocket server under **Tools ➔ WebSocket Server Settings** (Port: 4455).
 3. Add a **Browser Source** in OBS:
-   - **URL:** http://localhost:3000/obs.html?id=program
+   - **URL:** `http://localhost:3000/obs.html?id=program` (or copy directly from the System Tray menu)
    - **Width:** 1920
    - **Height:** 1080
    - Check *Shutdown source when not visible* = **Unchecked**.
+
+### 4. Stopping the Studio Safely
+- Right-click the **👑 Victorious Streaming Studio** System Tray icon and select **🛑 Stop Studio & Exit Safely**, or run `Stop-Sunday-Studio.bat`.
+- Unlike previous versions, this cleanly terminates only its own process without affecting any other Node.js programs on your PC.
 
 ---
 
 ## 📁 Repository Structure
 
-`
+```
+├── runtime/                   # Bundled portable Node.js runtime (100% self-contained)
 ├── .cert/                     # Auto-generated local SSL certificates for mobile HTTPS
 ├── public/                    # Frontend dashboards and camera interfaces
 │   ├── assets/                # Church fliers, default graphics, and assets
 │   ├── css/                   # Dark-mode broadcast studio styles
-│   ├── cam.html               # Mobile camera capture interface (with Tally & Flash)
+│   ├── cam.html               # Mobile camera capture interface (with Tally, PIN, & Flash)
 │   ├── index.html             # Sanctuary Multiview Director Command Center
 │   └── obs.html               # Ultra-low latency OBS Studio browser ingest
 ├── photos/                    # Local storage for high-res remote photos (.gitignore excluded)
-├── server.js                  # Core Node.js WebRTC signaling, WebSocket, & Express engine
-├── main.js                    # Electron runtime wrapper
-├── Launcher.cs                # Native Windows C# launcher source
-├── Launch-Studio.vbs          # Zero-flicker 1-click Windows portable launcher
-├── Setup-First-Time.bat       # Automatic 1-click system installer & firewall setup
-├── Start-Sunday-Studio.bat    # Background service starter
-├── Stop-Sunday-Studio.bat     # Clean shutdown script
-└── package.json               # Node.js project manifest & dependencies
-`
+├── server.js                  # Hardened WebRTC signaling, WebSocket, & Express engine
+├── Launcher.cs                # Native Windows C# launcher source code
+├── Victorious Streaming Studio.exe # Compiled native Windows application
+├── Setup-First-Time.bat       # Optional 1-click desktop shortcut & firewall helper
+├── Start-Sunday-Studio.bat    # 1-Click native studio launcher
+├── Stop-Sunday-Studio.bat     # Clean, safe process shutdown script
+└── package.json               # Project manifest & production dependencies
+```
 
 ---
 

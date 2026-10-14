@@ -1,45 +1,37 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace VictoriousStreamingHub
+namespace VictoriousStreamingStudio
 {
     static class Program
     {
-        [DllImport("shell32.dll", CharSet = CharSet.Auto)]
-        public static extern IntPtr ExtractIcon(IntPtr hInst, string lpszExeFileName, int nIconIndex);
-
         [STAThread]
         static void Main()
         {
             string appDir = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\');
             Directory.SetCurrentDirectory(appDir);
 
-            AppDomain.CurrentDomain.UnhandledException += (s, e) => {
-                File.WriteAllText(Path.Combine(appDir, "crash.log"), "UnhandledException:\n" + e.ExceptionObject.ToString());
-            };
-
-            Application.ThreadException += (s, e) => {
-                File.WriteAllText(Path.Combine(appDir, "crash.log"), "ThreadException:\n" + e.Exception.ToString());
-            };
-
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            string nodePath = FindNode();
+            string nodePath = FindPortableOrSystemNode(appDir);
             if (string.IsNullOrEmpty(nodePath))
             {
-                MessageBox.Show("Node.js runtime was not detected.", "Victorious Streaming Hub", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    "The runtime engine (node.exe) was not found in 'runtime\\node' or on your system.\n\nPlease ensure the runtime folder is intact.",
+                    "Victorious Streaming Studio",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
                 return;
             }
-
-            KillPort3000();
-            Thread.Sleep(300);
 
             try
             {
@@ -47,12 +39,35 @@ namespace VictoriousStreamingHub
             }
             catch (Exception ex)
             {
-                File.WriteAllText(Path.Combine(appDir, "crash.log"), "RunException:\n" + ex.ToString());
+                File.WriteAllText(Path.Combine(appDir, "crash.log"), "Studio Crash:\n" + ex.ToString());
             }
         }
 
-        public static string FindNode()
+        public static string FindPortableOrSystemNode(string appDir)
         {
+            // 1. Check bundled runtime folder (100% portable)
+            string localRuntime = Path.Combine(appDir, @"runtime\node\node.exe");
+            if (File.Exists(localRuntime)) return localRuntime;
+
+            // 2. Check local bin folder
+            string localBin = Path.Combine(appDir, @"bin\node.exe");
+            if (File.Exists(localBin)) return localBin;
+
+            // 3. Fallback to system installations
+            string[] searchPaths = new string[]
+            {
+                @"C:\Program Files\nodejs\node.exe",
+                @"C:\Program Files (x86)\nodejs\node.exe",
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Programs\node\node.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"npm\node.exe")
+            };
+
+            foreach (string p in searchPaths)
+            {
+                if (File.Exists(p)) return p;
+            }
+
+            // 4. Try 'where node'
             try
             {
                 ProcessStartInfo psi = new ProcessStartInfo
@@ -65,11 +80,11 @@ namespace VictoriousStreamingHub
                 };
                 using (Process p = Process.Start(psi))
                 {
-                    string output = p.StandardOutput.ReadToEnd();
+                    string outStr = p.StandardOutput.ReadToEnd();
                     p.WaitForExit();
-                    if (!string.IsNullOrEmpty(output))
+                    if (!string.IsNullOrEmpty(outStr))
                     {
-                        string[] lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                        string[] lines = outStr.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                         if (lines.Length > 0 && File.Exists(lines[0].Trim()))
                         {
                             return lines[0].Trim();
@@ -78,18 +93,6 @@ namespace VictoriousStreamingHub
                 }
             }
             catch { }
-
-            string[] searchPaths = new string[]
-            {
-                @"C:\Program Files\nodejs\node.exe",
-                @"C:\Program Files (x86)\nodejs\node.exe",
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Programs\node\node.exe")
-            };
-
-            foreach (string path in searchPaths)
-            {
-                if (File.Exists(path)) return path;
-            }
 
             return null;
         }
@@ -111,25 +114,6 @@ namespace VictoriousStreamingHub
 
             return null;
         }
-
-        public static void KillPort3000()
-        {
-            try
-            {
-                ProcessStartInfo psi = new ProcessStartInfo
-                {
-                    FileName = "cmd.exe",
-                    Arguments = "/c for /f \"tokens=5\" %a in ('netstat -aon 2^>nul ^| findstr \":3000\" ^| findstr \"LISTENING\"') do taskkill /F /PID %a >nul 2>&1",
-                    CreateNoWindow = true,
-                    UseShellExecute = false
-                };
-                using (Process p = Process.Start(psi))
-                {
-                    p.WaitForExit();
-                }
-            }
-            catch { }
-        }
     }
 
     public class StudioContext : ApplicationContext
@@ -139,38 +123,59 @@ namespace VictoriousStreamingHub
         private string appDir;
         private string nodePath;
 
+        private int httpPort = 3000;
+        private int httpsPort = 3443;
+        private string localIp = "127.0.0.1";
+        private string sessionPin = "";
+        private bool isServerReady = false;
+
         public StudioContext(string appDir, string nodePath)
         {
             this.appDir = appDir;
             this.nodePath = nodePath;
 
-            File.AppendAllText(Path.Combine(appDir, "debug.log"), "1. StudioContext ctor\n");
-
-            StartNodeEngine();
             SetupTray();
+            StartServerProcess();
 
-            Thread launchThread = new Thread(() =>
+            Thread monitorThread = new Thread(() =>
             {
-                try
+                int waited = 0;
+                while (!isServerReady && waited < 15000)
                 {
-                    File.AppendAllText(Path.Combine(appDir, "debug.log"), "2. launchThread started\n");
-                    Thread.Sleep(500);
-                    LaunchStudioWindow();
+                    Thread.Sleep(250);
+                    waited += 250;
                 }
-                catch (Exception ex)
-                {
-                    File.AppendAllText(Path.Combine(appDir, "debug.log"), "launchThread error: " + ex + "\n");
-                }
+
+                LaunchDirectorWindow();
             });
-            launchThread.IsBackground = true;
-            launchThread.Start();
+            monitorThread.IsBackground = true;
+            monitorThread.Start();
         }
 
-        private void StartNodeEngine()
+        private void SetupTray()
+        {
+            trayIcon = new NotifyIcon();
+            trayIcon.Text = "Victorious Streaming Studio (Starting...)";
+            trayIcon.Icon = SystemIcons.Application;
+
+            ContextMenu menu = new ContextMenu();
+            menu.MenuItems.Add(new MenuItem("👑 Victorious Streaming Studio") { Enabled = false });
+            menu.MenuItems.Add(new MenuItem("-"));
+            menu.MenuItems.Add("🎛️ Open Director Command Center", (s, e) => LaunchDirectorWindow());
+            menu.MenuItems.Add("📱 Copy Camera Connect Link", (s, e) => CopyCameraLink());
+            menu.MenuItems.Add("🎬 Copy OBS Program URL", (s, e) => CopyObsUrl());
+            menu.MenuItems.Add(new MenuItem("-"));
+            menu.MenuItems.Add("🛑 Stop Studio & Exit Safely", (s, e) => Shutdown());
+
+            trayIcon.ContextMenu = menu;
+            trayIcon.Visible = true;
+            trayIcon.DoubleClick += (s, e) => LaunchDirectorWindow();
+        }
+
+        private void StartServerProcess()
         {
             try
             {
-                File.AppendAllText(Path.Combine(appDir, "debug.log"), "3. StartNodeEngine\n");
                 ProcessStartInfo psi = new ProcessStartInfo
                 {
                     FileName = nodePath,
@@ -178,49 +183,80 @@ namespace VictoriousStreamingHub
                     WorkingDirectory = appDir,
                     CreateNoWindow = true,
                     UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
                     WindowStyle = ProcessWindowStyle.Hidden
                 };
-                nodeProcess = Process.Start(psi);
-                File.AppendAllText(Path.Combine(appDir, "debug.log"), "4. Node started PID=" + (nodeProcess != null ? nodeProcess.Id.ToString() : "null") + "\n");
+
+                nodeProcess = new Process();
+                nodeProcess.StartInfo = psi;
+                nodeProcess.EnableRaisingEvents = true;
+
+                nodeProcess.OutputDataReceived += (s, e) =>
+                {
+                    if (string.IsNullOrEmpty(e.Data)) return;
+
+                    // Parse server ready signal:
+                    // [STUDIO_SERVER_READY] HTTP=3000 HTTPS=3443 IP=192.168.1.100 PIN=1234
+                    if (e.Data.Contains("[STUDIO_SERVER_READY]"))
+                    {
+                        Match mHttp = Regex.Match(e.Data, @"HTTP=(\d+)");
+                        Match mHttps = Regex.Match(e.Data, @"HTTPS=(\d+)");
+                        Match mIp = Regex.Match(e.Data, @"IP=([0-9.]+)");
+                        Match mPin = Regex.Match(e.Data, @"PIN=(\d+)");
+
+                        if (mHttp.Success) int.TryParse(mHttp.Groups[1].Value, out httpPort);
+                        if (mHttps.Success) int.TryParse(mHttps.Groups[1].Value, out httpsPort);
+                        if (mIp.Success) localIp = mIp.Groups[1].Value;
+                        if (mPin.Success) sessionPin = mPin.Groups[1].Value;
+
+                        isServerReady = true;
+
+                        if (trayIcon != null)
+                        {
+                            trayIcon.Text = string.Format("Victorious Studio (Port {0} • PIN {1})", httpPort, sessionPin);
+                            trayIcon.ShowBalloonTip(
+                                3000,
+                                "Victorious Streaming Studio Ready",
+                                string.Format("Studio online on Port {0}\nPIN: {1}\nIP: {2}", httpPort, sessionPin, localIp),
+                                ToolTipIcon.Info
+                            );
+                        }
+                    }
+                };
+
+                nodeProcess.ErrorDataReceived += (s, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        File.AppendAllText(Path.Combine(appDir, "server_error.log"), e.Data + "\n");
+                    }
+                };
+
+                nodeProcess.Exited += (s, e) =>
+                {
+                    if (!isShuttingDown)
+                    {
+                        trayIcon.ShowBalloonTip(4000, "Studio Stopped", "The background broadcast engine stopped unexpectedly.", ToolTipIcon.Warning);
+                    }
+                };
+
+                nodeProcess.Start();
+                nodeProcess.BeginOutputReadLine();
+                nodeProcess.BeginErrorReadLine();
             }
             catch (Exception ex)
             {
-                File.AppendAllText(Path.Combine(appDir, "debug.log"), "StartNodeEngine error: " + ex + "\n");
+                MessageBox.Show("Failed to launch broadcast engine: " + ex.Message, "Victorious Studio Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void SetupTray()
+        private void LaunchDirectorWindow()
         {
             try
             {
-                File.AppendAllText(Path.Combine(appDir, "debug.log"), "5. SetupTray\n");
-                trayIcon = new NotifyIcon();
-                trayIcon.Text = "Victorious Streaming Hub";
-                trayIcon.Icon = SystemIcons.Application;
-
-                ContextMenu menu = new ContextMenu();
-                menu.MenuItems.Add("Open Studio Window", (s, e) => LaunchStudioWindow());
-                menu.MenuItems.Add("Exit Victorious Hub", (s, e) => Shutdown());
-                trayIcon.ContextMenu = menu;
-                trayIcon.Visible = true;
-                trayIcon.DoubleClick += (s, e) => LaunchStudioWindow();
-                File.AppendAllText(Path.Combine(appDir, "debug.log"), "6. SetupTray complete\n");
-            }
-            catch (Exception ex)
-            {
-                File.AppendAllText(Path.Combine(appDir, "debug.log"), "SetupTray error: " + ex + "\n");
-            }
-        }
-
-        private void LaunchStudioWindow()
-        {
-            try
-            {
-                File.AppendAllText(Path.Combine(appDir, "debug.log"), "7. LaunchStudioWindow waiting port\n");
-                WaitForPort(3000, 10000);
-                File.AppendAllText(Path.Combine(appDir, "debug.log"), "8. Port 3000 ready\n");
-
                 string browserPath = Program.FindBrowser();
+                string targetUrl = string.Format("http://localhost:{0}?pin={1}", httpPort, sessionPin);
                 string profileDir = Path.Combine(appDir, ".profile");
 
                 if (!string.IsNullOrEmpty(browserPath))
@@ -228,61 +264,67 @@ namespace VictoriousStreamingHub
                     ProcessStartInfo psi = new ProcessStartInfo
                     {
                         FileName = browserPath,
-                        Arguments = "--app=http://localhost:3000 --user-data-dir=\"" + profileDir + "\" --window-size=1366,850",
+                        Arguments = string.Format("--app=\"{0}\" --user-data-dir=\"{1}\" --app-id=VictoriousStreamingStudio --window-size=1366,850 --autoplay-policy=no-user-gesture-required --allow-insecure-localhost", targetUrl, profileDir),
                         WorkingDirectory = appDir
                     };
                     Process.Start(psi);
-                    File.AppendAllText(Path.Combine(appDir, "debug.log"), "9. Browser started\n");
+                }
+                else
+                {
+                    Process.Start(targetUrl);
                 }
             }
             catch (Exception ex)
             {
-                File.AppendAllText(Path.Combine(appDir, "debug.log"), "LaunchStudioWindow error: " + ex + "\n");
+                MessageBox.Show("Could not open Director Window: " + ex.Message, "Victorious Studio", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
+        private void CopyCameraLink()
+        {
+            try
+            {
+                string camUrl = string.Format("https://{0}:{1}/cam.html?id=1&pin={2}", localIp, httpsPort, sessionPin);
+                Clipboard.SetText(camUrl);
+                trayIcon.ShowBalloonTip(2000, "Copied to Clipboard", "Camera 1 link copied:\n" + camUrl, ToolTipIcon.Info);
+            }
+            catch { }
+        }
+
+        private void CopyObsUrl()
+        {
+            try
+            {
+                string obsUrl = string.Format("http://localhost:{0}/obs.html?id=program", httpPort);
+                Clipboard.SetText(obsUrl);
+                trayIcon.ShowBalloonTip(2000, "Copied to Clipboard", "OBS Program source link copied:\n" + obsUrl, ToolTipIcon.Info);
+            }
+            catch { }
+        }
+
+        private bool isShuttingDown = false;
+
         private void Shutdown()
         {
-            File.AppendAllText(Path.Combine(appDir, "debug.log"), "10. Shutdown called\n");
+            isShuttingDown = true;
             if (trayIcon != null)
             {
                 trayIcon.Visible = false;
                 trayIcon.Dispose();
             }
 
+            // Cleanly kill ONLY our child process
             try
             {
                 if (nodeProcess != null && !nodeProcess.HasExited)
                 {
                     nodeProcess.Kill();
+                    nodeProcess.WaitForExit(1000);
                 }
             }
             catch { }
 
-            Program.KillPort3000();
             ExitThread();
-        }
-
-        private void WaitForPort(int port, int timeoutMs)
-        {
-            int elapsed = 0;
-            while (elapsed < timeoutMs)
-            {
-                try
-                {
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://localhost:" + port + "/");
-                    request.Timeout = 600;
-                    using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                    {
-                        if (response.StatusCode == HttpStatusCode.OK) return;
-                    }
-                }
-                catch
-                {
-                    Thread.Sleep(250);
-                    elapsed += 250;
-                }
-            }
         }
     }
 }

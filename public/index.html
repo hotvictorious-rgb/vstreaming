@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -236,6 +236,10 @@
             </div>
         </div>
         <div class="system-status">
+            <div class="pin-status-pill" id="pin-status-pill" style="display: flex; align-items: center; gap: 8px; background: rgba(30, 27, 75, 0.85); border: 1px solid rgba(99, 102, 241, 0.5); padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; color: #a5b4fc;" title="Session Security PIN for Mobile Cameras and Control">
+                <span>🔒 PIN: <span id="lbl-studio-pin" style="color: #38bdf8; letter-spacing: 1px;">----</span></span>
+                <span style="font-size: 11px; color: #64748b;">• Port: <span id="lbl-studio-port" style="color: #cbd5e1;">3000</span></span>
+            </div>
             <div class="master-obs-pill" onclick="copyMasterObsUrl()" title="Click to copy Master OBS Program link">
                 <span>📺 Master OBS Link</span>
                 <span style="font-size: 11px; background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 10px;">📋 Copy</span>
@@ -959,6 +963,12 @@ God in three Persons, blessed Trinity!</textarea>
                 const res = await fetch('/api/info');
                 serverInfo = await res.json();
                 document.getElementById('lbl-ip').innerText = `${serverInfo.localIp}:${serverInfo.httpPort}`;
+                if (serverInfo.pin && document.getElementById('lbl-studio-pin')) {
+                    document.getElementById('lbl-studio-pin').innerText = serverInfo.pin;
+                }
+                if (serverInfo.httpPort && document.getElementById('lbl-studio-port')) {
+                    document.getElementById('lbl-studio-port').innerText = serverInfo.httpPort;
+                }
                 updateCameraStates(serverInfo.cameras);
                 if (serverInfo.flierUrl) {
                     document.getElementById('dashboard-flier-preview').src = serverInfo.flierUrl;
