@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Victorious Broadcaster - Camera</title>
+    <!-- PWA & Mobile Standalone App Directives -->
+    <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Victorious Cam">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/assets/cam-icon.png">
+    <link rel="icon" type="image/png" href="/assets/cam-icon-192.png">
     <link rel="stylesheet" href="/css/style.css">
     <style>
         /* Force hardware-accelerated presentation */
@@ -223,8 +232,9 @@
                 <div class="hud-btn" id="lbl-cam-name">Camera 1</div>
             </div>
 
-            <!-- Right Top: Resolution, Mic, Flash, Dimmer & Battery -->
+            <!-- Right Top: Resolution, Mic, Fullscreen/App, Flash, Dimmer & Battery -->
             <div class="hud-cluster hud-right">
+                <button class="hud-btn" id="btn-fullscreen-toggle" onclick="toggleFullscreen()" title="Toggle Borderless Fullscreen (Hide Browser Headers)" style="font-weight: 700;">⛶ Full</button>
                 <button class="hud-btn" id="btn-res-toggle" onclick="toggleResolutionProfile()" title="Toggle Video Quality (1080p HQ / 720p Fast)" style="font-weight: 700; border-color: var(--primary-gold);">💎 1080p</button>
                 <button class="hud-btn" id="btn-mic-toggle" onclick="toggleMicStreaming()" title="Toggle Phone Microphone for OBS" style="font-weight: 700;">🎤 Mic Off</button>
                 <div class="intercom-pill" id="intercom-pill" title="Intercom Volume">
@@ -472,6 +482,111 @@
 
         window.addEventListener('resize', checkOrientation);
         window.addEventListener('orientationchange', checkOrientation);
+
+        // Fullscreen & PWA Standalone Mode Management
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+        // Register Service Worker for PWA installation support
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => {
+                    console.log('[PWA] SW register note:', err.message);
+                });
+            });
+        }
+
+        let deferredInstallPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            console.log('[PWA] Native install prompt captured');
+        });
+
+        function toggleFullscreen() {
+            if (deferredInstallPrompt && !isStandalone && !document.fullscreenElement) {
+                deferredInstallPrompt.prompt();
+                deferredInstallPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        showHudToast('📲 Installing Victorious Broadcaster App...');
+                    }
+                    deferredInstallPrompt = null;
+                });
+                return;
+            }
+
+            const docEl = document.documentElement;
+            const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+
+            if (!isFs) {
+                const requestMethod = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
+                if (requestMethod) {
+                    requestMethod.call(docEl).then(() => {
+                        showHudToast('⛶ Borderless Viewfinder Active');
+                        updateFullscreenBtn(true);
+                    }).catch(err => {
+                        console.warn('Fullscreen request rejected:', err);
+                        if (isIOS) {
+                            showHudToast('💡 iPhone: Tap Share ➔ "Add to Home Screen" for borderless mode');
+                        }
+                    });
+                } else if (isIOS) {
+                    showHudToast('💡 iPhone: Tap Share ➔ "Add to Home Screen" for borderless mode');
+                }
+            } else {
+                const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+                if (exitMethod) {
+                    exitMethod.call(document).then(() => {
+                        showHudToast('Standard View');
+                        updateFullscreenBtn(false);
+                    }).catch(e => console.warn('Exit fullscreen error:', e));
+                }
+            }
+        }
+
+        function updateFullscreenBtn(isFs) {
+            const btn = document.getElementById('btn-fullscreen-toggle');
+            if (!btn) return;
+            if (isStandalone) {
+                btn.innerHTML = '📱 App';
+                btn.style.color = '#38bdf8';
+                btn.style.borderColor = '#0284c7';
+                btn.title = 'Running in Borderless Standalone App Mode';
+            } else if (isFs) {
+                btn.innerHTML = '🗗 Window';
+                btn.style.color = '#34d399';
+                btn.style.borderColor = '#10b981';
+                btn.title = 'Exit Fullscreen Mode';
+            } else {
+                btn.innerHTML = '⛶ Full';
+                btn.style.color = '#cbd5e1';
+                btn.style.borderColor = '';
+                btn.title = 'Enter Borderless Fullscreen (Hide Browser Headers)';
+            }
+        }
+
+        ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(evt => {
+            document.addEventListener(evt, () => {
+                const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+                updateFullscreenBtn(isFs);
+            });
+        });
+
+        function checkIosPwaPrompt() {
+            if (isIOS && !isStandalone) {
+                const dismissed = localStorage.getItem('victorious_hide_ios_prompt');
+                if (!dismissed) {
+                    const prompt = document.getElementById('ios-pwa-prompt');
+                    if (prompt) prompt.style.display = 'flex';
+                }
+            }
+        }
+
+        function dismissIosPrompt() {
+            const prompt = document.getElementById('ios-pwa-prompt');
+            if (prompt) prompt.style.display = 'none';
+            try { localStorage.setItem('victorious_hide_ios_prompt', '1'); } catch (e) {}
+        }
 
         async function toggleResolutionProfile() {
             currentProfile = (currentProfile === '1080p') ? '720p' : '1080p';
@@ -1187,8 +1302,16 @@
 
         // Start immediately
         startCamera();
+        checkIosPwaPrompt();
+        updateFullscreenBtn(false);
     </script>
     <!-- Dedicated Intercom Talkback Audio Output (Director Voice -> Mobile Headset/Speaker) -->
     <audio id="intercom-audio" autoplay playsinline style="display: none;"></audio>
+
+    <!-- iOS / Safari Add-To-Home-Screen (PWA) Borderless Guide Tip -->
+    <div id="ios-pwa-prompt" style="display: none; position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(56, 189, 248, 0.5); backdrop-filter: blur(12px); border-radius: 10px; padding: 7px 14px; z-index: 9000; font-size: 11px; color: #e2e8f0; align-items: center; gap: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.85); max-width: 92vw; pointer-events: auto;">
+        <span>💡 <strong>Borderless Camera:</strong> Tap <span style="font-size: 13px;">⎙</span> Share &rarr; <em>"Add to Home Screen"</em> to hide browser header!</span>
+        <button onclick="dismissIosPrompt()" style="background: transparent; border: none; color: #94a3b8; font-size: 15px; cursor: pointer; padding: 2px 6px;">✕</button>
+    </div>
 </body>
 </html>
