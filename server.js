@@ -1062,11 +1062,12 @@ async function autoProvisionObsAudioSources() {
                     inputKind: 'browser_source',
                     inputSettings: {
                         url: audioUrl,
-                        width: 100,
-                        height: 100,
+                        width: 1,
+                        height: 1,
                         reroute_audio: true, // "Control audio via OBS" -> enables OBS Audio Mixer fader!
                         restart_when_active: false,
-                        shutdown: false // keeps audio streaming continuously in background!
+                        shutdown: false, // keeps audio streaming continuously in background!
+                        custom_css: "body { background: transparent !important; margin: 0px auto; overflow: hidden; opacity: 0; display: none; }"
                     }
                 });
                 results.push({ id: i, inputName, status: 'created' });
@@ -1080,9 +1081,12 @@ async function autoProvisionObsAudioSources() {
                     inputName: inputName,
                     inputSettings: {
                         url: audioUrl,
+                        width: 1,
+                        height: 1,
                         reroute_audio: true,
                         restart_when_active: false,
-                        shutdown: false
+                        shutdown: false,
+                        custom_css: "body { background: transparent !important; margin: 0px auto; overflow: hidden; opacity: 0; display: none; }"
                     }
                 });
                 results.push({ id: i, inputName, status: 'updated' });

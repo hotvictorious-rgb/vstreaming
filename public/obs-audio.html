@@ -9,18 +9,26 @@
         body, html {
             width: 100%;
             height: 100%;
-            background: #090514;
-            color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: transparent !important;
+            overflow: hidden !important;
+            pointer-events: none !important;
         }
 
-        /* Compact Audio Meter & Status HUD (Visible when viewed in browser; invisible in 1x1 OBS) */
+        /* 100% Invisible in OBS Studio Canvas - Zero Visual Artifacts */
         .audio-hud {
-            display: flex;
+            display: none !important;
+        }
+
+        /* Only show UI if explicitly tested in a standalone browser tab with ?gui=1 */
+        body.show-gui {
+            background: #090514 !important;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto !important;
+        }
+        body.show-gui .audio-hud {
+            display: flex !important;
             flex-direction: column;
             align-items: center;
             gap: 10px;
@@ -104,6 +112,9 @@
         const audioElement = document.getElementById('native-audio');
 
         lblTitle.innerText = `Camera ${camId} Audio`;
+        if (urlParams.get('gui') === '1' || urlParams.get('test') === '1') {
+            document.body.classList.add('show-gui');
+        }
 
         let ws = null;
         let pc = null;
