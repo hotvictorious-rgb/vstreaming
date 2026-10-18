@@ -662,6 +662,47 @@ God in three Persons, blessed Trinity!</textarea>
         <div class="section-title"><span>🎛</span><h2>Sanctuary Multiview Control & Live Cameras</h2>
         </div>
 
+        <!-- Church Audio Master Command Bar (Strict Single Sound Broadcast Controller) -->
+        <div class="audio-master-bar" id="audio-master-bar">
+            <div class="audio-master-left">
+                <div class="audio-live-indicator" id="master-live-indicator">
+                    <span class="audio-dot" id="master-sound-dot"></span>
+                    <span class="audio-badge-live" id="master-sound-badge">LIVE SOUND</span>
+                </div>
+                <div class="audio-source-info">
+                    <div class="audio-sub-label">Active Broadcast Audio Channel (Strict Single Sound)</div>
+                    <div class="audio-main-channel" id="lbl-master-sound-channel">
+                        <span id="txt-master-sound-name">Camera 1 • Pastor / Pulpit</span>
+                        <span class="audio-mode-pill music" id="pill-master-dsp-mode">🎵 Music Mode</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="audio-master-center">
+                <div class="audio-ctrl-group">
+                    <span class="ctrl-group-title">AUDIO ROUTING</span>
+                    <div class="audio-btn-group">
+                        <button type="button" class="btn-audio-ctrl active" id="btn-route-lock" onclick="setAudioRoutingMode('manual')" title="Lock audio to selected camera anchor while freely cutting video angles">🔒 Locked Mic</button>
+                        <button type="button" class="btn-audio-ctrl" id="btn-route-afv" onclick="setAudioRoutingMode('afv')" title="Audio Follows Video: active sound switches automatically when video cuts">🔗 AFV</button>
+                    </div>
+                </div>
+
+                <div class="audio-ctrl-group">
+                    <span class="ctrl-group-title">GLOBAL ACOUSTIC MODE</span>
+                    <div class="audio-btn-group">
+                        <button type="button" class="btn-audio-ctrl active-music" id="btn-dsp-global-music" onclick="setGlobalAudioMode('music')" title="Set all phone microphones to raw 48kHz worship music (Drums, Bass, Choir)">🎵 Worship</button>
+                        <button type="button" class="btn-audio-ctrl" id="btn-dsp-global-speech" onclick="setGlobalAudioMode('speech')" title="Set all phone microphones to voice isolation & speech boost (Preaching)">🗣️ Sermon</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="audio-master-right">
+                <button type="button" class="btn-emergency-sound" id="btn-emergency-sound" onclick="toggleEmergencyAudioMute()" title="Instantly silence all camera microphones in OBS Studio">
+                    <span id="ico-emergency-sound">🔇</span> <span id="txt-emergency-sound">MUTE STREAM SOUND</span>
+                </button>
+            </div>
+        </div>
+
         <!-- 4-Camera Grid -->
         <div class="multiview-grid" id="camera-grid">
             <!-- Cam 1 -->
@@ -674,15 +715,18 @@ God in three Persons, blessed Trinity!</textarea>
                         <div class="placeholder-hint">Scan QR code below to connect phone</div>
                     </div>
                     <div class="video-overlay-tally" id="overlay-tally-1">OFF AIR</div>
+                    <div class="video-overlay-sound live" id="overlay-sound-1">🔊 LIVE SOUND</div>
                     <div class="video-overlay-battery" id="overlay-battery-1">🔋 --%</div>
                 </div>
                 <div class="cam-info">
                     <div class="cam-name-row">
-                        <span class="cam-name">Camera  • Pastor / Pulpit</span>
+                        <span class="cam-name">Camera 1 • Pastor / Pulpit</span>
                         <span class="cam-status" id="status-1">⚪ Offline</span>
                     </div>
                     <div class="cam-actions">
                         <button class="btn btn-tally-live" id="btn-live-1" onclick="setTally(1, 'PROGRAM')">⚡ CUT LIVE</button>
+                        <button class="btn btn-sound-live active" id="btn-sound-1" onclick="takeCameraSound(1)" title="Make Camera 1 the exclusive live audio in OBS">🔊 Live Sound</button>
+                        <button class="btn btn-dsp-card music" id="btn-dsp-1" onclick="toggleRemoteDspMode(1)" title="Remotely switch Camera 1 between Music and Speech">🎵 Music</button>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(1)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(1)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(1)">📋 OBS Link</button>
@@ -703,6 +747,7 @@ God in three Persons, blessed Trinity!</textarea>
                         <div class="placeholder-hint">Scan QR code below to connect phone</div>
                     </div>
                     <div class="video-overlay-tally" id="overlay-tally-2">OFF AIR</div>
+                    <div class="video-overlay-sound muted" id="overlay-sound-2">🔇 MUTED</div>
                     <div class="video-overlay-battery" id="overlay-battery-2">🔋 --%</div>
                 </div>
                 <div class="cam-info">
@@ -712,6 +757,8 @@ God in three Persons, blessed Trinity!</textarea>
                     </div>
                     <div class="cam-actions">
                         <button class="btn btn-tally-live" id="btn-live-2" onclick="setTally(2, 'PROGRAM')">⚡ CUT LIVE</button>
+                        <button class="btn btn-sound-live" id="btn-sound-2" onclick="takeCameraSound(2)" title="Make Camera 2 the exclusive live audio in OBS">🔊 Live Sound</button>
+                        <button class="btn btn-dsp-card music" id="btn-dsp-2" onclick="toggleRemoteDspMode(2)" title="Remotely switch Camera 2 between Music and Speech">🎵 Music</button>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(2)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(2)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(2)">📋 OBS Link</button>
@@ -732,6 +779,7 @@ God in three Persons, blessed Trinity!</textarea>
                         <div class="placeholder-hint">Scan QR code below to connect phone</div>
                     </div>
                     <div class="video-overlay-tally" id="overlay-tally-3">OFF AIR</div>
+                    <div class="video-overlay-sound muted" id="overlay-sound-3">🔇 MUTED</div>
                     <div class="video-overlay-battery" id="overlay-battery-3">🔋 --%</div>
                 </div>
                 <div class="cam-info">
@@ -741,6 +789,8 @@ God in three Persons, blessed Trinity!</textarea>
                     </div>
                     <div class="cam-actions">
                         <button class="btn btn-tally-live" id="btn-live-3" onclick="setTally(3, 'PROGRAM')">⚡ CUT LIVE</button>
+                        <button class="btn btn-sound-live" id="btn-sound-3" onclick="takeCameraSound(3)" title="Make Camera 3 the exclusive live audio in OBS">🔊 Live Sound</button>
+                        <button class="btn btn-dsp-card music" id="btn-dsp-3" onclick="toggleRemoteDspMode(3)" title="Remotely switch Camera 3 between Music and Speech">🎵 Music</button>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(3)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(3)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(3)">📋 OBS Link</button>
@@ -761,6 +811,7 @@ God in three Persons, blessed Trinity!</textarea>
                         <div class="placeholder-hint">Scan QR code below to connect phone</div>
                     </div>
                     <div class="video-overlay-tally" id="overlay-tally-4">OFF AIR</div>
+                    <div class="video-overlay-sound muted" id="overlay-sound-4">🔇 MUTED</div>
                     <div class="video-overlay-battery" id="overlay-battery-4">🔋 --%</div>
                 </div>
                 <div class="cam-info">
@@ -770,6 +821,8 @@ God in three Persons, blessed Trinity!</textarea>
                     </div>
                     <div class="cam-actions">
                         <button class="btn btn-tally-live" id="btn-live-4" onclick="setTally(4, 'PROGRAM')">⚡ CUT LIVE</button>
+                        <button class="btn btn-sound-live" id="btn-sound-4" onclick="takeCameraSound(4)" title="Make Camera 4 the exclusive live audio in OBS">🔊 Live Sound</button>
+                        <button class="btn btn-dsp-card music" id="btn-dsp-4" onclick="toggleRemoteDspMode(4)" title="Remotely switch Camera 4 between Music and Speech">🎵 Music</button>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(4)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(4)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(4)">📋 OBS Link</button>
@@ -790,6 +843,7 @@ God in three Persons, blessed Trinity!</textarea>
                         <div class="placeholder-hint">Scan QR code below to connect phone</div>
                     </div>
                     <div class="video-overlay-tally" id="overlay-tally-5">OFF AIR</div>
+                    <div class="video-overlay-sound muted" id="overlay-sound-5">🔇 MUTED</div>
                     <div class="video-overlay-battery" id="overlay-battery-5">🔋 --%</div>
                 </div>
                 <div class="cam-info">
@@ -799,6 +853,8 @@ God in three Persons, blessed Trinity!</textarea>
                     </div>
                     <div class="cam-actions">
                         <button class="btn btn-tally-live" id="btn-live-5" onclick="setTally(5, 'PROGRAM')">⚡ CUT LIVE</button>
+                        <button class="btn btn-sound-live" id="btn-sound-5" onclick="takeCameraSound(5)" title="Make Camera 5 the exclusive live audio in OBS">🔊 Live Sound</button>
+                        <button class="btn btn-dsp-card music" id="btn-dsp-5" onclick="toggleRemoteDspMode(5)" title="Remotely switch Camera 5 between Music and Speech">🎵 Music</button>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(5)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(5)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(5)">📋 OBS Link</button>
@@ -819,6 +875,7 @@ God in three Persons, blessed Trinity!</textarea>
                         <div class="placeholder-hint">Scan QR code below to connect phone</div>
                     </div>
                     <div class="video-overlay-tally" id="overlay-tally-6">OFF AIR</div>
+                    <div class="video-overlay-sound muted" id="overlay-sound-6">🔇 MUTED</div>
                     <div class="video-overlay-battery" id="overlay-battery-6">🔋 --%</div>
                 </div>
                 <div class="cam-info">
@@ -828,6 +885,8 @@ God in three Persons, blessed Trinity!</textarea>
                     </div>
                     <div class="cam-actions">
                         <button class="btn btn-tally-live" id="btn-live-6" onclick="setTally(6, 'PROGRAM')">⚡ CUT LIVE</button>
+                        <button class="btn btn-sound-live" id="btn-sound-6" onclick="takeCameraSound(6)" title="Make Camera 6 the exclusive live audio in OBS">🔊 Live Sound</button>
+                        <button class="btn btn-dsp-card music" id="btn-dsp-6" onclick="toggleRemoteDspMode(6)" title="Remotely switch Camera 6 between Music and Speech">🎵 Music</button>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(6)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(6)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(6)">📋 OBS Link</button>
@@ -1043,6 +1102,15 @@ God in three Persons, blessed Trinity!</textarea>
                 if (serverInfo.isEmergencyCut) {
                     updateEmergencyCutUI(true);
                 }
+                if (serverInfo.audioState) {
+                    if (typeof serverInfo.audioState.activeCamId !== 'undefined') currentActiveAudioCam = serverInfo.audioState.activeCamId;
+                    if (serverInfo.audioState.routingMode) currentAudioRoutingMode = serverInfo.audioState.routingMode;
+                    if (typeof serverInfo.audioState.isEmergencyMuted !== 'undefined') isEmergencySoundMuted = !!serverInfo.audioState.isEmergencyMuted;
+                    if (serverInfo.audioState.camDspModes) {
+                        cameraAudioDspModes = { ...cameraAudioDspModes, ...serverInfo.audioState.camDspModes };
+                    }
+                    updateAudioMasterUI();
+                }
                 populateMicrophoneList();
                 initWebSocket();
             } catch (e) {
@@ -1102,6 +1170,28 @@ God in three Persons, blessed Trinity!</textarea>
                     const dot = document.getElementById('dot-obs');
                     dot.className = data.connected ? 'badge-dot active' : 'badge-dot inactive';
                     document.getElementById('lbl-obs').innerText = data.connected ? 'OBS Connected (Live Tally Active)' : 'OBS WebSocket (Port 4455)';
+                }
+                if (data.type === 'audio_state_update') {
+                    const st = data.audioState || data;
+                    if (typeof st.activeCamId !== 'undefined') currentActiveAudioCam = st.activeCamId;
+                    if (st.routingMode) currentAudioRoutingMode = st.routingMode;
+                    if (typeof st.isEmergencyMuted !== 'undefined') isEmergencySoundMuted = !!st.isEmergencyMuted;
+                    if (st.camDspModes) {
+                        cameraAudioDspModes = { ...cameraAudioDspModes, ...st.camDspModes };
+                    }
+                    updateAudioMasterUI();
+                }
+                if (data.type === 'cam_audio_mode') {
+                    if (data.camId === 'all') {
+                        for (let i = 1; i <= 6; i++) cameraAudioDspModes[i] = data.mode;
+                    } else if (data.camId) {
+                        cameraAudioDspModes[data.camId] = data.mode;
+                    }
+                    updateAudioMasterUI();
+                }
+                if (data.type === 'global_audio_mode_changed') {
+                    for (let i = 1; i <= 6; i++) cameraAudioDspModes[i] = data.mode;
+                    updateAudioMasterUI();
                 }
                 if (data.type === 'photo_captured') {
                     showToast(`\u{1F4F8} Camera ${data.camId} snapped a high-res photo!\nSaved to laptop: photos/`);
@@ -2868,6 +2958,7 @@ God in three Persons, blessed Trinity!</textarea>
                     applyDirectorTransform(id, cam.transform);
                 }
             }
+            updateAudioMasterUI();
         }
 
         function updateTallyBadge(id, state, isConnected) {
@@ -3038,6 +3129,185 @@ God in three Persons, blessed Trinity!</textarea>
         let currentModalCamId = 1;
         let cameraObsAudio = {}; // camId -> boolean
         let cameraMicStatus = {}; // camId -> boolean
+
+        // --- Church Audio Master State (Strict Single Live Sound Rule) ---
+        let currentActiveAudioCam = 1;
+        let currentAudioRoutingMode = 'manual'; // 'manual' (Locked Mic) or 'afv' (Audio Follows Video)
+        let isEmergencySoundMuted = false;
+        let cameraAudioDspModes = { 1: 'music', 2: 'music', 3: 'music', 4: 'music', 5: 'music', 6: 'music' };
+
+        function takeCameraSound(camId) {
+            currentActiveAudioCam = camId;
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'set_active_audio',
+                    camId: camId
+                }));
+            }
+            updateAudioMasterUI();
+            const names = {
+                1: 'Pastor / Pulpit', 2: 'Choir / Altar', 3: 'Congregation / Wide',
+                4: 'Mobile / Roaming 1', 5: 'Mobile / Roaming 2', 6: 'Guest / Overflow'
+            };
+            showToast(`🔊 Live Stream Sound switched exclusively to Camera ${camId} (${names[camId] || 'Cam ' + camId})`);
+        }
+
+        function setAudioRoutingMode(mode) {
+            currentAudioRoutingMode = mode;
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'set_audio_routing_mode',
+                    mode: mode
+                }));
+            }
+            updateAudioMasterUI();
+            showToast(mode === 'afv' ? '🔗 AFV Active: Sound automatically follows video cuts' : '🔒 Audio Locked: Sound stays on selected mic anchor');
+        }
+
+        function setGlobalAudioMode(mode) {
+            for (let i = 1; i <= 6; i++) {
+                cameraAudioDspModes[i] = mode;
+            }
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'set_cam_audio_mode',
+                    camId: 'all',
+                    mode: mode
+                }));
+            }
+            updateAudioMasterUI();
+            showToast(mode === 'music' ? '🎵 Praise & Worship Mode: All phone microphones set to raw 48kHz' : '🗣️ Sermon Mode: All phone microphones set to voice isolation');
+        }
+
+        function toggleRemoteDspMode(camId) {
+            const cur = cameraAudioDspModes[camId] || 'music';
+            const next = cur === 'music' ? 'speech' : 'music';
+            cameraAudioDspModes[camId] = next;
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'set_cam_audio_mode',
+                    camId: camId,
+                    mode: next
+                }));
+            }
+            updateAudioMasterUI();
+            showToast(`🎙️ Camera ${camId} set to: ${next === 'music' ? '🎵 Worship Music' : '🗣️ Sermon Voice'}`);
+        }
+
+        function toggleEmergencyAudioMute() {
+            isEmergencySoundMuted = !isEmergencySoundMuted;
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'set_emergency_audio_mute',
+                    muted: isEmergencySoundMuted
+                }));
+            }
+            updateAudioMasterUI();
+            showToast(isEmergencySoundMuted ? '🔇 Emergency Mute: ALL camera audio silenced in OBS!' : '🔊 Emergency Mute CLEARED: Single live sound restored');
+        }
+
+        function updateAudioMasterUI() {
+            const names = {
+                1: 'Pastor / Pulpit', 2: 'Choir / Altar', 3: 'Congregation / Wide',
+                4: 'Mobile / Roaming 1', 5: 'Mobile / Roaming 2', 6: 'Guest / Overflow'
+            };
+
+            const txtName = document.getElementById('txt-master-sound-name');
+            const pillDsp = document.getElementById('pill-master-dsp-mode');
+            const dotIndicator = document.getElementById('master-sound-dot');
+            const badgeIndicator = document.getElementById('master-sound-badge');
+            const liveIndicator = document.getElementById('master-live-indicator');
+            const btnLock = document.getElementById('btn-route-lock');
+            const btnAfv = document.getElementById('btn-route-afv');
+            const btnEmg = document.getElementById('btn-emergency-sound');
+            const icoEmg = document.getElementById('ico-emergency-sound');
+            const txtEmg = document.getElementById('txt-emergency-sound');
+
+            const activeDsp = cameraAudioDspModes[currentActiveAudioCam] || 'music';
+
+            if (txtName) {
+                txtName.innerText = `Camera ${currentActiveAudioCam} • ${names[currentActiveAudioCam] || 'Cam ' + currentActiveAudioCam}`;
+            }
+
+            if (pillDsp) {
+                pillDsp.className = `audio-mode-pill ${activeDsp}`;
+                pillDsp.innerText = activeDsp === 'music' ? '🎵 Music Mode' : '🗣️ Speech Mode';
+            }
+
+            if (isEmergencySoundMuted) {
+                if (liveIndicator) liveIndicator.className = 'audio-live-indicator muted-master';
+                if (dotIndicator) dotIndicator.className = 'audio-dot muted-master';
+                if (badgeIndicator) {
+                    badgeIndicator.className = 'audio-badge-live muted-master';
+                    badgeIndicator.innerText = 'MUTED IN OBS';
+                }
+                if (btnEmg) btnEmg.className = 'btn-emergency-sound active';
+                if (icoEmg) icoEmg.innerText = '🔴';
+                if (txtEmg) txtEmg.innerText = 'SOUND MUTED IN OBS';
+            } else {
+                if (liveIndicator) liveIndicator.className = 'audio-live-indicator';
+                if (dotIndicator) dotIndicator.className = 'audio-dot';
+                if (badgeIndicator) {
+                    badgeIndicator.className = 'audio-badge-live';
+                    badgeIndicator.innerText = 'LIVE SOUND';
+                }
+                if (btnEmg) btnEmg.className = 'btn-emergency-sound';
+                if (icoEmg) icoEmg.innerText = '🔇';
+                if (txtEmg) txtEmg.innerText = 'MUTE STREAM SOUND';
+            }
+
+            if (btnLock) {
+                btnLock.className = currentAudioRoutingMode === 'manual' ? 'btn-audio-ctrl active' : 'btn-audio-ctrl';
+            }
+            if (btnAfv) {
+                btnAfv.className = currentAudioRoutingMode === 'afv' ? 'btn-audio-ctrl active' : 'btn-audio-ctrl';
+            }
+
+            // Update Global DSP buttons
+            const btnWorship = document.getElementById('btn-dsp-global-music');
+            const btnSermon = document.getElementById('btn-dsp-global-speech');
+            if (btnWorship) {
+                btnWorship.className = activeDsp === 'music' ? 'btn-audio-ctrl active-music' : 'btn-audio-ctrl';
+            }
+            if (btnSermon) {
+                btnSermon.className = activeDsp === 'speech' ? 'btn-audio-ctrl active-speech' : 'btn-audio-ctrl';
+            }
+
+            // Update each camera card's overlays and buttons (STRICT SINGLE SOUND RULE)
+            for (let id = 1; id <= 6; id++) {
+                const overlaySound = document.getElementById(`overlay-sound-${id}`);
+                const btnSound = document.getElementById(`btn-sound-${id}`);
+                const btnDsp = document.getElementById(`btn-dsp-${id}`);
+                const camDsp = cameraAudioDspModes[id] || 'music';
+
+                const isThisLive = (!isEmergencySoundMuted && id === currentActiveAudioCam);
+
+                if (overlaySound) {
+                    if (isThisLive) {
+                        overlaySound.className = 'video-overlay-sound live';
+                        overlaySound.innerText = `🔊 LIVE SOUND (${camDsp === 'music' ? 'Music' : 'Speech'})`;
+                    } else {
+                        overlaySound.className = 'video-overlay-sound muted';
+                        overlaySound.innerText = '🔇 MUTED';
+                    }
+                }
+
+                if (btnSound) {
+                    if (id === currentActiveAudioCam) {
+                        btnSound.className = 'btn btn-sound-live active';
+                        btnSound.innerText = '🟢 Sound Live';
+                    } else {
+                        btnSound.className = 'btn btn-sound-live';
+                        btnSound.innerText = '🔊 Take Sound';
+                    }
+                }
+
+                if (btnDsp) {
+                    btnDsp.className = `btn btn-dsp-card ${camDsp}`;
+                    btnDsp.innerText = camDsp === 'music' ? '🎵 Music' : '🗣️ Speech';
+                }
+            }
+        }
 
         function populateNetworkAdapters(interfaces, selectedIp) {
             ['sel-network-adapter', 'modal-network-select'].forEach(selectId => {

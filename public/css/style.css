@@ -1080,3 +1080,306 @@ body.dimmed .shutter-container {
     border-radius: 20px;
     font-size: 12px;
 }
+
+/* --- Church Audio Master Bar (Strict Single Sound Broadcast Controller) --- */
+.audio-master-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 20px;
+    margin-bottom: 22px;
+    background: rgba(19, 13, 37, 0.92);
+    border: 1.5px solid rgba(124, 58, 237, 0.45);
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(124, 58, 237, 0.15);
+    backdrop-filter: blur(12px);
+    flex-wrap: wrap;
+}
+
+.audio-master-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 280px;
+}
+
+.audio-live-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    border-radius: 8px;
+}
+
+.audio-live-indicator.muted-master {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
+.audio-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 10px #10b981;
+    animation: audioPulse 1.8s infinite;
+}
+
+.audio-dot.muted-master {
+    background: #ef4444;
+    box-shadow: 0 0 10px #ef4444;
+    animation: none;
+}
+
+@keyframes audioPulse {
+    0% { transform: scale(0.9); opacity: 0.8; }
+    50% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+.audio-badge-live {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    color: #34d399;
+    text-transform: uppercase;
+}
+
+.audio-badge-live.muted-master {
+    color: #f87171;
+}
+
+.audio-source-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.audio-sub-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #94a3b8;
+}
+
+.audio-main-channel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 800;
+    color: #f8fafc;
+}
+
+.audio-mode-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.audio-mode-pill.music {
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid #10b981;
+    color: #34d399;
+}
+
+.audio-mode-pill.speech {
+    background: rgba(56, 189, 248, 0.2);
+    border: 1px solid #0284c7;
+    color: #38bdf8;
+}
+
+.audio-master-center {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.audio-ctrl-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ctrl-group-title {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    color: #a78bfa;
+    text-transform: uppercase;
+}
+
+.audio-btn-group {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-audio-ctrl {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #cbd5e1;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-audio-ctrl:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+.btn-audio-ctrl.active {
+    background: rgba(124, 58, 237, 0.35);
+    border-color: #8b5cf6;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+}
+
+.btn-audio-ctrl.active-music {
+    background: rgba(16, 185, 129, 0.25);
+    border-color: #10b981;
+    color: #34d399;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
+
+.btn-audio-ctrl.active-speech {
+    background: rgba(56, 189, 248, 0.25);
+    border-color: #0284c7;
+    color: #38bdf8;
+    box-shadow: 0 0 10px rgba(2, 132, 199, 0.4);
+}
+
+.audio-master-right {
+    display: flex;
+    align-items: center;
+}
+
+.btn-emergency-sound {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1.5px solid rgba(239, 68, 68, 0.5);
+    color: #fca5a5;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-emergency-sound:hover {
+    background: rgba(239, 68, 68, 0.3);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
+}
+
+.btn-emergency-sound.active {
+    background: #ef4444 !important;
+    border-color: #dc2626 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 16px rgba(239, 68, 68, 0.9) !important;
+    animation: soundMuteBlink 0.8s infinite alternate;
+}
+
+@keyframes soundMuteBlink {
+    0% { opacity: 0.85; }
+    100% { opacity: 1; transform: scale(1.02); }
+}
+
+/* Card Audio Overlays & Buttons */
+.video-overlay-sound {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    backdrop-filter: blur(6px);
+    z-index: 5;
+    transition: all 0.2s ease;
+}
+
+.video-overlay-sound.live {
+    background: rgba(16, 185, 129, 0.95);
+    border: 1px solid #34d399;
+    color: #ffffff;
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.7);
+}
+
+.video-overlay-sound.muted {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #64748b;
+}
+
+.btn-sound-live {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-sound-live:hover {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: #10b981;
+    color: #34d399;
+}
+
+.btn-sound-live.active {
+    background: #10b981 !important;
+    border-color: #059669 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.6) !important;
+}
+
+.btn-dsp-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-dsp-card.music {
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.btn-dsp-card.speech {
+    color: #38bdf8;
+    border-color: rgba(2, 132, 199, 0.4);
+    background: rgba(2, 132, 199, 0.1);
+}
+

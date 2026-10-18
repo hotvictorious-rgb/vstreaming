@@ -186,6 +186,60 @@ function getSanitizedCameras() {
     return clean;
 }
 
+// Authoritative Audio Master State (Strict Single Live Sound Broadcast Rule)
+const audioState = {
+    activeCamId: 1, // Currently unmuted live audio camera (1-6)
+    routingMode: 'manual', // 'manual' (Locked Sound Anchor) or 'afv' (Audio Follows Video)
+    isEmergencyMuted: false, // Master Silence Switch
+    globalMode: 'music' // 'music' (Praise & Worship) or 'speech' (Sermon)
+};
+
+function getObsAudioInputName(camId) {
+    const names = {
+        1: 'Pastor / Pulpit',
+        2: 'Choir / Altar',
+        3: 'Congregation / Wide',
+        4: 'Mobile / Roaming 1',
+        5: 'Mobile / Roaming 2',
+        6: 'Guest / Overflow'
+    };
+    return `Cam ${camId} Audio (${names[camId] || 'Cam ' + camId})`;
+}
+
+// Enforce Strict Single Sound in OBS: Only activeCamId is unmuted, all others 100% muted!
+async function syncObsSingleAudioSource() {
+    if (!obsClient || !isObsConnected) return;
+    const promises = [];
+    for (let i = 1; i <= 6; i++) {
+        const inputName = getObsAudioInputName(i);
+        const shouldMute = audioState.isEmergencyMuted || (i !== audioState.activeCamId);
+        promises.push(
+            obsClient.call('SetInputMute', { inputName, inputMuted: shouldMute })
+                .catch(err => console.warn(`[OBS Audio Mute] Error setting ${inputName}:`, err.message))
+        );
+    }
+    await Promise.allSettled(promises);
+    console.log(`[OBS Audio Master] Single Sound -> Cam ${audioState.activeCamId} (Emergency Muted: ${audioState.isEmergencyMuted}, Routing: ${audioState.routingMode})`);
+}
+
+function getAudioStatePayload() {
+    const camDspModes = {};
+    for (let i = 1; i <= 6; i++) {
+        camDspModes[i] = cameras[i] ? (cameras[i].audioMode || audioState.globalMode) : audioState.globalMode;
+    }
+    return {
+        ...audioState,
+        camDspModes
+    };
+}
+
+function broadcastAudioState() {
+    broadcastToDirectors({
+        type: 'audio_state_update',
+        audioState: getAudioStatePayload()
+    });
+}
+
 // Generate Camera URLs & QR Codes for a specific IP
 async function generateCameraUrls(ip) {
     const urls = {};
@@ -220,7 +274,8 @@ app.get('/api/info', async (req, res) => {
         programUrl: `http://localhost:${HTTP_PORT}/obs.html?id=program`,
         flierUrl: getActiveFlierUrl(),
         isEmergencyCut,
-        currentProgramCamId
+        currentProgramCamId,
+        audioState: getAudioStatePayload()
     });
 });
 
@@ -466,6 +521,11 @@ app.post('/api/tally', (req, res) => {
             }
             broadcastToProgramReceivers(targetId);
             switchOBSScene(targetId, true);
+            if (audioState.routingMode === 'afv') {
+                audioState.activeCamId = targetId;
+                syncObsSingleAudioSource().catch(() => {});
+                broadcastAudioState();
+            }
         } else {
             cameras[targetId].tally = state;
             broadcastTally(targetId, state);
@@ -523,7 +583,7 @@ function setupWebSocket(wss) {
         ws.isAlive = true;
         ws.on('pong', () => { ws.isAlive = true; });
 
-        ws.on('message', (message) => {
+        ws.on('message', async (message) => {
             try {
                 const data = JSON.parse(message);
                 
@@ -581,12 +641,23 @@ function setupWebSocket(wss) {
                         console.log(`[Broadcaster Connected] Camera ${peerCamId} (${cameras[peerCamId].name}) -> Standby (Director Preview Only)`);
                         broadcastToDirectors({ type: 'camera_update', cameras });
                         ws.send(JSON.stringify({ type: 'tally', state: 'STANDBY' }));
+                        ws.send(JSON.stringify({
+                            type: 'remote_set_audio_mode',
+                            mode: cameras[peerCamId].audioMode || audioState.globalMode
+                        }));
 
                         // Immediately prompt broadcaster to create offers for Director preview only
                         triggerOffersForCamera(peerCamId, ws);
 
                         // Notify any waiting OBS receivers or director previews that this camera is online!
                         broadcastToReceivers(peerCamId, { type: 'broadcaster_online', camId: peerCamId });
+                    }
+
+                    if (peerRole === 'director') {
+                        ws.send(JSON.stringify({
+                            type: 'audio_state_update',
+                            audioState: getAudioStatePayload()
+                        }));
                     }
 
                     if (peerRole === 'receiver' && peerCamId) {
@@ -704,12 +775,87 @@ function setupWebSocket(wss) {
                     return;
                 }
 
-                // Camera Audio DSP Mode (Music vs Speech)
+                // Camera Audio DSP Mode (Music vs Speech - status update from phone)
                 if (data.type === 'cam_audio_mode') {
                     const targetId = parseInt(data.camId || peerCamId, 10);
                     if (cameras[targetId]) {
                         cameras[targetId].audioMode = data.mode;
                         broadcastToDirectors({ type: 'cam_audio_mode', camId: targetId, mode: data.mode });
+                    }
+                    return;
+                }
+
+                // --- Master Single Audio Control System (Director Remote) ---
+                if (data.type === 'set_active_audio') {
+                    const targetCamId = parseInt(data.camId, 10);
+                    if (targetCamId >= 1 && targetCamId <= 6) {
+                        audioState.activeCamId = targetCamId;
+                        if (data.routingMode) audioState.routingMode = data.routingMode;
+                        await syncObsSingleAudioSource();
+                        broadcastAudioState();
+                    }
+                    return;
+                }
+
+                if (data.type === 'set_audio_routing_mode') {
+                    audioState.routingMode = data.mode === 'afv' ? 'afv' : 'manual';
+                    if (audioState.routingMode === 'afv' && currentProgramCamId) {
+                        audioState.activeCamId = currentProgramCamId;
+                        await syncObsSingleAudioSource();
+                    }
+                    broadcastAudioState();
+                    return;
+                }
+
+                if (data.type === 'set_emergency_audio_mute') {
+                    audioState.isEmergencyMuted = !!data.muted;
+                    await syncObsSingleAudioSource();
+                    broadcastAudioState();
+                    return;
+                }
+
+                if (data.type === 'set_cam_audio_mode') {
+                    const target = data.camId;
+                    const mode = (data.mode === 'speech') ? 'speech' : 'music';
+                    if (target === 'all') {
+                        audioState.globalMode = mode;
+                        for (let i = 1; i <= 6; i++) {
+                            cameras[i].audioMode = mode;
+                        }
+                        // Command all phone broadcasters to rebuild hardware DSP
+                        [wssHttp, wssHttps].forEach(wss => {
+                            wss.clients.forEach(client => {
+                                if (client.readyState === WebSocket.OPEN && client.role === 'broadcaster') {
+                                    client.send(JSON.stringify({ type: 'remote_set_audio_mode', mode }));
+                                }
+                            });
+                        });
+                        broadcastToDirectors({ type: 'global_audio_mode_changed', mode });
+                    } else {
+                        const targetId = parseInt(target, 10);
+                        if (cameras[targetId]) {
+                            cameras[targetId].audioMode = mode;
+                            // Command specific phone broadcaster to rebuild hardware DSP
+                            [wssHttp, wssHttps].forEach(wss => {
+                                wss.clients.forEach(client => {
+                                    if (client.readyState === WebSocket.OPEN && client.role === 'broadcaster' && client.camId === targetId) {
+                                        client.send(JSON.stringify({ type: 'remote_set_audio_mode', mode }));
+                                    }
+                                });
+                            });
+                            broadcastToDirectors({ type: 'cam_audio_mode', camId: targetId, mode });
+                        }
+                    }
+                    broadcastAudioState();
+                    return;
+                }
+
+                if (data.type === 'set_obs_audio_volume') {
+                    const camId = parseInt(data.camId, 10);
+                    const volMul = Math.max(0, Math.min(1.0, parseFloat(data.volumeMul || 1.0)));
+                    if (obsClient && isObsConnected && camId >= 1 && camId <= 6) {
+                        const inputName = getObsAudioInputName(camId);
+                        obsClient.call('SetInputVolume', { inputName, inputVolumeMul: volMul }).catch(() => {});
                     }
                     return;
                 }
@@ -808,6 +954,11 @@ function setupWebSocket(wss) {
                             }
                             broadcastToProgramReceivers(targetId);
                             switchOBSScene(targetId, true);
+                            if (audioState.routingMode === 'afv') {
+                                audioState.activeCamId = targetId;
+                                syncObsSingleAudioSource().catch(() => {});
+                                broadcastAudioState();
+                            }
                         } else if (state === 'PREVIEW') {
                             // Set Preview on this camera without cutting Program
                             cameras[targetId].tally = 'PREVIEW';
@@ -1006,6 +1157,7 @@ try {
             isObsConnected = true;
             console.log('[Victorious Hub] Successfully connected to OBS Studio WebSocket (Port 4455)!');
             broadcastToDirectors({ type: 'obs_status', connected: true });
+            syncObsSingleAudioSource().catch(() => {});
 
             obsClient.on('CurrentProgramSceneChanged', (event) => {
                 const sceneName = (event.sceneName || '');

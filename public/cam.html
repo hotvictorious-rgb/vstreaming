@@ -670,20 +670,20 @@
             return sdp;
         }
 
-        async function toggleAudioMode() {
-            currentAudioMode = (currentAudioMode === 'music') ? 'speech' : 'music';
+        async function setAudioMode(targetMode, fromRemote = false) {
+            currentAudioMode = targetMode;
             const btn = document.getElementById('btn-audio-mode');
             if (btn) {
                 if (currentAudioMode === 'music') {
                     btn.innerText = '🎵 Music';
                     btn.style.color = '#a7f3d0';
                     btn.style.borderColor = '#10b981';
-                    showHudToast('🎵 Church Worship Mode: Drums, Bass & Instruments Unfiltered');
+                    showHudToast(fromRemote ? '🎙️ Director Set: 🎵 Worship Music Mode' : '🎵 Church Worship Mode: Drums, Bass & Instruments Unfiltered');
                 } else {
                     btn.innerText = '🗣️ Speech';
                     btn.style.color = '#38bdf8';
                     btn.style.borderColor = '#0284c7';
-                    showHudToast('🗣️ Sermon Mode: Voice Focus Active');
+                    showHudToast(fromRemote ? '🎙️ Director Set: 🗣️ Sermon Speech Mode' : '🗣️ Sermon Mode: Voice Focus Active');
                 }
             }
 
@@ -739,6 +739,11 @@
                     oldTrack.applyConstraints(getAudioConstraints()).catch(() => {});
                 }
             }
+        }
+
+        async function toggleAudioMode() {
+            const nextMode = (currentAudioMode === 'music') ? 'speech' : 'music';
+            await setAudioMode(nextMode, false);
         }
 
         async function toggleMicStreaming() {
@@ -1106,6 +1111,13 @@
 
                 if (data.type === 'tally') {
                     updateTally(data.state);
+                }
+
+                // Remote Audio DSP Mode switch from Director Command Center
+                if (data.type === 'remote_set_audio_mode') {
+                    if (data.mode && data.mode !== currentAudioMode) {
+                        setAudioMode(data.mode, true).catch(err => console.warn('remote_set_audio_mode err:', err));
+                    }
                 }
 
                 // Intercom visual alert banner from Director
