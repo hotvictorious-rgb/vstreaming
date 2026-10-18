@@ -675,6 +675,15 @@ God in three Persons, blessed Trinity!</textarea>
                         <span id="txt-master-sound-name">Camera 1 • Pastor / Pulpit</span>
                         <span class="audio-mode-pill music" id="pill-master-dsp-mode">🎵 Music Mode</span>
                     </div>
+                    <div class="master-meter-container" id="master-meter-container" title="Live Broadcast Audio Output Level (OBS Studio Mixer)">
+                        <div class="master-meter-track">
+                            <div class="master-meter-fill" id="master-meter-fill"></div>
+                        </div>
+                        <div class="master-meter-meta">
+                            <span class="master-detect-badge" id="master-detect-badge">⚪ SILENT</span>
+                            <span class="master-db-readout" id="master-db-readout">-60 dB</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -729,6 +738,18 @@ God in three Persons, blessed Trinity!</textarea>
                         <span class="cam-name">Camera 1 • Pastor / Pulpit</span>
                         <span class="cam-status" id="status-1">⚪ Offline</span>
                     </div>
+                    <div class="cam-audio-meter-strip" id="meter-strip-1" title="Real-time Microphone Activity & Audio Level">
+                        <div class="meter-channel-header">
+                            <div class="meter-status-group">
+                                <span class="meter-activity-dot" id="activity-dot-1"></span>
+                                <span class="meter-status-text" id="activity-text-1">MIC SILENT</span>
+                            </div>
+                            <span class="meter-db-text" id="activity-db-1">-60 dB</span>
+                        </div>
+                        <div class="meter-track">
+                            <div class="meter-bar" id="meter-bar-1"></div>
+                        </div>
+                    </div>
                     <div class="cam-actions">
                         <button class="btn btn-tally-live" id="btn-live-1" onclick="setTally(1, 'PROGRAM')">⚡ CUT LIVE</button>
                         <button class="btn btn-sound-live active" id="btn-sound-1" onclick="takeCameraSound(1)" title="Make Camera 1 the exclusive live audio in OBS">🔊 Live Sound</button>
@@ -760,6 +781,18 @@ God in three Persons, blessed Trinity!</textarea>
                     <div class="cam-name-row">
                         <span class="cam-name">Camera 2 • Choir / Altar</span>
                         <span class="cam-status" id="status-2">⚪ Offline</span>
+                    </div>
+                    <div class="cam-audio-meter-strip" id="meter-strip-2" title="Real-time Microphone Activity & Audio Level">
+                        <div class="meter-channel-header">
+                            <div class="meter-status-group">
+                                <span class="meter-activity-dot" id="activity-dot-2"></span>
+                                <span class="meter-status-text" id="activity-text-2">MIC SILENT</span>
+                            </div>
+                            <span class="meter-db-text" id="activity-db-2">-60 dB</span>
+                        </div>
+                        <div class="meter-track">
+                            <div class="meter-bar" id="meter-bar-2"></div>
+                        </div>
                     </div>
                     <div class="cam-actions">
                         <button class="btn btn-tally-live" id="btn-live-2" onclick="setTally(2, 'PROGRAM')">⚡ CUT LIVE</button>
@@ -793,6 +826,18 @@ God in three Persons, blessed Trinity!</textarea>
                         <span class="cam-name">Camera 3 • Congregation / Wide</span>
                         <span class="cam-status" id="status-3">⚪ Offline</span>
                     </div>
+                    <div class="cam-audio-meter-strip" id="meter-strip-3" title="Real-time Microphone Activity & Audio Level">
+                        <div class="meter-channel-header">
+                            <div class="meter-status-group">
+                                <span class="meter-activity-dot" id="activity-dot-3"></span>
+                                <span class="meter-status-text" id="activity-text-3">MIC SILENT</span>
+                            </div>
+                            <span class="meter-db-text" id="activity-db-3">-60 dB</span>
+                        </div>
+                        <div class="meter-track">
+                            <div class="meter-bar" id="meter-bar-3"></div>
+                        </div>
+                    </div>
                     <div class="cam-actions">
                         <button class="btn btn-tally-live" id="btn-live-3" onclick="setTally(3, 'PROGRAM')">⚡ CUT LIVE</button>
                         <button class="btn btn-sound-live" id="btn-sound-3" onclick="takeCameraSound(3)" title="Make Camera 3 the exclusive live audio in OBS">🔊 Live Sound</button>
@@ -824,6 +869,18 @@ God in three Persons, blessed Trinity!</textarea>
                     <div class="cam-name-row">
                         <span class="cam-name">Camera 4 • Mobile / Roaming 1</span>
                         <span class="cam-status" id="status-4">⚪ Offline</span>
+                    </div>
+                    <div class="cam-audio-meter-strip" id="meter-strip-4" title="Real-time Microphone Activity & Audio Level">
+                        <div class="meter-channel-header">
+                            <div class="meter-status-group">
+                                <span class="meter-activity-dot" id="activity-dot-4"></span>
+                                <span class="meter-status-text" id="activity-text-4">MIC SILENT</span>
+                            </div>
+                            <span class="meter-db-text" id="activity-db-4">-60 dB</span>
+                        </div>
+                        <div class="meter-track">
+                            <div class="meter-bar" id="meter-bar-4"></div>
+                        </div>
                     </div>
                     <div class="cam-actions">
                         <button class="btn btn-tally-live" id="btn-live-4" onclick="setTally(4, 'PROGRAM')">⚡ CUT LIVE</button>
@@ -857,6 +914,18 @@ God in three Persons, blessed Trinity!</textarea>
                         <span class="cam-name">Camera 5 • Mobile / Roaming 2</span>
                         <span class="cam-status" id="status-5">⚪ Offline</span>
                     </div>
+                    <div class="cam-audio-meter-strip" id="meter-strip-5" title="Real-time Microphone Activity & Audio Level">
+                        <div class="meter-channel-header">
+                            <div class="meter-status-group">
+                                <span class="meter-activity-dot" id="activity-dot-5"></span>
+                                <span class="meter-status-text" id="activity-text-5">MIC SILENT</span>
+                            </div>
+                            <span class="meter-db-text" id="activity-db-5">-60 dB</span>
+                        </div>
+                        <div class="meter-track">
+                            <div class="meter-bar" id="meter-bar-5"></div>
+                        </div>
+                    </div>
                     <div class="cam-actions">
                         <button class="btn btn-tally-live" id="btn-live-5" onclick="setTally(5, 'PROGRAM')">⚡ CUT LIVE</button>
                         <button class="btn btn-sound-live" id="btn-sound-5" onclick="takeCameraSound(5)" title="Make Camera 5 the exclusive live audio in OBS">🔊 Live Sound</button>
@@ -888,6 +957,18 @@ God in three Persons, blessed Trinity!</textarea>
                     <div class="cam-name-row">
                         <span class="cam-name">Camera 6 • Guest / Overflow</span>
                         <span class="cam-status" id="status-6">⚪ Offline</span>
+                    </div>
+                    <div class="cam-audio-meter-strip" id="meter-strip-6" title="Real-time Microphone Activity & Audio Level">
+                        <div class="meter-channel-header">
+                            <div class="meter-status-group">
+                                <span class="meter-activity-dot" id="activity-dot-6"></span>
+                                <span class="meter-status-text" id="activity-text-6">MIC SILENT</span>
+                            </div>
+                            <span class="meter-db-text" id="activity-db-6">-60 dB</span>
+                        </div>
+                        <div class="meter-track">
+                            <div class="meter-bar" id="meter-bar-6"></div>
+                        </div>
                     </div>
                     <div class="cam-actions">
                         <button class="btn btn-tally-live" id="btn-live-6" onclick="setTally(6, 'PROGRAM')">⚡ CUT LIVE</button>
@@ -1203,6 +1284,9 @@ God in three Persons, blessed Trinity!</textarea>
                     for (let i = 1; i <= 6; i++) cameraAudioDspModes[i] = data.mode;
                     updateAudioMasterUI();
                 }
+                if (data.type === 'cam_audio_level') {
+                    updateCamAudioLevelUI(data.camId, data.level, data.db, data.detected);
+                }
                 if (data.type === 'photo_captured') {
                     showToast(`\u{1F4F8} Camera ${data.camId} snapped a high-res photo!\nSaved to laptop: photos/`);
                     loadPhotosCount();
@@ -1291,6 +1375,10 @@ God in three Persons, blessed Trinity!</textarea>
                             document.addEventListener('click', unlock, { once: true });
                         });
                     }
+                }
+                if (event.track.kind === 'audio') {
+                    const audioStream = event.streams[0] || new MediaStream([event.track]);
+                    startDirectorAudioMeter(camId, audioStream);
                 }
             };
 
@@ -2956,6 +3044,7 @@ God in three Persons, blessed Trinity!</textarea>
                         btn.style.boxShadow = 'none';
                         btn.title = `Camera ${id} is offline - connect phone to cut live`;
                     }
+                    updateCamAudioLevelUI(id, 0, -60, false);
                 }
                 updateTallyBadge(id, cam.tally, cam.connected);
                 if (typeof cam.micActive !== 'undefined') {
@@ -3147,6 +3236,112 @@ God in three Persons, blessed Trinity!</textarea>
         let cameraAudioDspModes = { 1: 'music', 2: 'music', 3: 'music', 4: 'music', 5: 'music', 6: 'music' };
         let isBroadcastLimiterActive = true;
         let isBroadcastCompressorActive = true;
+
+        const directorAudioContexts = {}; // camId -> { ctx, analyser, running }
+        const lastWebRtcUpdateTimes = {}; // camId -> timestamp
+
+        function startDirectorAudioMeter(camId, stream) {
+            try {
+                if (!stream || stream.getAudioTracks().length === 0) return;
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+
+                if (directorAudioContexts[camId] && directorAudioContexts[camId].ctx) {
+                    try { directorAudioContexts[camId].ctx.close(); } catch (e) {}
+                }
+
+                const ctx = new AudioCtx();
+                if (ctx.state === 'suspended') {
+                    ctx.resume().catch(() => {});
+                }
+                const source = ctx.createMediaStreamSource(stream);
+                const analyser = ctx.createAnalyser();
+                analyser.fftSize = 64;
+                analyser.smoothingTimeConstant = 0.3;
+                source.connect(analyser);
+
+                const state = { ctx, analyser, running: true };
+                directorAudioContexts[camId] = state;
+
+                const dataArray = new Uint8Array(analyser.fftSize);
+
+                function tick() {
+                    if (!state.running) return;
+                    requestAnimationFrame(tick);
+                    analyser.getByteTimeDomainData(dataArray);
+                    let max = 0;
+                    for (let i = 0; i < dataArray.length; i++) {
+                        const diff = Math.abs(dataArray[i] - 128);
+                        if (diff > max) max = diff;
+                    }
+                    const peak = max / 128; // 0..1
+                    const percent = Math.min(100, Math.round(peak * 100 * 1.5));
+                    const isDetected = peak > 0.03;
+                    const dB = peak > 0.001 ? Math.max(-60, Math.round(20 * Math.log10(peak))) : -60;
+
+                    updateCamAudioLevelUI(camId, percent, dB, isDetected, true);
+                }
+                tick();
+            } catch (err) {
+                console.warn(`[Director Audio Meter C${camId}] Setup note:`, err.message);
+            }
+        }
+
+        function updateCamAudioLevelUI(camId, level, db, isDetected, fromWebRtc = false) {
+            const now = Date.now();
+            if (fromWebRtc) {
+                lastWebRtcUpdateTimes[camId] = now;
+            } else {
+                if (lastWebRtcUpdateTimes[camId] && (now - lastWebRtcUpdateTimes[camId] < 500)) {
+                    return;
+                }
+            }
+
+            const bar = document.getElementById(`meter-bar-${camId}`);
+            const dot = document.getElementById(`activity-dot-${camId}`);
+            const txt = document.getElementById(`activity-text-${camId}`);
+            const dbEl = document.getElementById(`activity-db-${camId}`);
+            const strip = document.getElementById(`meter-strip-${camId}`);
+
+            if (bar) bar.style.width = `${level}%`;
+            if (dbEl) dbEl.innerText = `${db} dB`;
+
+            if (dot) dot.className = isDetected ? 'meter-activity-dot active' : 'meter-activity-dot';
+            if (txt) {
+                txt.className = isDetected ? 'meter-status-text active' : 'meter-status-text';
+                txt.innerText = isDetected ? '🟢 AUDIO DETECTED' : 'MIC SILENT';
+            }
+            if (strip) {
+                if (isDetected) strip.classList.add('detected');
+                else strip.classList.remove('detected');
+            }
+
+            // If this camera is the active live audio on broadcast stream, update Master Bar meter
+            if (parseInt(camId, 10) === parseInt(currentActiveAudioCam, 10)) {
+                const masterFill = document.getElementById('master-meter-fill');
+                const masterBadge = document.getElementById('master-detect-badge');
+                const masterDb = document.getElementById('master-db-readout');
+
+                if (masterFill) {
+                    masterFill.style.width = isEmergencySoundMuted ? '0%' : `${level}%`;
+                }
+                if (masterDb) {
+                    masterDb.innerText = isEmergencySoundMuted ? '-∞ dB (MUTED)' : `${db} dB`;
+                }
+                if (masterBadge) {
+                    if (isEmergencySoundMuted) {
+                        masterBadge.className = 'master-detect-badge';
+                        masterBadge.innerText = '🔴 MUTED IN OBS';
+                    } else if (isDetected) {
+                        masterBadge.className = 'master-detect-badge active';
+                        masterBadge.innerText = '🔊 SOUND DETECTED';
+                    } else {
+                        masterBadge.className = 'master-detect-badge';
+                        masterBadge.innerText = '⚪ SILENT';
+                    }
+                }
+            }
+        }
 
         function toggleBroadcastLimiter() {
             isBroadcastLimiterActive = !isBroadcastLimiterActive;

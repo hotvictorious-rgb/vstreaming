@@ -938,6 +938,17 @@ function setupWebSocket(wss) {
                     return;
                 }
 
+                if (data.type === 'audio_level_telemetry') {
+                    broadcastToDirectors({
+                        type: 'cam_audio_level',
+                        camId: data.camId,
+                        level: data.level,
+                        db: data.db,
+                        detected: !!data.detected
+                    });
+                    return;
+                }
+
                 // Intercom Audio Alerts & Crew Pings (Targeted / Isolated to specific Camera or All)
                 if (data.type === 'intercom_ping') {
                     const target = data.target || 'all';

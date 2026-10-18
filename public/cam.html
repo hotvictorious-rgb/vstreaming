@@ -236,7 +236,12 @@
             <div class="hud-cluster hud-right">
                 <button class="hud-btn" id="btn-fullscreen-toggle" onclick="toggleFullscreen()" title="Toggle Borderless Fullscreen (Hide Browser Headers)" style="font-weight: 700;">⛶ Full</button>
                 <button class="hud-btn" id="btn-audio-mode" onclick="toggleAudioMode()" title="Toggle Worship Music Mode (Full Drums/Bass) vs Speech Mode" style="font-weight: 700; color: #a7f3d0; border-color: #10b981;">🎵 Music</button>
-                <button class="hud-btn" id="btn-mic-toggle" onclick="toggleMicStreaming()" title="Toggle Phone Microphone for OBS" style="font-weight: 700;">🎤 Mic Off</button>
+                <div class="hud-btn hud-mic-cluster" id="hud-mic-cluster" style="display: flex; align-items: center; gap: 6px; padding: 3px 8px; font-weight: 700;">
+                    <button class="hud-btn-inline" id="btn-mic-toggle" onclick="toggleMicStreaming()" title="Toggle Phone Microphone for OBS" style="background: none; border: none; color: inherit; font-weight: 700; font-size: 11px; padding: 0; cursor: pointer;">🎤 Mic Off</button>
+                    <div id="hud-audio-meter-track" style="width: 26px; height: 6px; background: rgba(0,0,0,0.6); border-radius: 3px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); display: flex;">
+                        <div id="hud-audio-meter-fill" style="width: 0%; height: 100%; background: linear-gradient(to right, #10b981 70%, #f59e0b 85%, #ef4444 100%); transition: width 0.05s ease;"></div>
+                    </div>
+                </div>
                 <button class="hud-btn" id="btn-res-toggle" onclick="toggleResolutionProfile()" title="Toggle Video Quality (1080p HQ / 720p Fast)" style="font-weight: 700; border-color: var(--primary-gold);">💎 1080p</button>
                 <div class="intercom-pill" id="intercom-pill" title="Intercom Volume">
                     <button id="btn-intercom-test" onclick="testIntercomSound()" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #34d399; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 6px; cursor: pointer;" title="Tap to test and unlock intercom sound">🔔 Test</button>
@@ -724,6 +729,7 @@
                     localStream.addTrack(newTrack);
                 }
                 micStream = newAudioStream;
+                attachLocalAudioMeter(micStream || localStream);
 
                 // Stop old track to release hardware DSP
                 if (oldTrack && oldTrack !== newTrack) {
@@ -793,10 +799,9 @@
                 isMicStreaming = true;
                 if (btn) {
                     btn.innerText = '🎙️ Mic ON';
-                    btn.style.background = 'rgba(16, 185, 129, 0.3)';
-                    btn.style.borderColor = '#10b981';
                     btn.style.color = '#34d399';
                 }
+                attachLocalAudioMeter(micStream || localStream);
                 if (ws && ws.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({ type: 'cam_mic_status', camId, active: true }));
                 }
@@ -805,16 +810,95 @@
                 // MUTE (Digital silence without destroying WebRTC pipeline!)
                 audioTrack.enabled = false;
                 isMicStreaming = false;
+                const meterFill = document.getElementById('hud-audio-meter-fill');
+                if (meterFill) meterFill.style.width = '0%';
                 if (btn) {
                     btn.innerText = '🎤 Mic Off';
-                    btn.style.background = '';
-                    btn.style.borderColor = '';
                     btn.style.color = '';
                 }
                 if (ws && ws.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({ type: 'cam_mic_status', camId, active: false }));
+                    ws.send(JSON.stringify({ type: 'audio_level_telemetry', camId, level: 0, db: -60, detected: false }));
                 }
                 showHudToast('🎤 Mic Muted');
+            }
+        }
+
+        let localAudioMeterCtx = null;
+        let localAudioAnalyser = null;
+        let localAudioMeterRunning = false;
+        let lastTelemetryTime = 0;
+
+        function attachLocalAudioMeter(stream) {
+            try {
+                if (!stream || stream.getAudioTracks().length === 0) return;
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                if (!localAudioMeterCtx) {
+                    localAudioMeterCtx = new AudioCtx();
+                }
+                if (localAudioMeterCtx.state === 'suspended') {
+                    localAudioMeterCtx.resume().catch(() => {});
+                }
+                const source = localAudioMeterCtx.createMediaStreamSource(stream);
+                localAudioAnalyser = localAudioMeterCtx.createAnalyser();
+                localAudioAnalyser.fftSize = 64;
+                localAudioAnalyser.smoothingTimeConstant = 0.3;
+                source.connect(localAudioAnalyser);
+
+                if (!localAudioMeterRunning) {
+                    localAudioMeterRunning = true;
+                    const dataArray = new Uint8Array(localAudioAnalyser.fftSize);
+                    const meterFill = document.getElementById('hud-audio-meter-fill');
+                    const btn = document.getElementById('btn-mic-toggle');
+
+                    function runMeter() {
+                        if (!localAudioMeterRunning) return;
+                        requestAnimationFrame(runMeter);
+                        if (!isMicStreaming) {
+                            if (meterFill) meterFill.style.width = '0%';
+                            return;
+                        }
+                        localAudioAnalyser.getByteTimeDomainData(dataArray);
+                        let max = 0;
+                        for (let i = 0; i < dataArray.length; i++) {
+                            const diff = Math.abs(dataArray[i] - 128);
+                            if (diff > max) max = diff;
+                        }
+                        const peak = max / 128; // 0..1
+                        const percent = Math.min(100, Math.round(peak * 100 * 1.6));
+                        const isDetected = peak > 0.03;
+                        const dB = peak > 0.001 ? Math.max(-60, Math.round(20 * Math.log10(peak))) : -60;
+
+                        if (meterFill) {
+                            meterFill.style.width = percent + '%';
+                        }
+                        if (btn) {
+                            if (isDetected) {
+                                btn.innerText = '🟢 Mic Live';
+                                btn.style.color = '#34d399';
+                            } else {
+                                btn.innerText = '🎙️ Mic ON';
+                                btn.style.color = '#a7f3d0';
+                            }
+                        }
+
+                        const now = Date.now();
+                        if (now - lastTelemetryTime > 120 && ws && ws.readyState === WebSocket.OPEN) {
+                            lastTelemetryTime = now;
+                            ws.send(JSON.stringify({
+                                type: 'audio_level_telemetry',
+                                camId,
+                                level: percent,
+                                db: dB,
+                                detected: isDetected
+                            }));
+                        }
+                    }
+                    runMeter();
+                }
+            } catch (e) {
+                console.warn('[Cam Audio Meter] Error setting up meter:', e);
             }
         }
 
@@ -1048,6 +1132,7 @@
                             videoStream.addTrack(aTrack);
                             micStream = separateAudio;
                             isMicStreaming = true;
+                            attachLocalAudioMeter(micStream || videoStream);
                             const btn = document.getElementById('btn-mic-toggle');
                             if (btn) {
                                 btn.innerText = '🎙️ Mic ON';
