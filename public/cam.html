@@ -670,49 +670,62 @@
 
         async function toggleMicStreaming() {
             const btn = document.getElementById('btn-mic-toggle');
-            if (!isMicStreaming) {
+
+            // Find current active audio track
+            let audioTrack = (micStream || localStream)?.getAudioTracks()[0];
+
+            // If audio track is missing or stopped, acquire a fresh stream once
+            if (!audioTrack || audioTrack.readyState !== 'live') {
                 try {
-                    micStream = await navigator.mediaDevices.getUserMedia({
+                    const newAudioStream = await navigator.mediaDevices.getUserMedia({
                         audio: getAudioConstraints()
                     });
-                    const audioTrack = micStream.getAudioTracks()[0];
-                    if (audioTrack) {
-                        if (localStream) {
-                            localStream.addTrack(audioTrack);
-                        }
-                        for (const receiverId in peerConnections) {
-                            const pc = peerConnections[receiverId];
-                            if (pc) {
+                    audioTrack = newAudioStream.getAudioTracks()[0];
+                    micStream = newAudioStream;
+                    if (localStream) {
+                        localStream.getAudioTracks().forEach(t => {
+                            try { localStream.removeTrack(t); } catch (e) {}
+                        });
+                        localStream.addTrack(audioTrack);
+                    }
+
+                    // For each connected peer connection, attach or replace track
+                    for (const receiverId in peerConnections) {
+                        const pc = peerConnections[receiverId];
+                        if (pc) {
+                            const senders = pc.getSenders();
+                            const audioSender = senders.find(s => s.track && s.track.kind === 'audio') || senders.find(s => !s.track || s.track.kind === 'audio');
+                            if (audioSender && audioSender.replaceTrack) {
+                                audioSender.replaceTrack(audioTrack).catch(e => console.warn('replaceTrack err:', e));
+                            } else {
                                 try { pc.addTrack(audioTrack, micStream || localStream); } catch (e) {}
+                                createPeerConnection(receiverId, receiverId.startsWith('obs_audio_'));
                             }
                         }
-                        isMicStreaming = true;
-                        if (btn) {
-                            btn.innerText = '🎙️ Mic ON';
-                            btn.style.background = 'rgba(16, 185, 129, 0.3)';
-                            btn.style.borderColor = '#10b981';
-                            btn.style.color = '#34d399';
-                        }
-                        if (ws && ws.readyState === WebSocket.OPEN) {
-                            ws.send(JSON.stringify({ type: 'cam_mic_status', camId, active: true }));
-                        }
-                        showHudToast(currentAudioMode === 'music' ? '🎙️ Worship Music Mic Active (48kHz)' : '🎙️ Microphone Active');
                     }
                 } catch (err) {
                     alert('Could not access microphone: ' + err.message);
+                    return;
                 }
+            }
+
+            if (!isMicStreaming) {
+                // UNMUTE (Instant resume with 0ms delay, rock-solid WebRTC)
+                audioTrack.enabled = true;
+                isMicStreaming = true;
+                if (btn) {
+                    btn.innerText = '🎙️ Mic ON';
+                    btn.style.background = 'rgba(16, 185, 129, 0.3)';
+                    btn.style.borderColor = '#10b981';
+                    btn.style.color = '#34d399';
+                }
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'cam_mic_status', camId, active: true }));
+                }
+                showHudToast(currentAudioMode === 'music' ? '🎙️ Worship Music Mic Active (48kHz)' : '🎙️ Microphone Active');
             } else {
-                if (micStream) {
-                    micStream.getTracks().forEach(t => t.stop());
-                    if (localStream) {
-                        const audioTracks = localStream.getAudioTracks();
-                        audioTracks.forEach(t => {
-                            try { localStream.removeTrack(t); } catch (e) {}
-                            t.stop();
-                        });
-                    }
-                    micStream = null;
-                }
+                // MUTE (Digital silence without destroying WebRTC pipeline!)
+                audioTrack.enabled = false;
                 isMicStreaming = false;
                 if (btn) {
                     btn.innerText = '🎤 Mic Off';
