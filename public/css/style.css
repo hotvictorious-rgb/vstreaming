@@ -1263,9 +1263,33 @@ body.dimmed .shutter-container {
     box-shadow: 0 0 10px rgba(2, 132, 199, 0.4);
 }
 
+.btn-audio-ctrl.active-limiter {
+    background: rgba(16, 185, 129, 0.18);
+    border-color: #10b981;
+    color: #34d399;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.btn-audio-ctrl.active-limiter:hover {
+    background: rgba(16, 185, 129, 0.28);
+    color: #ffffff;
+}
+
+.btn-audio-ctrl.disabled-limiter {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+}
+
+.btn-audio-ctrl.disabled-limiter:hover {
+    background: rgba(239, 68, 68, 0.25);
+    color: #ffffff;
+}
+
 .audio-master-right {
     display: flex;
     align-items: center;
+    gap: 12px;
 }
 
 .btn-emergency-sound {

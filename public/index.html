@@ -697,6 +697,12 @@ God in three Persons, blessed Trinity!</textarea>
             </div>
 
             <div class="audio-master-right">
+                <div class="audio-ctrl-group">
+                    <span class="ctrl-group-title">BROADCAST CEILING</span>
+                    <button type="button" class="btn-audio-ctrl active-limiter" id="btn-master-limiter" onclick="toggleBroadcastLimiter()" title="Toggle OBS Brickwall Limiter (-2.0 dB Zero-Clipping Ceiling) & Dynamic Compressor">
+                        <span id="ico-master-limiter">🛡️</span> <span id="lbl-master-limiter">Limiter: -2.0dB ACTIVE</span>
+                    </button>
+                </div>
                 <button type="button" class="btn-emergency-sound" id="btn-emergency-sound" onclick="toggleEmergencyAudioMute()" title="Instantly silence all camera microphones in OBS Studio">
                     <span id="ico-emergency-sound">🔇</span> <span id="txt-emergency-sound">MUTE STREAM SOUND</span>
                 </button>
@@ -1106,6 +1112,8 @@ God in three Persons, blessed Trinity!</textarea>
                     if (typeof serverInfo.audioState.activeCamId !== 'undefined') currentActiveAudioCam = serverInfo.audioState.activeCamId;
                     if (serverInfo.audioState.routingMode) currentAudioRoutingMode = serverInfo.audioState.routingMode;
                     if (typeof serverInfo.audioState.isEmergencyMuted !== 'undefined') isEmergencySoundMuted = !!serverInfo.audioState.isEmergencyMuted;
+                    if (typeof serverInfo.audioState.limiterEnabled !== 'undefined') isBroadcastLimiterActive = !!serverInfo.audioState.limiterEnabled;
+                    if (typeof serverInfo.audioState.compressorEnabled !== 'undefined') isBroadcastCompressorActive = !!serverInfo.audioState.compressorEnabled;
                     if (serverInfo.audioState.camDspModes) {
                         cameraAudioDspModes = { ...cameraAudioDspModes, ...serverInfo.audioState.camDspModes };
                     }
@@ -1176,6 +1184,8 @@ God in three Persons, blessed Trinity!</textarea>
                     if (typeof st.activeCamId !== 'undefined') currentActiveAudioCam = st.activeCamId;
                     if (st.routingMode) currentAudioRoutingMode = st.routingMode;
                     if (typeof st.isEmergencyMuted !== 'undefined') isEmergencySoundMuted = !!st.isEmergencyMuted;
+                    if (typeof st.limiterEnabled !== 'undefined') isBroadcastLimiterActive = !!st.limiterEnabled;
+                    if (typeof st.compressorEnabled !== 'undefined') isBroadcastCompressorActive = !!st.compressorEnabled;
                     if (st.camDspModes) {
                         cameraAudioDspModes = { ...cameraAudioDspModes, ...st.camDspModes };
                     }
@@ -3135,6 +3145,23 @@ God in three Persons, blessed Trinity!</textarea>
         let currentAudioRoutingMode = 'manual'; // 'manual' (Locked Mic) or 'afv' (Audio Follows Video)
         let isEmergencySoundMuted = false;
         let cameraAudioDspModes = { 1: 'music', 2: 'music', 3: 'music', 4: 'music', 5: 'music', 6: 'music' };
+        let isBroadcastLimiterActive = true;
+        let isBroadcastCompressorActive = true;
+
+        function toggleBroadcastLimiter() {
+            isBroadcastLimiterActive = !isBroadcastLimiterActive;
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'set_obs_audio_filters',
+                    limiter: isBroadcastLimiterActive,
+                    compressor: isBroadcastCompressorActive
+                }));
+            }
+            updateAudioMasterUI();
+            showToast(isBroadcastLimiterActive
+                ? '🛡️ Broadcast Limiter ACTIVE: Safe -2.0 dB zero-clipping ceiling enforced in OBS'
+                : '⚠️ Broadcast Limiter DISABLED: Warning, loud shouts may cause digital clipping in OBS');
+        }
 
         function takeCameraSound(camId) {
             currentActiveAudioCam = camId;
@@ -3271,6 +3298,24 @@ God in three Persons, blessed Trinity!</textarea>
             }
             if (btnSermon) {
                 btnSermon.className = activeDsp === 'speech' ? 'btn-audio-ctrl active-speech' : 'btn-audio-ctrl';
+            }
+
+            // Update Broadcast Limiter Button
+            const btnLimiter = document.getElementById('btn-master-limiter');
+            const lblLimiter = document.getElementById('lbl-master-limiter');
+            const icoLimiter = document.getElementById('ico-master-limiter');
+            if (btnLimiter) {
+                if (isBroadcastLimiterActive) {
+                    btnLimiter.className = 'btn-audio-ctrl active-limiter';
+                    if (icoLimiter) icoLimiter.innerText = '🛡️';
+                    if (lblLimiter) lblLimiter.innerText = 'Limiter: -2.0dB ACTIVE';
+                    btnLimiter.title = 'Broadcast Brickwall Limiter is ACTIVE (-2.0 dB ceiling protects against clipping distortion). Click to toggle.';
+                } else {
+                    btnLimiter.className = 'btn-audio-ctrl disabled-limiter';
+                    if (icoLimiter) icoLimiter.innerText = '⚠️';
+                    if (lblLimiter) lblLimiter.innerText = 'Limiter: OFF (Risk)';
+                    btnLimiter.title = 'Broadcast Limiter is OFF. Loud sounds may clip into the red. Click to turn ON.';
+                }
             }
 
             // Update each camera card's overlays and buttons (STRICT SINGLE SOUND RULE)

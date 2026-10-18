@@ -191,7 +191,9 @@ const audioState = {
     activeCamId: 1, // Currently unmuted live audio camera (1-6)
     routingMode: 'manual', // 'manual' (Locked Sound Anchor) or 'afv' (Audio Follows Video)
     isEmergencyMuted: false, // Master Silence Switch
-    globalMode: 'music' // 'music' (Praise & Worship) or 'speech' (Sermon)
+    globalMode: 'music', // 'music' (Praise & Worship) or 'speech' (Sermon)
+    limiterEnabled: true, // Broadcast Brickwall Limiter (-2.0 dB zero-clipping ceiling)
+    compressorEnabled: true // Broadcast Dynamic Range Compressor (lifts soft speech, smooths peaks)
 };
 
 function getObsAudioInputName(camId) {
@@ -220,6 +222,72 @@ async function syncObsSingleAudioSource() {
     }
     await Promise.allSettled(promises);
     console.log(`[OBS Audio Master] Single Sound -> Cam ${audioState.activeCamId} (Emergency Muted: ${audioState.isEmergencyMuted}, Routing: ${audioState.routingMode})`);
+}
+
+// Automatically ensure OBS Audio Inputs have Church Broadcast Limiter & Compressor
+async function ensureObsAudioFilters() {
+    if (!obsClient || !isObsConnected) return;
+    const compressorSettings = {
+        threshold: -18.0,
+        ratio: 3.5,
+        attack_time: 6,
+        release_time: 60,
+        output_gain: 2.0
+    };
+    const limiterSettings = {
+        threshold: -2.0,
+        release_time: 60
+    };
+
+    for (let i = 1; i <= 6; i++) {
+        const inputName = getObsAudioInputName(i);
+        try {
+            const listRes = await obsClient.call('GetSourceFilterList', { sourceName: inputName });
+            const existingFilters = (listRes && listRes.filters) ? listRes.filters : [];
+            const hasComp = existingFilters.some(f => f.filterName === 'Church Broadcast Compressor');
+            const hasLimiter = existingFilters.some(f => f.filterName === 'Church Broadcast Limiter');
+
+            // Stage 1: Dynamic Range Compressor (lifts quiet speech, smooths peaks)
+            if (!hasComp) {
+                await obsClient.call('CreateSourceFilter', {
+                    sourceName: inputName,
+                    filterName: 'Church Broadcast Compressor',
+                    filterKind: 'compressor_filter',
+                    filterSettings: compressorSettings
+                }).catch(() => {});
+            }
+            await obsClient.call('SetSourceFilterEnabled', {
+                sourceName: inputName,
+                filterName: 'Church Broadcast Compressor',
+                filterEnabled: audioState.compressorEnabled
+            }).catch(() => {});
+
+            // Stage 2: Brickwall Limiter (Safe -2.0 dB ceiling, prevents 0 dB digital clipping)
+            if (!hasLimiter) {
+                await obsClient.call('CreateSourceFilter', {
+                    sourceName: inputName,
+                    filterName: 'Church Broadcast Limiter',
+                    filterKind: 'limiter_filter',
+                    filterSettings: limiterSettings
+                }).catch(() => {});
+            }
+            await obsClient.call('SetSourceFilterEnabled', {
+                sourceName: inputName,
+                filterName: 'Church Broadcast Limiter',
+                filterEnabled: audioState.limiterEnabled
+            }).catch(() => {});
+        } catch (err) {
+            // Source may not exist in OBS yet, continue
+        }
+    }
+    console.log(`[OBS Audio Filters] Guard Active on Cam 1-6: Limiter=${audioState.limiterEnabled} (-2.0 dB Ceiling), Compressor=${audioState.compressorEnabled}`);
+}
+
+async function setObsAudioFilters({ limiter, compressor }) {
+    if (typeof limiter === 'boolean') audioState.limiterEnabled = limiter;
+    if (typeof compressor === 'boolean') audioState.compressorEnabled = compressor;
+    await ensureObsAudioFilters();
+    broadcastAudioState();
 }
 
 function getAudioStatePayload() {
@@ -860,6 +928,16 @@ function setupWebSocket(wss) {
                     return;
                 }
 
+                if (data.type === 'set_obs_audio_filters') {
+                    await setObsAudioFilters(data);
+                    return;
+                }
+
+                if (data.type === 'toggle_obs_limiter') {
+                    await setObsAudioFilters({ limiter: !audioState.limiterEnabled });
+                    return;
+                }
+
                 // Intercom Audio Alerts & Crew Pings (Targeted / Isolated to specific Camera or All)
                 if (data.type === 'intercom_ping') {
                     const target = data.target || 'all';
@@ -1158,6 +1236,7 @@ try {
             console.log('[Victorious Hub] Successfully connected to OBS Studio WebSocket (Port 4455)!');
             broadcastToDirectors({ type: 'obs_status', connected: true });
             syncObsSingleAudioSource().catch(() => {});
+            ensureObsAudioFilters().catch(err => console.warn('[OBS Filter Setup] Error:', err.message));
 
             obsClient.on('CurrentProgramSceneChanged', (event) => {
                 const sceneName = (event.sceneName || '');
@@ -1258,6 +1337,7 @@ async function autoProvisionObsAudioSources() {
             }
         }
     }
+    await ensureObsAudioFilters().catch(() => {});
     return { scene: targetScene, results };
 }
 
