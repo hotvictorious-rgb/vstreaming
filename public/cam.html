@@ -443,6 +443,7 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         let camId = parseInt(urlParams.get('id') || '1', 10);
+        const pin = urlParams.get('pin') || '';
         document.getElementById('lbl-cam-name').innerText = `Camera ${camId}`;
 
         let localStream = null;
@@ -780,8 +781,6 @@
         // Connect WebSocket Signaling to Local Hub
         function initWebSocket() {
             const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const urlParams = new URLSearchParams(window.location.search);
-            const pin = urlParams.get('pin') || '';
             ws = new WebSocket(`${proto}//${window.location.host}`);
 
             ws.onopen = () => {
@@ -1140,11 +1139,16 @@
                 const pinParam = pin ? `&pin=${encodeURIComponent(pin)}` : '';
                 const res = await fetch(`/api/upload-photo?camId=${camId}${pinParam}`, {
                     method: 'POST',
+                    headers: {
+                        'x-studio-pin': pin
+                    },
                     body: formData
                 });
                 const data = await res.json();
-                if (data.success) {
+                if (res.ok && data.success) {
                     showHudToast('📸 Photo Saved to Laptop!');
+                } else {
+                    showHudToast(`⚠️ ${data.error || 'Upload rejected by server'}`);
                 }
             } catch (err) {
                 console.warn('Photo upload error:', err);

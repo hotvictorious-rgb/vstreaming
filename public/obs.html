@@ -733,11 +733,11 @@
 
             console.log(`[A/B Switcher] Pre-connecting Camera ${targetId} on Channel ${pendingChannel.id} (Receiver: ${pendingChannel.receiverId}). Active on air: ${activeChannel ? 'Channel ' + activeChannel.id : 'Flier'}`);
 
-            // Handshake safety timeout (800ms) - If incoming camera never replies, keep active live or show flier
+            // Handshake safety timeout (3500ms) - Gives Wi-Fi WebRTC ICE & DTLS negotiation time to paint frames
             if (handshakeTimeout) clearTimeout(handshakeTimeout);
             handshakeTimeout = setTimeout(() => {
                 if (pendingChannel && pendingChannel.camId === targetId) {
-                    console.warn(`[A/B Switcher] Camera ${targetId} handshake timed out (800ms)`);
+                    console.warn(`[A/B Switcher] Camera ${targetId} handshake timed out (3500ms)`);
                     teardownChannel(pendingChannel);
                     pendingChannel = null;
 
@@ -749,7 +749,7 @@
                         fallbackToFlier(true);
                     }
                 }
-            }, 800);
+            }, 3500);
 
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({
@@ -883,6 +883,8 @@
                         const onlineId = parseInt(data.camId, 10);
                         if (!isProgramMode && onlineId === camId && activeTallyState === 'PROGRAM') {
                             requestStream(camId);
+                        } else if (isProgramMode && onlineId === currentProgramCamId && activeTallyState === 'PROGRAM') {
+                            requestStream(currentProgramCamId);
                         }
                     }
 
@@ -908,10 +910,13 @@
 
                     // WebRTC Signaling: Offer
                     if (data.type === 'offer') {
-                        if (pendingChannel && (data.receiverId === pendingChannel.receiverId || !data.receiverId)) {
+                        const isMatchPending = pendingChannel && (data.receiverId === pendingChannel.receiverId || !data.receiverId || data.receiverId === 'obs_program_master' || (data.receiverId && data.receiverId.includes(`obs_prog_${pendingChannel.id}_`)));
+                        const isMatchActive = activeChannel && (data.receiverId === activeChannel.receiverId || !data.receiverId || (data.receiverId && data.receiverId.includes(`obs_prog_${activeChannel.id}_`)));
+
+                        if (isMatchPending) {
                             console.log(`[A/B Switcher] Routing Offer to Pending Channel ${pendingChannel.id}`);
                             await handleOffer(pendingChannel, data.sdp);
-                        } else if (activeChannel && (data.receiverId === activeChannel.receiverId)) {
+                        } else if (isMatchActive) {
                             console.log(`[A/B Switcher] Re-negotiating Active Channel ${activeChannel.id}`);
                             await handleOffer(activeChannel, data.sdp);
                         }
@@ -919,9 +924,12 @@
 
                     // WebRTC Signaling: ICE Candidate
                     if (data.type === 'ice-candidate') {
-                        if (pendingChannel && (data.receiverId === pendingChannel.receiverId || !data.receiverId)) {
+                        const isMatchPending = pendingChannel && (data.receiverId === pendingChannel.receiverId || !data.receiverId || data.receiverId === 'obs_program_master' || (data.receiverId && data.receiverId.includes(`obs_prog_${pendingChannel.id}_`)));
+                        const isMatchActive = activeChannel && (data.receiverId === activeChannel.receiverId || !data.receiverId || (data.receiverId && data.receiverId.includes(`obs_prog_${activeChannel.id}_`)));
+
+                        if (isMatchPending) {
                             await queueOrAddCandidate(pendingChannel, data.candidate);
-                        } else if (activeChannel && (data.receiverId === activeChannel.receiverId)) {
+                        } else if (isMatchActive) {
                             await queueOrAddCandidate(activeChannel, data.candidate);
                         }
                     }

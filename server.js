@@ -583,13 +583,6 @@ function setupWebSocket(wss) {
                     if (ws.isProgramReceiver) {
                         const isLiveProgramActive = (currentProgramCamId && cameras[currentProgramCamId] && cameras[currentProgramCamId].connected && cameras[currentProgramCamId].tally === 'PROGRAM');
                         ws.send(JSON.stringify({ type: 'program_cut', camId: isLiveProgramActive ? currentProgramCamId : null }));
-                        if (isLiveProgramActive && cameraSockets[currentProgramCamId] && cameraSockets[currentProgramCamId].readyState === WebSocket.OPEN) {
-                            cameraSockets[currentProgramCamId].send(JSON.stringify({
-                                type: 'receiver_ready',
-                                camId: currentProgramCamId,
-                                receiverId: data.receiverId
-                            }));
-                        }
                         return;
                     }
 
@@ -890,13 +883,6 @@ function broadcastToProgramReceivers(targetCamId) {
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN && client.isProgramReceiver) {
                 client.send(msg);
-                if (cameras[targetCamId] && cameras[targetCamId].connected && cameraSockets[targetCamId] && cameraSockets[targetCamId].readyState === WebSocket.OPEN) {
-                    cameraSockets[targetCamId].send(JSON.stringify({
-                        type: 'receiver_ready',
-                        camId: targetCamId,
-                        receiverId: client.receiverId
-                    }));
-                }
             }
         });
     });
