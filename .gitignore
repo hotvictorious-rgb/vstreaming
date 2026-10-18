@@ -1,4 +1,4 @@
-﻿# Dependencies
+# Dependencies
 node_modules/
 
 # Edge isolated browser profile
@@ -13,6 +13,8 @@ photos/*
 
 # Temporary files & logs
 *.log
+*.bak
+runtime/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

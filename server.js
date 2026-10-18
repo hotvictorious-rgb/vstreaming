@@ -432,15 +432,16 @@ function triggerOffersForCamera(camId, broadcasterWs) {
     [wssHttp, wssHttps].forEach(wss => {
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
-                // Strict Broadcast Rule: Program OBS is ONLY prompted if this camera is actively cut to PROGRAM
-                if (client.isProgramReceiver && currentProgramCamId === camId && cameras[camId] && cameras[camId].tally === 'PROGRAM' && client.receiverId) {
-                    console.log(`[Broadcaster Connect] Prompting Camera ${camId} for active Program OBS (${client.receiverId})`);
-                    broadcasterWs.send(JSON.stringify({ type: 'receiver_ready', camId, receiverId: client.receiverId }));
+                // Program OBS: Pre-warm and stream all connected cameras into OBS background stack
+                if (client.isProgramReceiver && client.receiverId) {
+                    const recId = `${client.receiverId}_c${camId}`;
+                    if (!client.receiverIds) client.receiverIds = new Set();
+                    client.receiverIds.add(recId);
+                    console.log(`[Broadcaster Connect] Pre-warming Camera ${camId} for Program OBS stack (${recId})`);
+                    broadcasterWs.send(JSON.stringify({ type: 'receiver_ready', camId, receiverId: recId }));
                 } else if (client.role === 'receiver' && client.camId === camId && client.receiverId) {
-                    if (cameras[camId] && cameras[camId].tally === 'PROGRAM') {
-                        console.log(`[Broadcaster Connect] Prompting Camera ${camId} for active OBS receiver (${client.receiverId})`);
-                        broadcasterWs.send(JSON.stringify({ type: 'receiver_ready', camId, receiverId: client.receiverId }));
-                    }
+                    console.log(`[Broadcaster Connect] Prompting Camera ${camId} for OBS receiver (${client.receiverId})`);
+                    broadcasterWs.send(JSON.stringify({ type: 'receiver_ready', camId, receiverId: client.receiverId }));
                 } else if (client.role === 'director') {
                     if (client.receiverIds) {
                         client.receiverIds.forEach(recId => {
@@ -482,12 +483,19 @@ function setupWebSocket(wss) {
                         const isLiveProgramActive = (currentProgramCamId && cameras[currentProgramCamId] && cameras[currentProgramCamId].connected && cameras[currentProgramCamId].tally === 'PROGRAM');
                         console.log(`[Master Program OBS Registered] (ID: ${data.receiverId}), current live is Cam ${isLiveProgramActive ? currentProgramCamId : 'NONE (Flier Active)'}`);
                         ws.send(JSON.stringify({ type: 'program_cut', camId: isLiveProgramActive ? currentProgramCamId : null }));
-                        if (isLiveProgramActive && cameraSockets[currentProgramCamId] && cameraSockets[currentProgramCamId].readyState === WebSocket.OPEN) {
-                            cameraSockets[currentProgramCamId].send(JSON.stringify({
-                                type: 'receiver_ready',
-                                camId: currentProgramCamId,
-                                receiverId: data.receiverId
-                            }));
+
+                        // Pre-warm all currently connected cameras into Program OBS stack
+                        for (let id = 1; id <= 6; id++) {
+                            if (cameras[id] && cameras[id].connected && cameraSockets[id] && cameraSockets[id].readyState === WebSocket.OPEN) {
+                                const recId = `${data.receiverId}_c${id}`;
+                                ws.receiverIds.add(recId);
+                                console.log(`[Program OBS Registered] Pre-warming connected Camera ${id} (${recId})`);
+                                cameraSockets[id].send(JSON.stringify({
+                                    type: 'receiver_ready',
+                                    camId: id,
+                                    receiverId: recId
+                                }));
+                            }
                         }
                         return;
                     }
@@ -801,12 +809,18 @@ function broadcastToProgramReceivers(targetCamId) {
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN && client.isProgramReceiver) {
                 client.send(msg);
-                if (cameras[targetCamId] && cameras[targetCamId].connected && cameraSockets[targetCamId] && cameraSockets[targetCamId].readyState === WebSocket.OPEN) {
-                    cameraSockets[targetCamId].send(JSON.stringify({
-                        type: 'receiver_ready',
-                        camId: targetCamId,
-                        receiverId: client.receiverId
-                    }));
+                // Fallback: If this camera was not yet connected/warmed up in client's stack, prompt it now
+                if (targetCamId && cameras[targetCamId] && cameras[targetCamId].connected && cameraSockets[targetCamId] && cameraSockets[targetCamId].readyState === WebSocket.OPEN) {
+                    const recId = `${client.receiverId}_c${targetCamId}`;
+                    if (!client.receiverIds || !client.receiverIds.has(recId)) {
+                        if (!client.receiverIds) client.receiverIds = new Set();
+                        client.receiverIds.add(recId);
+                        cameraSockets[targetCamId].send(JSON.stringify({
+                            type: 'receiver_ready',
+                            camId: targetCamId,
+                            receiverId: recId
+                        }));
+                    }
                 }
             }
         });
