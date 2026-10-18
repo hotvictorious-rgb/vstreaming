@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBS Audio Receiver</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html {
+            width: 100%;
+            height: 100%;
+            background: #090514;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Compact Audio Meter & Status HUD (Visible when viewed in browser; invisible in 1x1 OBS) */
+        .audio-hud {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 20px;
+            background: rgba(19, 13, 37, 0.95);
+            border: 1px solid rgba(124, 58, 237, 0.4);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            min-width: 220px;
+        }
+
+        .cam-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #fbbf24;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .meter-container {
+            width: 180px;
+            height: 14px;
+            background: #150d2a;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 7px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .meter-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #10b981 0%, #10b981 70%, #f59e0b 85%, #ef4444 100%);
+            transition: width 0.05s ease;
+        }
+
+        .status-badge {
+            font-size: 11px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+        }
+        .status-dot.active {
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="audio-hud" id="hud">
+        <div class="cam-title" id="lbl-title">Camera Audio</div>
+        <div class="meter-container">
+            <div class="meter-fill" id="meter-fill"></div>
+        </div>
+        <div class="status-badge">
+            <span class="status-dot" id="status-dot"></span>
+            <span id="status-text">Connecting to Hub...</span>
+        </div>
+    </div>
+
+    <!-- Hidden Native Audio Output (Routed to OBS Audio Mixer via CEF) -->
+    <audio id="native-audio" autoplay playsinline></audio>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const camId = parseInt(urlParams.get('id') || urlParams.get('cam') || '1', 10);
+        const receiverId = `obs_audio_c${camId}_` + Math.random().toString(36).substring(2, 7);
+
+        const lblTitle = document.getElementById('lbl-title');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const meterFill = document.getElementById('meter-fill');
+        const audioElement = document.getElementById('native-audio');
+
+        lblTitle.innerText = `Camera ${camId} Audio`;
+
+        let ws = null;
+        let pc = null;
+        let candidateQueue = [];
+        let audioContext = null;
+        let analyser = null;
+        let meterRunning = false;
+
+        const rtcConfig = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+
+        function updateStatus(connected, text) {
+            statusDot.className = 'status-dot' + (connected ? ' active' : '');
+            statusText.innerText = text;
+        }
+
+        function initWebSocket() {
+            const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${proto}//${window.location.host}`);
+
+            ws.onopen = () => {
+                console.log(`[OBS Audio C${camId}] Connected to Victorious Hub WebSocket`);
+                ws.send(JSON.stringify({
+                    type: 'register',
+                    role: 'receiver',
+                    camId: camId,
+                    receiverId: receiverId,
+                    audioOnly: true
+                }));
+
+                ws.send(JSON.stringify({
+                    type: 'receiver_ready',
+                    camId: camId,
+                    receiverId: receiverId,
+                    audioOnly: true
+                }));
+
+                updateStatus(false, 'Waiting for phone mic...');
+            };
+
+            ws.onmessage = async (event) => {
+                let data;
+                try {
+                    data = JSON.parse(event.data);
+                } catch (e) {
+                    return;
+                }
+
+                if (data.type === 'offer' && (data.receiverId === receiverId || !data.receiverId)) {
+                    await handleOffer(data.sdp);
+                }
+
+                if (data.type === 'ice-candidate' && (data.receiverId === receiverId || !data.receiverId)) {
+                    if (pc && pc.remoteDescription && pc.remoteDescription.type) {
+                        try {
+                            await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+                        } catch (e) {}
+                    } else {
+                        candidateQueue.push(new RTCIceCandidate(data.candidate));
+                    }
+                }
+
+                if (data.type === 'broadcaster_online' && parseInt(data.camId, 10) === camId) {
+                    console.log(`[OBS Audio C${camId}] Broadcaster online, requesting audio stream`);
+                    ws.send(JSON.stringify({
+                        type: 'receiver_ready',
+                        camId: camId,
+                        receiverId: receiverId,
+                        audioOnly: true
+                    }));
+                }
+            };
+
+            ws.onclose = () => {
+                updateStatus(false, 'Disconnected. Reconnecting...');
+                setTimeout(initWebSocket, 2000);
+            };
+
+            ws.onerror = (err) => {
+                console.warn(`[OBS Audio C${camId}] WS error:`, err);
+            };
+        }
+
+        async function handleOffer(sdp) {
+            if (pc) {
+                pc.close();
+                pc = null;
+            }
+
+            pc = new RTCPeerConnection(rtcConfig);
+            candidateQueue = [];
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate && ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        type: 'ice-candidate',
+                        camId: camId,
+                        receiverId: receiverId,
+                        candidate: event.candidate
+                    }));
+                }
+            };
+
+            pc.oniceconnectionstatechange = () => {
+                console.log(`[OBS Audio C${camId} ICE] ${pc.iceConnectionState}`);
+                if (['connected', 'completed'].includes(pc.iceConnectionState)) {
+                    updateStatus(true, 'Audio Live in OBS');
+                } else if (['disconnected', 'failed', 'closed'].includes(pc.iceConnectionState)) {
+                    updateStatus(false, 'Signal dropped');
+                }
+            };
+
+            pc.ontrack = (event) => {
+                console.log(`[OBS Audio C${camId}] Audio track received!`, event.track);
+                const stream = event.streams[0] || new MediaStream([event.track]);
+                audioElement.srcObject = stream;
+                audioElement.muted = false;
+                audioElement.volume = 1.0;
+                audioElement.play().catch(e => {
+                    console.warn(`[OBS Audio C${camId}] Autoplay note:`, e.message);
+                });
+
+                startAudioMeter(stream);
+                updateStatus(true, 'Audio Live in OBS');
+            };
+
+            await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+
+            while (candidateQueue.length > 0) {
+                const cand = candidateQueue.shift();
+                try { await pc.addIceCandidate(cand); } catch (e) {}
+            }
+
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+
+            ws.send(JSON.stringify({
+                type: 'answer',
+                camId: camId,
+                receiverId: receiverId,
+                sdp: pc.localDescription
+            }));
+        }
+
+        function startAudioMeter(stream) {
+            try {
+                if (!audioContext) {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContextClass) {
+                        audioContext = new AudioContextClass();
+                    }
+                }
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                if (audioContext && !meterRunning) {
+                    const source = audioContext.createMediaStreamSource(stream);
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 64;
+                    source.connect(analyser);
+                    meterRunning = true;
+
+                    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                    function drawMeter() {
+                        if (!meterRunning) return;
+                        requestAnimationFrame(drawMeter);
+                        analyser.getByteFrequencyData(dataArray);
+                        let sum = 0;
+                        for (let i = 0; i < dataArray.length; i++) {
+                            sum += dataArray[i];
+                        }
+                        const avg = sum / dataArray.length;
+                        const percent = Math.min(100, Math.round((avg / 128) * 100));
+                        if (meterFill) meterFill.style.width = `${percent}%`;
+                    }
+                    drawMeter();
+                }
+            } catch (err) {
+                console.warn('[OBS Audio] Meter setup note:', err.message);
+            }
+        }
+
+        initWebSocket();
+    </script>
+</body>
+</html>

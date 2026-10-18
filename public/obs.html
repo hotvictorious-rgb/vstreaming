@@ -577,7 +577,6 @@
 
         // Connection Pool: camPool[id] = { pc, videoEl, candidateQueue, isStreaming, muteTimeout, receiverId }
         const camPool = {};
-        const cameraObsAudio = {}; // Audio Gate: camId -> boolean (Director controlled)
 
         // Robust RTC Configuration with STUN for LAN/Wi-Fi mDNS discovery
         const rtcConfig = {
@@ -719,14 +718,12 @@
             if (hasVideo) {
                 // Instant clean cut: elevate target camera FIRST to guarantee zero black frame/flier flash
                 targetPool.videoEl.classList.add('live');
-                // Apply audio passthrough gate (only live camera can play into OBS if Director enabled it)
-                targetPool.videoEl.muted = !cameraObsAudio[currentProgramCamId];
-                if (!targetPool.videoEl.muted) targetPool.videoEl.volume = 1.0;
+                targetPool.videoEl.muted = true; // Program video source is purely video; sound is mixed independently in OBS
 
                 for (let i = 1; i <= NUM_CAMERAS; i++) {
                     if (i !== currentProgramCamId && camPool[i]?.videoEl) {
                         camPool[i].videoEl.classList.remove('live');
-                        camPool[i].videoEl.muted = true; // All background cameras remain strictly muted
+                        camPool[i].videoEl.muted = true;
                     }
                 }
             } else {
@@ -993,16 +990,6 @@
                         }
                     }
 
-                    // Director Audio Passthrough to OBS Toggle
-                    if (data.type === 'set_obs_audio') {
-                        const targetId = parseInt(data.camId, 10);
-                        cameraObsAudio[targetId] = !!data.enabled;
-                        console.log(`[OBS Audio] Camera ${targetId} mic in OBS: ${data.enabled ? 'UNMUTED' : 'MUTED'}`);
-                        if (isProgramMode && currentProgramCamId === targetId && camPool[targetId]?.videoEl) {
-                            camPool[targetId].videoEl.muted = !data.enabled;
-                            if (data.enabled) camPool[targetId].videoEl.volume = 1.0;
-                        }
-                    }
 
                     // Broadcaster Came Online (Pre-warm channel immediately in background)
                     if (data.type === 'broadcaster_online') {

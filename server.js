@@ -158,12 +158,12 @@ const cameraSockets = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
 
 // Global Camera State (Pure JSON Telemetry DTO)
 const cameras = {
-    1: { id: 1, name: 'Pastor / Pulpit', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, obsAudio: false },
-    2: { id: 2, name: 'Choir / Altar', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, obsAudio: false },
-    3: { id: 3, name: 'Congregation / Wide', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, obsAudio: false },
-    4: { id: 4, name: 'Mobile / Roaming 1', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, obsAudio: false },
-    5: { id: 5, name: 'Mobile / Roaming 2', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, obsAudio: false },
-    6: { id: 6, name: 'Guest / Overflow', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, obsAudio: false }
+    1: { id: 1, name: 'Pastor / Pulpit', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false },
+    2: { id: 2, name: 'Choir / Altar', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false },
+    3: { id: 3, name: 'Congregation / Wide', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false },
+    4: { id: 4, name: 'Mobile / Roaming 1', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false },
+    5: { id: 5, name: 'Mobile / Roaming 2', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false },
+    6: { id: 6, name: 'Guest / Overflow', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false }
 };
 
 // Safe Projection: Guarantees 100% clean, non-circular JSON payload for Director HUD & APIs
@@ -179,8 +179,7 @@ function getSanitizedCameras() {
             battery: cam.battery,
             charging: cam.charging,
             lastSeen: cam.lastSeen,
-            micActive: !!cam.micActive,
-            obsAudio: !!cam.obsAudio
+            micActive: !!cam.micActive
         };
     }
     return clean;
@@ -194,6 +193,7 @@ async function generateCameraUrls(ip) {
         urls[i] = {
             camUrl,
             obsUrl: `http://localhost:${HTTP_PORT}/obs.html?id=${i}`,
+            audioUrl: `http://localhost:${HTTP_PORT}/obs-audio.html?id=${i}`,
             qrCode: await qrcode.toDataURL(camUrl, { width: 220, margin: 1 })
         };
     }
@@ -699,18 +699,6 @@ function setupWebSocket(wss) {
                     if (cameras[targetId]) {
                         cameras[targetId].micActive = !!data.active;
                         broadcastToDirectors({ type: 'cam_mic_status', camId: targetId, active: !!data.active });
-                        broadcastToReceivers(targetId, { type: 'cam_mic_status', camId: targetId, active: !!data.active });
-                    }
-                    return;
-                }
-
-                // Director Audio Passthrough to OBS Studio Toggle (From Director Hub)
-                if (data.type === 'set_obs_audio') {
-                    const targetId = parseInt(data.camId, 10);
-                    if (cameras[targetId]) {
-                        cameras[targetId].obsAudio = !!data.enabled;
-                        broadcastToReceivers(targetId, { type: 'set_obs_audio', camId: targetId, enabled: !!data.enabled });
-                        broadcastToDirectors({ type: 'obs_audio_status', camId: targetId, enabled: !!data.enabled });
                     }
                     return;
                 }
@@ -1037,6 +1025,84 @@ try {
 } catch (e) {
     console.log('[Victorious Hub] OBS WebSocket client module ready for live linking.');
 }
+
+// OBS Studio Auto-Provisioning: Automatically create 6 camera audio mixer faders in OBS
+async function autoProvisionObsAudioSources() {
+    if (!obsClient || !isObsConnected) {
+        throw new Error('OBS Studio is not connected via WebSocket (Port 4455). Please ensure OBS Studio is running.');
+    }
+    const sceneList = await obsClient.call('GetSceneList');
+    const targetScene = sceneList.currentProgramSceneName;
+    if (!targetScene) {
+        throw new Error('Could not find active scene in OBS Studio.');
+    }
+
+    const inputList = await obsClient.call('GetInputList');
+    const existingNames = new Set(inputList.inputs.map(i => i.inputName));
+
+    const results = [];
+    const cameraNames = {
+        1: 'Pastor / Pulpit',
+        2: 'Choir / Altar',
+        3: 'Congregation / Wide',
+        4: 'Mobile / Roaming 1',
+        5: 'Mobile / Roaming 2',
+        6: 'Guest / Overflow'
+    };
+
+    for (let i = 1; i <= 6; i++) {
+        const inputName = `Cam ${i} Audio (${cameraNames[i] || 'Cam ' + i})`;
+        const audioUrl = `http://localhost:${HTTP_PORT}/obs-audio.html?id=${i}`;
+
+        if (!existingNames.has(inputName)) {
+            try {
+                await obsClient.call('CreateInput', {
+                    sceneName: targetScene,
+                    inputName: inputName,
+                    inputKind: 'browser_source',
+                    inputSettings: {
+                        url: audioUrl,
+                        width: 100,
+                        height: 100,
+                        reroute_audio: true, // "Control audio via OBS" -> enables OBS Audio Mixer fader!
+                        restart_when_active: false,
+                        shutdown: false // keeps audio streaming continuously in background!
+                    }
+                });
+                results.push({ id: i, inputName, status: 'created' });
+            } catch (err) {
+                console.warn(`[OBS Auto-Provision] Error creating ${inputName}:`, err.message);
+                results.push({ id: i, inputName, status: 'error', error: err.message });
+            }
+        } else {
+            try {
+                await obsClient.call('SetInputSettings', {
+                    inputName: inputName,
+                    inputSettings: {
+                        url: audioUrl,
+                        reroute_audio: true,
+                        restart_when_active: false,
+                        shutdown: false
+                    }
+                });
+                results.push({ id: i, inputName, status: 'updated' });
+            } catch (err) {
+                results.push({ id: i, inputName, status: 'exists' });
+            }
+        }
+    }
+    return { scene: targetScene, results };
+}
+
+// API: Auto-Provision OBS Audio Mixer Channels
+app.post('/api/obs/sync-audio-mixers', async (req, res) => {
+    try {
+        const data = await autoProvisionObsAudioSources();
+        res.json({ success: true, ...data });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 
 // Start Listening
 httpServer.listen(HTTP_PORT, () => {

@@ -88,11 +88,11 @@
             to { box-shadow: 0 0 20px rgba(239, 68, 68, 1); }
         }
 
-        /* Camera Audio to OBS Control */
-        .btn-audio-obs {
-            background: rgba(148, 163, 184, 0.12);
-            border: 1px solid rgba(148, 163, 184, 0.3);
-            color: #94a3b8;
+        /* Dedicated Camera Audio Source Link */
+        .btn-audio-link {
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            color: #38bdf8;
             font-size: 11px;
             font-weight: 700;
             padding: 6px 10px;
@@ -103,18 +103,10 @@
             align-items: center;
             gap: 4px;
         }
-        .btn-audio-obs:hover {
-            background: rgba(148, 163, 184, 0.25);
-            color: #cbd5e1;
-        }
-        .btn-audio-obs.active {
-            background: rgba(16, 185, 129, 0.25) !important;
-            border-color: #10b981 !important;
-            color: #34d399 !important;
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
-        }
-        .btn-audio-obs.mic-live {
-            border-color: #38bdf8;
+        .btn-audio-link:hover {
+            background: rgba(56, 189, 248, 0.25);
+            color: #7dd3fc;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
         }
 
         /* =====================================================================
@@ -277,6 +269,9 @@
                 <span>📺 Master OBS Link</span>
                 <span style="font-size: 11px; background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 10px;">📋 Copy</span>
             </div>
+            <button class="btn" id="btn-sync-obs-audio" onclick="syncObsAudioMixers()" style="background: linear-gradient(135deg, #059669, #10b981); border: 1px solid #34d399; color: #fff; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);" title="Automatically create and configure all 6 independent camera audio faders in your active OBS Studio Audio Mixer">
+                <span>🎙️</span> <span>Auto-Setup OBS Audio Mixers</span>
+            </button>
             <button class="btn-snap-director" onclick="openPhotosModal()" style="padding: 6px 14px; font-size: 13px;">📸 Photos (<span id="lbl-photos-count">0</span>)
             </button>
             <button class="btn-emergency-cut" id="btn-emergency-cut" onclick="toggleEmergencyCut()"><span>🚨</span><span id="lbl-emergency-text">EMERGENCY CUT TO FLIER</span></button>
@@ -691,7 +686,7 @@ God in three Persons, blessed Trinity!</textarea>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(1)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(1)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(1)">📋 OBS Link</button>
-                        <button class="btn btn-audio-obs" id="btn-audio-obs-1" onclick="toggleObsAudio(1)" title="Toggle Camera Microphone into OBS Studio (Safety Muted by Default)">🔇 OBS Mic Off</button>
+                        <button class="btn btn-audio-link" id="btn-audio-link-1" onclick="copyAudioUrl(1)" title="Copy dedicated 48kHz audio source URL for OBS Audio Mixer">🎙️ Audio Link</button>
                         <button class="btn btn-talk-cam" id="btn-talk-cam-1" onclick="toggleCamTalk(1)" title="Click to Talk / Click to Stop privately with Camera 1">🎙️ Talk</button>
                         <button class="btn btn-ping-cam" onclick="sendReadyToStreamAlert(1)" title="Alert Camera 1 specifically: 'Camera 1, get ready to stream!'" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">🔔 Ready</button>
                     </div>
@@ -720,7 +715,7 @@ God in three Persons, blessed Trinity!</textarea>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(2)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(2)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(2)">📋 OBS Link</button>
-                        <button class="btn btn-audio-obs" id="btn-audio-obs-2" onclick="toggleObsAudio(2)" title="Toggle Camera Microphone into OBS Studio (Safety Muted by Default)">🔇 OBS Mic Off</button>
+                        <button class="btn btn-audio-link" id="btn-audio-link-2" onclick="copyAudioUrl(2)" title="Copy dedicated 48kHz audio source URL for OBS Audio Mixer">🎙️ Audio Link</button>
                         <button class="btn btn-talk-cam" id="btn-talk-cam-2" onclick="toggleCamTalk(2)" title="Click to Talk / Click to Stop privately with Camera 2">🎙️ Talk</button>
                         <button class="btn btn-ping-cam" onclick="sendReadyToStreamAlert(2)" title="Alert Camera 2 specifically: 'Camera 2, get ready to stream!'" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">🔔 Ready</button>
                     </div>
@@ -749,7 +744,7 @@ God in three Persons, blessed Trinity!</textarea>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(3)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(3)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(3)">📋 OBS Link</button>
-                        <button class="btn btn-audio-obs" id="btn-audio-obs-3" onclick="toggleObsAudio(3)" title="Toggle Camera Microphone into OBS Studio (Safety Muted by Default)">🔇 OBS Mic Off</button>
+                        <button class="btn btn-audio-link" id="btn-audio-link-3" onclick="copyAudioUrl(3)" title="Copy dedicated 48kHz audio source URL for OBS Audio Mixer">🎙️ Audio Link</button>
                         <button class="btn btn-talk-cam" id="btn-talk-cam-3" onclick="toggleCamTalk(3)" title="Click to Talk / Click to Stop privately with Camera 3">🎙️ Talk</button>
                         <button class="btn btn-ping-cam" onclick="sendReadyToStreamAlert(3)" title="Alert Camera 3 specifically: 'Camera 3, get ready to stream!'" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">🔔 Ready</button>
                     </div>
@@ -778,7 +773,7 @@ God in three Persons, blessed Trinity!</textarea>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(4)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(4)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(4)">📋 OBS Link</button>
-                        <button class="btn btn-audio-obs" id="btn-audio-obs-4" onclick="toggleObsAudio(4)" title="Toggle Camera Microphone into OBS Studio (Safety Muted by Default)">🔇 OBS Mic Off</button>
+                        <button class="btn btn-audio-link" id="btn-audio-link-4" onclick="copyAudioUrl(4)" title="Copy dedicated 48kHz audio source URL for OBS Audio Mixer">🎙️ Audio Link</button>
                         <button class="btn btn-talk-cam" id="btn-talk-cam-4" onclick="toggleCamTalk(4)" title="Click to Talk / Click to Stop privately with Camera 4">🎙️ Talk</button>
                         <button class="btn btn-ping-cam" onclick="sendReadyToStreamAlert(4)" title="Alert Camera 4 specifically: 'Camera 4, get ready to stream!'" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">🔔 Ready</button>
                     </div>
@@ -807,7 +802,7 @@ God in three Persons, blessed Trinity!</textarea>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(5)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(5)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(5)">📋 OBS Link</button>
-                        <button class="btn btn-audio-obs" id="btn-audio-obs-5" onclick="toggleObsAudio(5)" title="Toggle Camera Microphone into OBS Studio (Safety Muted by Default)">🔇 OBS Mic Off</button>
+                        <button class="btn btn-audio-link" id="btn-audio-link-5" onclick="copyAudioUrl(5)" title="Copy dedicated 48kHz audio source URL for OBS Audio Mixer">🎙️ Audio Link</button>
                         <button class="btn btn-talk-cam" id="btn-talk-cam-5" onclick="toggleCamTalk(5)" title="Click to Talk / Click to Stop privately with Camera 5">🎙️ Talk</button>
                         <button class="btn btn-ping-cam" onclick="sendReadyToStreamAlert(5)" title="Alert Camera 5 specifically: 'Camera 5, get ready to stream!'" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">🔔 Ready</button>
                     </div>
@@ -836,7 +831,7 @@ God in three Persons, blessed Trinity!</textarea>
                         <button class="btn btn-snap-director" onclick="snapDirectorPhoto(6)">📸 Snap Photo</button>
                         <button class="btn btn-primary" onclick="openQrModal(6)">📲 Connect</button>
                         <button class="btn btn-secondary" onclick="copyObsUrl(6)">📋 OBS Link</button>
-                        <button class="btn btn-audio-obs" id="btn-audio-obs-6" onclick="toggleObsAudio(6)" title="Toggle Camera Microphone into OBS Studio (Safety Muted by Default)">🔇 OBS Mic Off</button>
+                        <button class="btn btn-audio-link" id="btn-audio-link-6" onclick="copyAudioUrl(6)" title="Copy dedicated 48kHz audio source URL for OBS Audio Mixer">🎙️ Audio Link</button>
                         <button class="btn btn-talk-cam" id="btn-talk-cam-6" onclick="toggleCamTalk(6)" title="Click to Talk / Click to Stop privately with Camera 6">🎙️ Talk</button>
                         <button class="btn btn-ping-cam" onclick="sendReadyToStreamAlert(6)" title="Alert Camera 6 specifically: 'Camera 6, get ready to stream!'" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">🔔 Ready</button>
                     </div>
@@ -1085,10 +1080,7 @@ God in three Persons, blessed Trinity!</textarea>
                     updateTallyBadge(data.camId, data.state);
                 }
                 if (data.type === 'cam_mic_status') {
-                    updateMicStatusUI(data.camId, data.active);
-                }
-                if (data.type === 'obs_audio_status') {
-                    updateObsAudioButton(data.camId, data.enabled);
+                    cameraMicStatus[data.camId] = !!data.active;
                 }
                 if (data.type === 'emergency_cut') {
                     if (serverInfo) serverInfo.isEmergencyCut = data.active;
@@ -2869,10 +2861,6 @@ God in three Persons, blessed Trinity!</textarea>
                 if (typeof cam.micActive !== 'undefined') {
                     cameraMicStatus[id] = !!cam.micActive;
                 }
-                if (typeof cam.obsAudio !== 'undefined') {
-                    cameraObsAudio[id] = !!cam.obsAudio;
-                }
-                updateObsAudioButton(id, !!cameraObsAudio[id]);
                 if (cam.battery !== null) {
                     updateTelemetry(id, cam.battery, cam.charging);
                 }
@@ -3097,46 +3085,35 @@ God in three Persons, blessed Trinity!</textarea>
             }
         }
 
-        function toggleObsAudio(camId) {
-            const nextState = !cameraObsAudio[camId];
-            cameraObsAudio[camId] = nextState;
-
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                    type: 'set_obs_audio',
-                    camId: parseInt(camId, 10),
-                    enabled: nextState
-                }));
-            }
-            updateObsAudioButton(camId, nextState);
-            showToast(nextState
-                ? `🔊 Camera ${camId} mic will now play into OBS Studio!`
-                : `🔇 Camera ${camId} mic is now safety-muted in OBS.`);
+        function copyAudioUrl(camId) {
+            const port = serverInfo?.httpPort || 3000;
+            const url = `http://localhost:${port}/obs-audio.html?id=${camId}`;
+            navigator.clipboard.writeText(url).then(() => {
+                showToast(`🎙️ Camera ${camId} Audio Link Copied!\nAdd as Browser Source in OBS and check "Control audio via OBS".`);
+            });
         }
 
-        function updateObsAudioButton(camId, enabled) {
-            cameraObsAudio[camId] = enabled;
-            const btn = document.getElementById(`btn-audio-obs-${camId}`);
-            if (!btn) return;
-            const hasMic = !!cameraMicStatus[camId];
-            if (enabled) {
-                btn.className = 'btn btn-audio-obs active' + (hasMic ? ' mic-live' : '');
-                btn.innerText = hasMic ? '🔊 OBS Mic ON' : '🔊 OBS Audio ON';
-                btn.title = `Camera ${camId} audio is unmuted in OBS`;
-            } else {
-                btn.className = 'btn btn-audio-obs' + (hasMic ? ' mic-live' : '');
-                btn.innerText = hasMic ? '🎙️ Mic Ready (Muted)' : '🔇 OBS Mic Off';
-                btn.title = hasMic
-                    ? `Phone mic is active on Camera ${camId}, but safety-muted in OBS. Click to unmute into OBS!`
-                    : `Camera ${camId} audio is safety-muted in OBS.`;
+        async function syncObsAudioMixers() {
+            const btn = document.getElementById('btn-sync-obs-audio');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = '⏳ Syncing OBS Audio...';
             }
-        }
-
-        function updateMicStatusUI(camId, active) {
-            cameraMicStatus[camId] = active;
-            updateObsAudioButton(camId, !!cameraObsAudio[camId]);
-            if (active) {
-                showToast(`🎙️ Camera ${camId} phone mic is streaming!\nTap [🔇 OBS Mic Off] on Camera ${camId} to bring it into OBS.`);
+            try {
+                const res = await fetch('/api/obs/sync-audio-mixers', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`✅ Successfully created/updated camera audio channels in OBS Scene "${data.scene}"!\nCheck your OBS Audio Mixer.`);
+                } else {
+                    showToast(`⚠️ OBS Audio Sync: ${data.error || 'Failed'}`);
+                }
+            } catch (err) {
+                showToast(`⚠️ Could not reach OBS sync API: ${err.message}`);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>🎙️</span> <span>Auto-Setup OBS Audio Mixers</span>';
+                }
             }
         }
 
