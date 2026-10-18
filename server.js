@@ -22,19 +22,50 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Detect Local LAN IP (Wi-Fi or Ethernet)
-function getLocalIP() {
+// Smart Local LAN IP & Network Interface Detection
+let selectedInterfaceName = null;
+
+function getAvailableNetworkInterfaces() {
     const interfaces = os.networkInterfaces();
+    const result = [];
+    const virtualKeywords = ['virtual', 'vbox', 'vmnet', 'vethernet', 'wsl', 'docker', 'hyper-v', 'tailscale', 'zerotier', 'hamachi', 'loopback', 'teredo', 'npcap'];
+
     for (const name of Object.keys(interfaces)) {
         for (const iface of interfaces[name]) {
             if (iface.family === 'IPv4' && !iface.internal) {
-                if (iface.address.startsWith('192.168.') || iface.address.startsWith('10.') || iface.address.startsWith('172.')) {
-                    return iface.address;
-                }
+                const lowerName = name.toLowerCase();
+                const isVirtual = virtualKeywords.some(kw => lowerName.includes(kw));
+                const isWireless = lowerName.includes('wi-fi') || lowerName.includes('wireless') || lowerName.includes('wlan') || lowerName.includes('802.11');
+                const isEthernet = lowerName.includes('ethernet') || lowerName.includes('lan') || lowerName.includes('eth');
+
+                result.push({
+                    name,
+                    address: iface.address,
+                    isVirtual,
+                    isWireless,
+                    isEthernet,
+                    displayName: `${name} (${iface.address})${isWireless ? ' [Wi-Fi]' : (isVirtual ? ' [Virtual]' : '')}`,
+                    priority: isWireless ? 1 : (isEthernet && !isVirtual ? 2 : (isVirtual ? 9 : 3))
+                });
             }
         }
     }
-    return '127.0.0.1';
+
+    result.sort((a, b) => a.priority - b.priority);
+    return result;
+}
+
+function getLocalIP(requestedIp = null) {
+    const available = getAvailableNetworkInterfaces();
+    if (requestedIp) {
+        const found = available.find(i => i.address === requestedIp || i.name === requestedIp);
+        if (found) return found.address;
+    }
+    if (selectedInterfaceName) {
+        const found = available.find(i => i.address === selectedInterfaceName || i.name === selectedInterfaceName);
+        if (found) return found.address;
+    }
+    return available.length > 0 ? available[0].address : '127.0.0.1';
 }
 
 const LOCAL_IP = getLocalIP();
@@ -127,12 +158,12 @@ const cameraSockets = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
 
 // Global Camera State (Pure JSON Telemetry DTO)
 const cameras = {
-    1: { id: 1, name: 'Pastor / Pulpit', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null },
-    2: { id: 2, name: 'Choir / Altar', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null },
-    3: { id: 3, name: 'Congregation / Wide', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null },
-    4: { id: 4, name: 'Mobile / Roaming 1', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null },
-    5: { id: 5, name: 'Mobile / Roaming 2', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null },
-    6: { id: 6, name: 'Guest / Overflow', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null }
+    1: { id: 1, name: 'Pastor / Pulpit', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, obsAudio: false },
+    2: { id: 2, name: 'Choir / Altar', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, obsAudio: false },
+    3: { id: 3, name: 'Congregation / Wide', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, obsAudio: false },
+    4: { id: 4, name: 'Mobile / Roaming 1', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, obsAudio: false },
+    5: { id: 5, name: 'Mobile / Roaming 2', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, obsAudio: false },
+    6: { id: 6, name: 'Guest / Overflow', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, obsAudio: false }
 };
 
 // Safe Projection: Guarantees 100% clean, non-circular JSON payload for Director HUD & APIs
@@ -147,27 +178,40 @@ function getSanitizedCameras() {
             tally: cam.tally || 'OFF_AIR',
             battery: cam.battery,
             charging: cam.charging,
-            lastSeen: cam.lastSeen
+            lastSeen: cam.lastSeen,
+            micActive: !!cam.micActive,
+            obsAudio: !!cam.obsAudio
         };
     }
     return clean;
 }
 
-// API: Server Info & Status (Dynamic IP detection for any Wi-Fi)
-app.get('/api/info', async (req, res) => {
-    const currentIP = getLocalIP();
+// Generate Camera URLs & QR Codes for a specific IP
+async function generateCameraUrls(ip) {
     const urls = {};
     for (let i = 1; i <= 6; i++) {
-        const camUrl = `https://${currentIP}:${HTTPS_PORT}/cam.html?id=${i}`;
+        const camUrl = `https://${ip}:${HTTPS_PORT}/cam.html?id=${i}`;
         urls[i] = {
             camUrl,
             obsUrl: `http://localhost:${HTTP_PORT}/obs.html?id=${i}`,
             qrCode: await qrcode.toDataURL(camUrl, { width: 220, margin: 1 })
         };
     }
+    return urls;
+}
+
+// API: Server Info & Status (Dynamic IP detection & Adapter Selector for any Wi-Fi)
+app.get('/api/info', async (req, res) => {
+    const requestedIp = req.query.ip || null;
+    const currentIP = getLocalIP(requestedIp);
+    const availableInterfaces = getAvailableNetworkInterfaces();
+    const urls = await generateCameraUrls(currentIP);
+
     res.json({
         name: 'Victorious Streaming Hub',
         localIp: currentIP,
+        networkInterfaces: availableInterfaces,
+        selectedInterface: selectedInterfaceName || currentIP,
         httpPort: HTTP_PORT,
         httpsPort: HTTPS_PORT,
         cameras: getSanitizedCameras(),
@@ -177,6 +221,20 @@ app.get('/api/info', async (req, res) => {
         isEmergencyCut,
         currentProgramCamId
     });
+});
+
+// API: Select Active Network Adapter for QR Codes
+app.post('/api/select-network', express.json(), async (req, res) => {
+    const { name, ip } = req.body || {};
+    if (name || ip) {
+        selectedInterfaceName = ip || name;
+        const currentIP = getLocalIP();
+        console.log(`[Victorious Hub] Active network adapter changed to: ${selectedInterfaceName} (${currentIP})`);
+        const urls = await generateCameraUrls(currentIP);
+        res.json({ success: true, localIp: currentIP, selectedInterface: currentIP, urls });
+    } else {
+        res.status(400).json({ error: 'Missing name or ip' });
+    }
 });
 
 // API: Upload Sunday Church Flier
@@ -633,6 +691,28 @@ function setupWebSocket(wss) {
                 if (data.type === 'receiver_ready' && data.receiverId) {
                     if (!ws.receiverIds) ws.receiverIds = new Set();
                     ws.receiverIds.add(data.receiverId);
+                }
+
+                // Camera Microphone Streaming Status (From Phone Broadcaster)
+                if (data.type === 'cam_mic_status') {
+                    const targetId = parseInt(data.camId || peerCamId, 10);
+                    if (cameras[targetId]) {
+                        cameras[targetId].micActive = !!data.active;
+                        broadcastToDirectors({ type: 'cam_mic_status', camId: targetId, active: !!data.active });
+                        broadcastToReceivers(targetId, { type: 'cam_mic_status', camId: targetId, active: !!data.active });
+                    }
+                    return;
+                }
+
+                // Director Audio Passthrough to OBS Studio Toggle (From Director Hub)
+                if (data.type === 'set_obs_audio') {
+                    const targetId = parseInt(data.camId, 10);
+                    if (cameras[targetId]) {
+                        cameras[targetId].obsAudio = !!data.enabled;
+                        broadcastToReceivers(targetId, { type: 'set_obs_audio', camId: targetId, enabled: !!data.enabled });
+                        broadcastToDirectors({ type: 'obs_audio_status', camId: targetId, enabled: !!data.enabled });
+                    }
+                    return;
                 }
 
                 // Intercom Audio Alerts & Crew Pings (Targeted / Isolated to specific Camera or All)
