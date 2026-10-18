@@ -158,12 +158,12 @@ const cameraSockets = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
 
 // Global Camera State (Pure JSON Telemetry DTO)
 const cameras = {
-    1: { id: 1, name: 'Pastor / Pulpit', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false },
-    2: { id: 2, name: 'Choir / Altar', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false },
-    3: { id: 3, name: 'Congregation / Wide', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false },
-    4: { id: 4, name: 'Mobile / Roaming 1', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false },
-    5: { id: 5, name: 'Mobile / Roaming 2', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false },
-    6: { id: 6, name: 'Guest / Overflow', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false }
+    1: { id: 1, name: 'Pastor / Pulpit', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, audioMode: 'music' },
+    2: { id: 2, name: 'Choir / Altar', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, audioMode: 'music' },
+    3: { id: 3, name: 'Congregation / Wide', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, audioMode: 'music' },
+    4: { id: 4, name: 'Mobile / Roaming 1', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, audioMode: 'music' },
+    5: { id: 5, name: 'Mobile / Roaming 2', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, audioMode: 'music' },
+    6: { id: 6, name: 'Guest / Overflow', connected: false, suspended: false, tally: 'OFF_AIR', battery: null, charging: null, lastSeen: null, micActive: false, audioMode: 'music' }
 };
 
 // Safe Projection: Guarantees 100% clean, non-circular JSON payload for Director HUD & APIs
@@ -179,7 +179,8 @@ function getSanitizedCameras() {
             battery: cam.battery,
             charging: cam.charging,
             lastSeen: cam.lastSeen,
-            micActive: !!cam.micActive
+            micActive: !!cam.micActive,
+            audioMode: cam.audioMode || 'music'
         };
     }
     return clean;
@@ -699,6 +700,16 @@ function setupWebSocket(wss) {
                     if (cameras[targetId]) {
                         cameras[targetId].micActive = !!data.active;
                         broadcastToDirectors({ type: 'cam_mic_status', camId: targetId, active: !!data.active });
+                    }
+                    return;
+                }
+
+                // Camera Audio DSP Mode (Music vs Speech)
+                if (data.type === 'cam_audio_mode') {
+                    const targetId = parseInt(data.camId || peerCamId, 10);
+                    if (cameras[targetId]) {
+                        cameras[targetId].audioMode = data.mode;
+                        broadcastToDirectors({ type: 'cam_audio_mode', camId: targetId, mode: data.mode });
                     }
                     return;
                 }

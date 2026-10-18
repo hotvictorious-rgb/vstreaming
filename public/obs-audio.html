@@ -202,6 +202,32 @@
             };
         }
 
+        // Payload-agnostic Opus 192kbps Stereo SDP transformer (RFC 7587 compliant)
+        function boostOpusSdp(sdp) {
+            if (!sdp || !sdp.includes('opus/48000')) return sdp;
+            const opusMatch = sdp.match(/a=rtpmap:(\d+)\s+opus\/48000/i);
+            if (!opusMatch) return sdp;
+
+            const pt = opusMatch[1];
+            const fmtpRegex = new RegExp(`a=fmtp:${pt}\\s+([^\\r\\n]+)`, 'i');
+
+            if (fmtpRegex.test(sdp)) {
+                sdp = sdp.replace(fmtpRegex, (match, existingParams) => {
+                    let clean = existingParams
+                        .replace(/(^|;)\s*(stereo|sprop-stereo|maxaveragebitrate|cbr)=[^;]+/gi, '')
+                        .replace(/^;+|;+$/g, '');
+                    const prefix = clean ? clean + ';' : '';
+                    return `a=fmtp:${pt} ${prefix}stereo=1;sprop-stereo=1;maxaveragebitrate=192000;cbr=1`;
+                });
+            } else {
+                const rtpmapRegex = new RegExp(`(a=rtpmap:${pt}\\s+opus\\/48000[^\\r\\n]*)`, 'i');
+                sdp = sdp.replace(rtpmapRegex, `$1\r\na=fmtp:${pt} stereo=1;sprop-stereo=1;maxaveragebitrate=192000;cbr=1`);
+            }
+            return sdp;
+        }
+
+        let iceRecoveryTimer = null;
+
         async function handleOffer(sdp) {
             if (pc) {
                 pc.close();
@@ -225,9 +251,29 @@
             pc.oniceconnectionstatechange = () => {
                 console.log(`[OBS Audio C${camId} ICE] ${pc.iceConnectionState}`);
                 if (['connected', 'completed'].includes(pc.iceConnectionState)) {
+                    if (iceRecoveryTimer) {
+                        clearTimeout(iceRecoveryTimer);
+                        iceRecoveryTimer = null;
+                    }
                     updateStatus(true, 'Audio Live in OBS');
-                } else if (['disconnected', 'failed', 'closed'].includes(pc.iceConnectionState)) {
-                    updateStatus(false, 'Signal dropped');
+                } else if (['disconnected', 'failed'].includes(pc.iceConnectionState)) {
+                    updateStatus(false, 'Signal dropped - recovering...');
+                    if (!iceRecoveryTimer) {
+                        iceRecoveryTimer = setTimeout(() => {
+                            iceRecoveryTimer = null;
+                            if (ws && ws.readyState === WebSocket.OPEN) {
+                                console.log(`[OBS Audio C${camId}] Re-requesting audio handshake after ICE drop...`);
+                                ws.send(JSON.stringify({
+                                    type: 'receiver_ready',
+                                    camId: camId,
+                                    receiverId: receiverId,
+                                    audioOnly: true
+                                }));
+                            }
+                        }, 3000);
+                    }
+                } else if (pc.iceConnectionState === 'closed') {
+                    updateStatus(false, 'Signal closed');
                 }
             };
 
@@ -253,7 +299,8 @@
             }
 
             const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
+            const boostedSdp = boostOpusSdp(answer.sdp);
+            await pc.setLocalDescription({ type: answer.type, sdp: boostedSdp });
 
             ws.send(JSON.stringify({
                 type: 'answer',
@@ -300,6 +347,17 @@
                 console.warn('[OBS Audio] Meter setup note:', err.message);
             }
         }
+
+        // Unblock audio autoplay on interaction/preview focus
+        const unlockAudio = () => {
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume().catch(() => {});
+            }
+            if (audioElement && audioElement.paused && audioElement.srcObject) {
+                audioElement.play().catch(() => {});
+            }
+        };
+        ['click', 'touchstart', 'keydown'].forEach(evt => document.addEventListener(evt, unlockAudio, { passive: true }));
 
         initWebSocket();
     </script>

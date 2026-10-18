@@ -627,15 +627,47 @@
                     noiseSuppression: false,
                     autoGainControl: false,
                     channelCount: { ideal: 2 },
-                    sampleRate: { ideal: 48000 }
+                    sampleRate: { ideal: 48000 },
+                    // Low-level Chromium/Android hardware DSP bypasses:
+                    googEchoCancellation: false,
+                    googAutoGainControl: false,
+                    googNoiseSuppression: false,
+                    googHighpassFilter: false,
+                    googAudioMirroring: false
                 };
             } else {
                 return {
                     echoCancellation: true,
                     noiseSuppression: true,
-                    autoGainControl: true
+                    autoGainControl: true,
+                    channelCount: 1,
+                    sampleRate: { ideal: 48000 }
                 };
             }
+        }
+
+        // Payload-agnostic Opus 192kbps Stereo SDP transformer (RFC 7587 compliant)
+        function boostOpusSdp(sdp) {
+            if (!sdp || !sdp.includes('opus/48000')) return sdp;
+            const opusMatch = sdp.match(/a=rtpmap:(\d+)\s+opus\/48000/i);
+            if (!opusMatch) return sdp;
+
+            const pt = opusMatch[1];
+            const fmtpRegex = new RegExp(`a=fmtp:${pt}\\s+([^\\r\\n]+)`, 'i');
+
+            if (fmtpRegex.test(sdp)) {
+                sdp = sdp.replace(fmtpRegex, (match, existingParams) => {
+                    let clean = existingParams
+                        .replace(/(^|;)\s*(stereo|sprop-stereo|maxaveragebitrate|cbr)=[^;]+/gi, '')
+                        .replace(/^;+|;+$/g, '');
+                    const prefix = clean ? clean + ';' : '';
+                    return `a=fmtp:${pt} ${prefix}stereo=1;sprop-stereo=1;maxaveragebitrate=192000;cbr=1`;
+                });
+            } else {
+                const rtpmapRegex = new RegExp(`(a=rtpmap:${pt}\\s+opus\\/48000[^\\r\\n]*)`, 'i');
+                sdp = sdp.replace(rtpmapRegex, `$1\r\na=fmtp:${pt} stereo=1;sprop-stereo=1;maxaveragebitrate=192000;cbr=1`);
+            }
+            return sdp;
         }
 
         async function toggleAudioMode() {
@@ -655,15 +687,56 @@
                 }
             }
 
-            if (isMicStreaming && (micStream || localStream)) {
-                const stream = micStream || localStream;
-                const track = stream.getAudioTracks()[0];
-                if (track) {
-                    try {
-                        await track.applyConstraints(getAudioConstraints());
-                    } catch (e) {
-                        console.warn('Audio constraint update fallback:', e);
+            // CRITICAL HARDWARE SWITCH:
+            // Mobile browsers (iOS WebKit CoreAudio and Android AudioHAL) ignore applyConstraints for hardware DSP.
+            // We acquire a fresh hardware stream with the new constraints and hot-swap it
+            // via WebRTC sender.replaceTrack() to force the operating system to rebuild the physical audio session.
+            const oldTrack = (micStream || localStream)?.getAudioTracks()[0];
+            try {
+                const newAudioStream = await navigator.mediaDevices.getUserMedia({
+                    audio: getAudioConstraints()
+                });
+                const newTrack = newAudioStream.getAudioTracks()[0];
+                if (!newTrack) return;
+
+                // Maintain current mute/unmute state seamlessly
+                newTrack.enabled = isMicStreaming;
+
+                // Hot-swap new physical hardware track into all peer connections (OBS Audio, OBS Video, Director)
+                for (const receiverId in peerConnections) {
+                    const pc = peerConnections[receiverId];
+                    if (pc && pc.connectionState !== 'closed') {
+                        const senders = pc.getSenders();
+                        const audioSender = senders.find(s => s.track && s.track.kind === 'audio') || senders.find(s => !s.track || s.track?.kind === 'audio');
+                        if (audioSender && audioSender.replaceTrack) {
+                            audioSender.replaceTrack(newTrack).catch(err => {
+                                console.warn(`[replaceTrack] Receiver ${receiverId}:`, err);
+                            });
+                        }
                     }
+                }
+
+                // Update local references
+                if (localStream) {
+                    localStream.getAudioTracks().forEach(t => {
+                        try { localStream.removeTrack(t); } catch (e) {}
+                    });
+                    localStream.addTrack(newTrack);
+                }
+                micStream = newAudioStream;
+
+                // Stop old track to release hardware DSP
+                if (oldTrack && oldTrack !== newTrack) {
+                    oldTrack.stop();
+                }
+
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'cam_audio_mode', camId, mode: currentAudioMode }));
+                }
+            } catch (err) {
+                console.warn('[Audio Mode Switch] Fallback to applyConstraints:', err);
+                if (oldTrack) {
+                    oldTrack.applyConstraints(getAudioConstraints()).catch(() => {});
                 }
             }
         }
@@ -956,11 +1029,31 @@
                         }
                     }
                 } catch (mediaErr) {
-                    console.warn('Audio+Video joint request failed, falling back to video-only:', mediaErr.message);
+                    console.warn('Audio+Video joint request failed, falling back to separate tracks:', mediaErr.message);
                     videoStream = await navigator.mediaDevices.getUserMedia({
                         audio: false,
                         video: constraints.video
                     });
+                    try {
+                        const separateAudio = await navigator.mediaDevices.getUserMedia({
+                            audio: getAudioConstraints()
+                        });
+                        const aTrack = separateAudio.getAudioTracks()[0];
+                        if (aTrack) {
+                            videoStream.addTrack(aTrack);
+                            micStream = separateAudio;
+                            isMicStreaming = true;
+                            const btn = document.getElementById('btn-mic-toggle');
+                            if (btn) {
+                                btn.innerText = '🎙️ Mic ON';
+                                btn.style.background = 'rgba(16, 185, 129, 0.3)';
+                                btn.style.borderColor = '#10b981';
+                                btn.style.color = '#34d399';
+                            }
+                        }
+                    } catch (audioErr) {
+                        console.warn('Separate audio capture note:', audioErr.message);
+                    }
                 }
 
                 localStream = videoStream;
@@ -1106,13 +1199,7 @@
             };
 
             const offer = await pc.createOffer();
-            let sdp = offer.sdp;
-            // Boost Opus audio to 192kbps stereo for true church worship music reproduction
-            if (sdp.includes('opus/48000')) {
-                sdp = sdp.replace(/a=fmtp:111\s+([^\r\n]+)/g, (match, params) => {
-                    return `a=fmtp:111 ${params};stereo=1;sprop-stereo=1;maxaveragebitrate=192000;cbr=1`;
-                });
-            }
+            const sdp = boostOpusSdp(offer.sdp);
             await pc.setLocalDescription({ type: offer.type, sdp });
 
             ws.send(JSON.stringify({
