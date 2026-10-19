@@ -126,13 +126,24 @@ const photosDir = path.join(__dirname, 'photos');
 if (!fs.existsSync(photosDir)) fs.mkdirSync(photosDir, { recursive: true });
 app.use('/photos', express.static(photosDir));
 
-// High-Definition Church Sermon Highlights & Reels Storage (Saved locally on Laptop & Streamed to Mobile)
-const HIGHLIGHTS_DIR = path.join(process.env.USERPROFILE || 'C:\\Users\\USER', 'Videos', 'Sermon_Highlights');
-if (!fs.existsSync(HIGHLIGHTS_DIR)) fs.mkdirSync(HIGHLIGHTS_DIR, { recursive: true });
+// High-Definition Church Sermon Highlights & Reels Storage
+// 1. Saved directly inside vstreaming/clips/ (self-contained within application folder)
+const ROOT_CLIPS_DIR = path.join(__dirname, 'clips');
+if (!fs.existsSync(ROOT_CLIPS_DIR)) fs.mkdirSync(ROOT_CLIPS_DIR, { recursive: true });
 
+// 2. Streamed over church Wi-Fi to mobile media teams
 const PUBLIC_CLIPS_DIR = path.join(__dirname, 'public', 'clips');
 if (!fs.existsSync(PUBLIC_CLIPS_DIR)) fs.mkdirSync(PUBLIC_CLIPS_DIR, { recursive: true });
 app.use('/clips', express.static(PUBLIC_CLIPS_DIR));
+
+// 3. Dynamic Windows User Videos folder (works automatically on ANY laptop via %USERPROFILE%)
+const userVideosDir = process.env.USERPROFILE ? path.join(process.env.USERPROFILE, 'Videos') : null;
+const HIGHLIGHTS_DIR = (userVideosDir && fs.existsSync(userVideosDir))
+    ? path.join(userVideosDir, 'Sermon_Highlights')
+    : ROOT_CLIPS_DIR;
+if (!fs.existsSync(HIGHLIGHTS_DIR)) {
+    try { fs.mkdirSync(HIGHLIGHTS_DIR, { recursive: true }); } catch (e) {}
+}
 
 let isReplayBufferActive = false;
 let isObsRecording = false;
@@ -482,13 +493,17 @@ function handleReplaySaved(originalPath) {
         const ext = path.extname(originalPath).toLowerCase() || '.mp4';
         const newFilename = `Sermon_Highlight_${dateStr}${ext}`;
 
-        const destLaptopPath = path.join(HIGHLIGHTS_DIR, newFilename);
+        const destRootPath = path.join(ROOT_CLIPS_DIR, newFilename);
         const destPublicPath = path.join(PUBLIC_CLIPS_DIR, newFilename);
+        const destLaptopPath = path.join(HIGHLIGHTS_DIR, newFilename);
 
-        fs.copyFileSync(originalPath, destLaptopPath);
+        fs.copyFileSync(originalPath, destRootPath);
         fs.copyFileSync(originalPath, destPublicPath);
+        if (destLaptopPath !== destRootPath) {
+            try { fs.copyFileSync(originalPath, destLaptopPath); } catch (e) {}
+        }
 
-        const stat = fs.statSync(destLaptopPath);
+        const stat = fs.statSync(destRootPath);
         const clipData = {
             id: 'clip_' + timestamp,
             filename: newFilename,
@@ -578,13 +593,14 @@ app.get('/api/clips', (req, res) => {
     }
 });
 
-// API: Open Windows File Explorer to Laptop's Sermon Highlights Folder
+// API: Open Windows File Explorer to Sermon Highlights Folder (within vstreaming or user Videos)
 app.post('/api/clips/open-folder', (req, res) => {
     try {
         const { exec } = require('child_process');
-        exec(`explorer.exe "${HIGHLIGHTS_DIR}"`);
-        console.log(`[Reel Station] Opened Highlights Folder on Laptop: ${HIGHLIGHTS_DIR}`);
-        res.json({ success: true, path: HIGHLIGHTS_DIR });
+        const targetDir = fs.existsSync(ROOT_CLIPS_DIR) ? ROOT_CLIPS_DIR : HIGHLIGHTS_DIR;
+        exec(`explorer.exe "${targetDir}"`);
+        console.log(`[Reel Station] Opened Highlights Folder on Laptop: ${targetDir}`);
+        res.json({ success: true, path: targetDir, laptopVideosPath: HIGHLIGHTS_DIR });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -596,8 +612,10 @@ app.delete('/api/clips/:filename', (req, res) => {
         const filename = path.basename(req.params.filename);
         const p1 = path.join(PUBLIC_CLIPS_DIR, filename);
         const p2 = path.join(HIGHLIGHTS_DIR, filename);
+        const p3 = path.join(ROOT_CLIPS_DIR, filename);
         if (fs.existsSync(p1)) fs.unlinkSync(p1);
         if (fs.existsSync(p2)) fs.unlinkSync(p2);
+        if (fs.existsSync(p3)) fs.unlinkSync(p3);
         console.log(`[Reel Deleted] Removed from laptop: ${filename}`);
         broadcastToAll({ type: 'clip_deleted', filename });
         res.json({ success: true, filename });

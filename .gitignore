@@ -10,6 +10,8 @@ node_modules/
 # Private Media / Photos taken during services
 photos/*
 !photos/.gitkeep
+clips/*
+!clips/.gitkeep
 public/clips/*
 !public/clips/.gitkeep
 

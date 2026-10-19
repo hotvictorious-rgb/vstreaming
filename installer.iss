@@ -57,6 +57,10 @@ Source: "runtime\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdi
 ; All Required Offline Libraries (Bible-KJV, Express, OBS WebSocket, etc.)
 Source: "node_modules\*"; DestDir: "{app}\node_modules"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: ".bin\*,*.log"
 
+[Dirs]
+Name: "{app}\clips"
+Name: "{app}\photos"
+
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\app-icon.ico"
 Name: "{group}\Stop {#MyAppName}"; Filename: "{app}\Stop-Sunday-Studio.bat"
