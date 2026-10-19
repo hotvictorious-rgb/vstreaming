@@ -350,8 +350,16 @@
             <div class="dispatch-banner-icon">✂️</div>
             <div class="dispatch-banner-text">
                 <h4>Instant Sermon Highlights</h4>
-                <p>When the Director taps "Save Highlight", video clips automatically appear here in seconds. Tap <strong>Share</strong> to post immediately to Instagram Reels, TikTok, or WhatsApp!</p>
+                <p>When the Director or Media team taps "Save Highlight", video clips automatically appear here in seconds. Tap <strong>Share</strong> to post immediately to Instagram Reels, TikTok, or WhatsApp!</p>
             </div>
+        </div>
+
+        <!-- Quick Capture Button for Mobile Volunteers -->
+        <div style="margin-bottom: 16px; display: flex; gap: 8px;">
+            <button id="btn-mobile-trigger" onclick="triggerHighlightNow()" style="flex: 1; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; color: #0b0717; font-size: 13px; font-weight: 800; padding: 12px 16px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4); transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+                <span>⚡</span> <span id="lbl-mobile-trigger">Save 30s Sermon Clip Now</span>
+            </button>
+            <button onclick="loadClips()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 12px 14px; border-radius: 12px; cursor: pointer; font-size: 14px;" title="Refresh clips">🔄</button>
         </div>
 
         <!-- Video Clips Container -->
@@ -384,6 +392,33 @@
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 4000);
+        }
+
+        async function triggerHighlightNow() {
+            const btn = document.getElementById('btn-mobile-trigger');
+            const lbl = document.getElementById('lbl-mobile-trigger');
+            if (btn) btn.style.opacity = '0.7';
+            if (lbl) lbl.innerText = 'Extracting 30s Highlight...';
+            showToast('⏳ Extracting 30s highlight to laptop...');
+            try {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'trigger_highlight', duration: 30 }));
+                }
+                const res = await fetch('/api/clips/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ duration: 30 })
+                });
+                const data = await res.json();
+                if (data.message) showToast(data.message);
+                else if (data.success) showToast('🎬 Saving highlight to laptop!');
+            } catch (e) {
+                showToast('⚠️ Error: ' + e.message);
+            }
+            setTimeout(() => {
+                if (btn) btn.style.opacity = '1';
+                if (lbl) lbl.innerText = 'Save 30s Sermon Clip Now';
+            }, 3000);
         }
 
         // Initialize WebSocket to receive real-time highlight triggers

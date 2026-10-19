@@ -69,8 +69,8 @@ function getLocalIP(requestedIp = null) {
 }
 
 const LOCAL_IP = getLocalIP();
-const HTTP_PORT = 3000;
-const HTTPS_PORT = 3443;
+const HTTP_PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const HTTPS_PORT = process.env.HTTPS_PORT ? parseInt(process.env.HTTPS_PORT, 10) : 3443;
 
 // Ensure SSL Certificate exists for HTTPS
 const certDir = path.join(__dirname, '.cert');
