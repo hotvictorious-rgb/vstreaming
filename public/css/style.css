@@ -71,6 +71,7 @@ body {
     letter-spacing: 0.5px;
     background: linear-gradient(90deg, #ffffff, var(--primary-gold));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     line-height: 1.2;
 }
@@ -835,6 +836,7 @@ body.dimmed .shutter-container {
     letter-spacing: 0.5px;
     background: linear-gradient(90deg, #ffffff, var(--primary-gold));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
