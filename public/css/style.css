@@ -1547,3 +1547,162 @@ body.dimmed .shutter-container {
     transition: width 0.06s ease;
 }
 
+/* =====================================================================
+   SERMON REEL & HIGHLIGHT STATION HERO BAR
+   ===================================================================== */
+.reel-station-hero-bar {
+    background: linear-gradient(90deg, rgba(30, 16, 54, 0.95), rgba(18, 10, 36, 0.95));
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    border-radius: 12px;
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(8px);
+}
+
+.btn-highlight-hero {
+    position: relative;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border: none;
+    color: #0b0717;
+    font-size: 13px;
+    font-weight: 800;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(245, 158, 11, 0.45);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.btn-highlight-hero:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(245, 158, 11, 0.65);
+    filter: brightness(1.1);
+}
+
+.btn-highlight-hero:active {
+    transform: scale(0.98);
+}
+
+.btn-highlight-hero.saving {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: #fff !important;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.7) !important;
+}
+
+.highlight-pulse-ring {
+    position: absolute;
+    inset: -3px;
+    border-radius: 11px;
+    border: 2px solid rgba(245, 158, 11, 0.7);
+    animation: pulse-ring 2s infinite ease-out;
+    pointer-events: none;
+}
+
+@keyframes pulse-ring {
+    0% { transform: scale(0.98); opacity: 0.8; }
+    50% { transform: scale(1.05); opacity: 0.2; }
+    100% { transform: scale(0.98); opacity: 0.8; }
+}
+
+.reel-duration-selector {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 3px 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-dur {
+    background: transparent;
+    border: 1px solid transparent;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-dur:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.btn-dur.active {
+    background: rgba(245, 158, 11, 0.2);
+    border-color: rgba(245, 158, 11, 0.5);
+    color: #fbbf24;
+}
+
+.badge-rb {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+}
+
+.dot-rb {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #64748b;
+    transition: all 0.3s ease;
+}
+
+.dot-rb.active {
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+}
+
+.btn-reel-util {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #e2e8f0;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.btn-reel-util:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.highlight-gallery-btn {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.4);
+    color: #fbbf24;
+}
+
+.highlight-gallery-btn:hover {
+    background: rgba(245, 158, 11, 0.25);
+    border-color: #f59e0b;
+}
+

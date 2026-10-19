@@ -272,8 +272,8 @@
             <button class="btn" id="btn-sync-obs-audio" onclick="syncObsAudioMixers()" style="background: linear-gradient(135deg, #059669, #10b981); border: 1px solid #34d399; color: #fff; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);" title="Automatically create and configure all 6 independent camera audio faders in your active OBS Studio Audio Mixer">
                 <span>🎙️</span> <span>Auto-Setup OBS Audio Mixers</span>
             </button>
-            <button class="btn-snap-director" onclick="openPhotosModal()" style="padding: 6px 14px; font-size: 13px;">📸 Photos (<span id="lbl-photos-count">0</span>)
-            </button>
+            <button class="btn-snap-director" onclick="openPhotosModal()" style="padding: 6px 14px; font-size: 13px;">📸 Photos (<span id="lbl-photos-count">0</span>)</button>
+            <button class="btn-snap-director" onclick="openReelsModal()" style="padding: 6px 14px; font-size: 13px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.25)); border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24;" title="View today's saved sermon clips, download reels, or open the highlights folder on this laptop">✂️ Highlights (<span id="lbl-reels-count">0</span>)</button>
             <button class="btn-emergency-cut" id="btn-emergency-cut" onclick="toggleEmergencyCut()"><span>🚨</span><span id="lbl-emergency-text">EMERGENCY CUT TO FLIER</span></button>
             <div class="intercom-control-cluster" id="intercom-control-cluster" style="display: flex; align-items: center; gap: 8px; background: rgba(30, 19, 56, 0.75); border: 1px solid rgba(124, 58, 237, 0.4); padding: 4px 8px; border-radius: 8px;">
                 <div class="badge" id="badge-intercom" onclick="initIntercomMic()" style="cursor: pointer;" title="Click to test/initialize microphone">
@@ -314,8 +314,45 @@
         </div>
     </header>
 
+    <!-- Sermon Reel & Instant Highlight Station -->
+    <div style="max-width: 1400px; margin: 10px auto 0 auto; padding: 0 20px;">
+        <div class="reel-station-hero-bar">
+            <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                <button id="btn-save-highlight" onclick="triggerSermonHighlight()" class="btn-highlight-hero" title="Click or Press [H] on keyboard to save the last 30s as a high-definition MP4 clip directly onto this laptop hard drive">
+                    <span class="highlight-pulse-ring"></span>
+                    <span style="font-size: 16px;">⚡</span>
+                    <span id="lbl-highlight-btn">SAVE 30s HIGHLIGHT (Press H)</span>
+                </button>
+                
+                <div class="reel-duration-selector" title="Choose highlight clip length">
+                    <span style="font-size: 11px; color: #94a3b8; font-weight: 700;">DURATION:</span>
+                    <button class="btn-dur" id="dur-15" onclick="setReelDuration(15)">15s</button>
+                    <button class="btn-dur active" id="dur-30" onclick="setReelDuration(30)">30s Reel</button>
+                    <button class="btn-dur" id="dur-60" onclick="setReelDuration(60)">60s</button>
+                </div>
+
+                <div id="badge-rb-status" class="badge-rb" title="OBS Studio Replay Buffer Engine Status">
+                    <span class="dot-rb" id="dot-rb"></span>
+                    <span id="lbl-rb-status">Replay Buffer: Linking...</span>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <button onclick="openClipsFolder()" class="btn-reel-util" title="Open the Sermon Highlights folder on this laptop hard drive in Windows File Explorer">
+                    <span>📂</span> <span>Open Laptop Folder</span>
+                </button>
+                <button onclick="openReelsModal()" class="btn-reel-util highlight-gallery-btn" title="View, download, and manage today's saved sermon clips">
+                    <span>🎬</span> <span>Today's Highlights (<span id="lbl-reels-count-bar">0</span>)</span>
+                </button>
+                <button onclick="openMobileReelsModal()" class="btn-reel-util" style="background: rgba(124, 58, 237, 0.2); border-color: #8b5cf6; color: #c4b5fd;" title="Get QR Code or Link for Social Media Manager's Phone">
+                    <span>📱</span> <span>Phone Station</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Live Broadcast Graphics & Lower-Thirds Drawer -->
-    <div style="max-width: 1400px; margin: 0 auto; padding: 0 20px;">
+    <div style="max-width: 1400px; margin: 10px auto 0 auto; padding: 0 20px;">
         <div class="graphics-console-bar" onclick="toggleGraphicsDrawer()">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <span style="font-size: 20px;">📺</span>
@@ -1202,9 +1239,28 @@ God in three Persons, blessed Trinity!</textarea>
                 }
                 populateMicrophoneList();
                 initWebSocket();
+                checkReplayBufferStatus();
             } catch (e) {
                 console.error('Failed to load server info', e);
             }
+        }
+
+        async function checkReplayBufferStatus() {
+            try {
+                const res = await fetch('/api/clips/status');
+                const data = await res.json();
+                const dot = document.getElementById('dot-rb-hero');
+                const lbl = document.getElementById('lbl-rb-hero');
+                if (dot && lbl) {
+                    if (data.replayBufferActive) {
+                        dot.className = 'dot-rb active';
+                        lbl.innerText = 'BUFFER READY';
+                    } else {
+                        dot.className = 'dot-rb inactive';
+                        lbl.innerText = 'BUFFER STANDBY';
+                    }
+                }
+            } catch (e) {}
         }
 
         // Initialize WebSocket for Live Telemetry, Tally & WebRTC
@@ -1300,6 +1356,38 @@ God in three Persons, blessed Trinity!</textarea>
                     const modal = document.getElementById('photos-modal');
                     if (modal && modal.classList.contains('open')) {
                         refreshPhotosGallery();
+                    }
+                }
+                if (data.type === 'reel_saved') {
+                    showToast(`🎬 Sermon Highlight saved!\n📁 Saved on laptop: ${(data.clip && data.clip.title) ? data.clip.title : (data.clip && data.clip.filename) ? data.clip.filename : 'Highlight'}\n📦 ${(data.clip && data.clip.sizeFormatted) ? data.clip.sizeFormatted : ''}`);
+                    loadReelsCount();
+                    const modal = document.getElementById('reels-modal');
+                    if (modal && modal.classList.contains('open')) {
+                        refreshReelsGallery();
+                    }
+                    const btn = document.getElementById('btn-save-highlight');
+                    const lbl = document.getElementById('lbl-highlight-btn');
+                    if (btn) btn.classList.remove('saving');
+                    if (lbl) lbl.innerText = `SAVE ${typeof activeReelDuration !== 'undefined' ? activeReelDuration : 30}s HIGHLIGHT (Press H)`;
+                }
+                if (data.type === 'clip_deleted') {
+                    loadReelsCount();
+                    const modal = document.getElementById('reels-modal');
+                    if (modal && modal.classList.contains('open')) {
+                        refreshReelsGallery();
+                    }
+                }
+                if (data.type === 'replay_buffer_status') {
+                    const dot = document.getElementById('dot-rb-hero');
+                    const lbl = document.getElementById('lbl-rb-hero');
+                    if (dot && lbl) {
+                        if (data.active) {
+                            dot.className = 'dot-rb active';
+                            lbl.innerText = 'BUFFER READY';
+                        } else {
+                            dot.className = 'dot-rb inactive';
+                            lbl.innerText = 'BUFFER STANDBY';
+                        }
                     }
                 }
 
@@ -3212,6 +3300,9 @@ God in three Persons, blessed Trinity!</textarea>
                 toggleGraphicsDrawer();
             } else if (e.code === 'KeyH') {
                 e.preventDefault();
+                triggerSermonHighlight();
+            } else if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+                e.preventDefault();
                 openHotkeysModal();
             }
         });
@@ -3810,6 +3901,203 @@ God in three Persons, blessed Trinity!</textarea>
 
         loadInfo();
         loadPhotosCount();
+        loadReelsCount();
+
+        // =====================================================================
+        // SERMON REEL & HIGHLIGHT STATION HANDLERS (SAVED ON LAPTOP & CLIPS)
+        // =====================================================================
+        let activeReelDuration = 30;
+
+        function setReelDuration(sec) {
+            activeReelDuration = sec;
+            document.querySelectorAll('.btn-dur').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.getElementById(`dur-${sec}`);
+            if (activeBtn) activeBtn.classList.add('active');
+            const lbl = document.getElementById('lbl-highlight-btn');
+            if (lbl) lbl.innerText = `SAVE ${sec}s HIGHLIGHT (Press H)`;
+            showToast(`✂️ Highlight duration set to ${sec} seconds`);
+        }
+
+        async function triggerSermonHighlight() {
+            const btn = document.getElementById('btn-save-highlight');
+            const lbl = document.getElementById('lbl-highlight-btn');
+            if (btn) btn.classList.add('saving');
+            if (lbl) lbl.innerText = `SAVING ${activeReelDuration}s REEL...`;
+
+            showToast(`⏳ Extracting ${activeReelDuration}s Sermon Highlight to your Laptop...`);
+
+            try {
+                // Send over WebSocket for lowest latency
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        type: 'trigger_highlight',
+                        duration: activeReelDuration
+                    }));
+                }
+
+                // Also call REST API
+                const res = await fetch('/api/clips/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ duration: activeReelDuration })
+                });
+                const data = await res.json();
+                if (data.needsBuffer || data.needsConfig) {
+                    showToast(`ℹ️ ${data.message}`);
+                } else if (data.success) {
+                    showToast(`🎬 Saving highlight to laptop: Videos\\Sermon_Highlights`);
+                }
+            } catch (err) {
+                console.warn('Error triggering highlight:', err);
+                showToast(`⚠️ Could not save highlight: ${err.message}`);
+            }
+
+            setTimeout(() => {
+                if (btn) btn.classList.remove('saving');
+                if (lbl) lbl.innerText = `SAVE ${activeReelDuration}s HIGHLIGHT (Press H)`;
+            }, 3000);
+        }
+
+        async function openClipsFolder() {
+            try {
+                showToast(`📂 Opening Sermon Highlights folder on this laptop...`);
+                const res = await fetch('/api/clips/open-folder', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`📂 Folder opened: ${data.path}`);
+                }
+            } catch (err) {
+                alert(`Could not open folder automatically: ${err.message}`);
+            }
+        }
+
+        async function loadReelsCount() {
+            try {
+                const res = await fetch('/api/clips');
+                const clips = await res.json();
+                const count = Array.isArray(clips) ? clips.length : 0;
+                const lbl1 = document.getElementById('lbl-reels-count');
+                const lbl2 = document.getElementById('lbl-reels-count-bar');
+                if (lbl1) lbl1.innerText = count;
+                if (lbl2) lbl2.innerText = count;
+            } catch (e) {
+                console.warn('Could not load clips count', e);
+            }
+        }
+
+        async function openReelsModal() {
+            const modal = document.getElementById('reels-modal');
+            if (modal) modal.classList.add('open');
+            await refreshReelsGallery();
+        }
+
+        function closeReelsModal() {
+            const modal = document.getElementById('reels-modal');
+            if (modal) modal.classList.remove('open');
+        }
+
+        async function refreshReelsGallery() {
+            const grid = document.getElementById('reels-grid');
+            const emptyState = document.getElementById('reels-empty');
+            if (!grid) return;
+            grid.innerHTML = '<div style="color: #94a3b8; font-size: 13px; padding: 20px 0;">Loading sermon highlights from laptop...</div>';
+            if (emptyState) emptyState.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/clips');
+                const clips = await res.json();
+                await loadReelsCount();
+
+                if (!clips || clips.length === 0) {
+                    grid.innerHTML = '';
+                    if (emptyState) emptyState.style.display = 'block';
+                    return;
+                }
+
+                if (emptyState) emptyState.style.display = 'none';
+                grid.innerHTML = clips.map((c, idx) => {
+                    const d = new Date(c.time || Date.now());
+                    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    const dateStr = d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+                    return `
+                        <div class="photo-card" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;">
+                            <div style="position: relative; width: 100%; height: 160px; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                <video controls playsinline preload="metadata" src="${c.url}" style="width: 100%; height: 100%; object-fit: contain;"></video>
+                                <span style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.8); color: #fbbf24; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.4);">⚡ REEL #${clips.length - idx}</span>
+                            </div>
+                            <div style="padding: 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; justify-content: space-between;">
+                                <div>
+                                    <div style="font-size: 13px; color: #fff; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${c.filename}">${c.title || c.filename}</div>
+                                    <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">🕒 ${timeStr} • 📅 ${dateStr} • 📦 ${c.sizeFormatted}</div>
+                                    <div style="font-size: 10px; color: #10b981; margin-top: 3px; font-weight: 600;">💾 Saved: Videos\\Sermon_Highlights</div>
+                                </div>
+                                <div style="display: flex; gap: 6px;">
+                                    <a href="${c.url}" download="${c.filename}" class="btn" style="flex: 1; padding: 7px 10px; font-size: 11px; font-weight: 700; background: linear-gradient(135deg, #f59e0b, #d97706); color: #0b0717; text-decoration: none; text-align: center; border-radius: 6px;">⬇️ Download</a>
+                                    <button onclick="deleteReel('${c.filename}')" class="btn" style="padding: 7px 10px; font-size: 11px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; border-radius: 6px; cursor: pointer;">🗑️</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                grid.innerHTML = `<div style="color: #ef4444; font-size: 13px;">Error loading clips: ${err.message}</div>`;
+            }
+        }
+
+        async function deleteReel(filename) {
+            if (!confirm(`Are you sure you want to delete this sermon highlight clip?\n\n${filename}\n\nThis will remove it from the laptop hard drive.`)) {
+                return;
+            }
+            try {
+                const res = await fetch(`/api/clips/${encodeURIComponent(filename)}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`🗑️ Highlight clip removed: ${filename}`);
+                    await refreshReelsGallery();
+                    await loadReelsCount();
+                } else {
+                    alert('Failed to delete clip: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                alert('Error deleting clip: ' + err.message);
+            }
+        }
+
+        function openMobileReelsModal() {
+            const modal = document.getElementById('mobile-reels-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                const currentIp = window.location.hostname;
+                const reelsUrl = `${window.location.protocol}//${currentIp}:${window.location.port}/reels.html`;
+                const urlEl = document.getElementById('mobile-reels-url');
+                if (urlEl) urlEl.innerText = reelsUrl;
+                const qrImg = document.getElementById('mobile-reels-qr');
+                if (qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(reelsUrl)}`;
+            }
+        }
+
+        function closeMobileReelsModal() {
+            const modal = document.getElementById('mobile-reels-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function copyMobileReelsUrl() {
+            const currentIp = window.location.hostname;
+            const reelsUrl = `${window.location.protocol}//${currentIp}:${window.location.port}/reels.html`;
+            navigator.clipboard.writeText(reelsUrl).then(() => {
+                showToast(`📋 Copied Phone Station URL: ${reelsUrl}`);
+            });
+        }
+
+        // Global [H] key shortcut for Instant Highlight saving
+        window.addEventListener('keydown', (e) => {
+            const tag = (document.activeElement && document.activeElement.tagName) ? document.activeElement.tagName.toLowerCase() : '';
+            if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+            if (e.key === 'h' || e.key === 'H') {
+                e.preventDefault();
+                triggerSermonHighlight();
+            }
+        });
 
         // Auto-open Graphics Drawer and activate Scripture panel
         try {
@@ -3878,6 +4166,68 @@ God in three Persons, blessed Trinity!</textarea>
         </div>
     </div>
 
+    <!-- Sermon Reels & Highlights Modal (Saved on Laptop & Mobile Dispatch) -->
+    <div class="modal-backdrop" id="reels-modal" onclick="closeReelsModal(event)">
+        <div class="modal-content" style="max-width: 880px; width: 92%; max-height: 88vh; overflow-y: auto; text-align: left;" onclick="event.stopPropagation()">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 26px;">✂️</span>
+                    <div>
+                        <h3 style="color: var(--primary-gold); margin: 0; font-size: 18px;">Sermon Reels & Highlights Station</h3>
+                        <p style="color: #94a3b8; font-size: 12px; margin: 2px 0 0 0;">High-definition sermon clips saved directly onto your laptop's hard drive</p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button class="btn btn-secondary" onclick="openClipsFolder()" style="padding: 6px 12px; font-size: 12px; color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);" title="Open folder in Windows Explorer">📂 Open Folder</button>
+                    <button class="btn btn-secondary" onclick="openMobileReelsModal()" style="padding: 6px 12px; font-size: 12px; color: #c4b5fd; border-color: rgba(124, 58, 237, 0.4);" title="Get Phone Station Link">📱 Phone Link</button>
+                    <button class="btn btn-secondary" onclick="refreshReelsGallery()" style="padding: 6px 12px; font-size: 12px;">&#128260; Refresh</button>
+                    <button class="btn btn-secondary" onclick="closeReelsModal()" style="padding: 6px 12px; font-size: 14px;">&times;</button>
+                </div>
+            </div>
+            
+            <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: #fde68a; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    💾 Local Storage: <code style="color: #fbbf24; font-weight: 700;">Videos\Sermon_Highlights\</code> (Saved on this laptop)
+                </div>
+                <div>
+                    <button onclick="triggerSermonHighlight()" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-size: 11px; font-weight: 800; padding: 5px 12px; border-radius: 6px; cursor: pointer;">⚡ Clip Now (30s)</button>
+                </div>
+            </div>
+
+            <div id="reels-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px;">
+                <!-- Dynamically populated -->
+            </div>
+
+            <div id="reels-empty" style="display: none; text-align: center; padding: 40px 20px; color: #94a3b8;">
+                <div style="font-size: 38px; margin-bottom: 10px;">🎬</div>
+                <h4 style="color: #e2e8f0; margin: 0 0 4px 0;">No Highlights Saved Yet Today</h4>
+                <p style="font-size: 12px;">During the sermon, click the golden <strong>SAVE 30s HIGHLIGHT</strong> button (or press <strong>[H]</strong> on your keyboard) to instantly capture a video reel to this laptop.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Reel Station QR Code / Link Modal -->
+    <div id="mobile-reels-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(8px);" onclick="closeMobileReelsModal()">
+        <div style="background: #0e0822; border: 1px solid #7c3aed; border-radius: 16px; width: 440px; max-width: 92vw; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.9); text-align: center;" onclick="event.stopPropagation()">
+            <div style="font-size: 32px; margin-bottom: 6px;">📱</div>
+            <h3 style="color: #fbbf24; margin: 0 0 4px 0; font-size: 17px; font-weight: 800;">Mobile Reel Dispatch Station</h3>
+            <p style="color: #94a3b8; font-size: 12px; margin: 0 0 16px 0;">Social media handlers can open this on any iPhone/Android on the church Wi-Fi to immediately share clips to Instagram Reels & TikTok!</p>
+            
+            <div style="background: #fff; padding: 12px; border-radius: 12px; display: inline-block; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);">
+                <img id="mobile-reels-qr" src="" alt="Mobile Reels Station QR Code" style="width: 180px; height: 180px; display: block;">
+            </div>
+
+            <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 8px 12px; margin-bottom: 16px; font-size: 12px; color: #38bdf8; word-break: break-all; font-family: monospace;" id="mobile-reels-url">
+                http://localhost:3000/reels.html
+            </div>
+
+            <div style="display: flex; gap: 8px; justify-content: center;">
+                <button onclick="copyMobileReelsUrl()" class="btn" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; font-size: 12px; font-weight: 700; padding: 8px 16px; border-radius: 8px; cursor: pointer;">📋 Copy Link</button>
+                <button onclick="closeMobileReelsModal()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 12px;">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Master Broadcast Keyboard Shortcuts Modal -->
     <div id="hotkeys-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
         <div style="background: #0e071e; border: 1px solid #7c3aed; border-radius: 14px; width: 600px; max-width: 95vw; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 16px;">
@@ -3891,9 +4241,10 @@ God in three Persons, blessed Trinity!</textarea>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px;">
                 <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px;">
-                    <strong style="color: #c4b5fd; display: block; margin-bottom: 8px; font-size: 13px;">🎥 CAMERA SWITCHING</strong>
+                    <strong style="color: #c4b5fd; display: block; margin-bottom: 8px; font-size: 13px;">🎥 CAMERA & CLIPPING</strong>
                     <div style="display: flex; flex-direction: column; gap: 6px; color: #cbd5e1;">
-                        <div><kbd style="background: #1e1338; border: 1px solid #7c3aed; padding: 2px 6px; border-radius: 4px; color: #fff; font-weight: 700;">1</kbd> - <kbd style="background: #1e1338; border: 1px solid #7c3aed; padding: 2px 6px; border-radius: 4px; color: #fff; font-weight: 700;">4</kbd> : Cut Camera Live</div>
+                        <div><kbd style="background: #1e1338; border: 1px solid #7c3aed; padding: 2px 6px; border-radius: 4px; color: #fff; font-weight: 700;">1</kbd> - <kbd style="background: #1e1338; border: 1px solid #7c3aed; padding: 2px 6px; border-radius: 4px; color: #fff; font-weight: 700;">6</kbd> : Cut Camera Live</div>
+                        <div><kbd style="background: #1e1338; border: 1px solid #f59e0b; padding: 2px 6px; border-radius: 4px; color: #fbbf24; font-weight: 700;">H</kbd> : Save 30s Sermon Highlight</div>
                         <div><kbd style="background: #1e1338; border: 1px solid #7c3aed; padding: 2px 6px; border-radius: 4px; color: #fff; font-weight: 700;">Space</kbd> : Instant Panic Cut (Flier)</div>
                         <div><kbd style="background: #1e1338; border: 1px solid #7c3aed; padding: 2px 6px; border-radius: 4px; color: #fff; font-weight: 700;">T (Hold)</kbd> : Push-to-Talk Intercom</div>
                     </div>

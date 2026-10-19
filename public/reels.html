@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Victorious Streaming Hub - Social Media Reel Station</title>
+    <meta name="theme-color" content="#0b0717">
+    <link rel="apple-touch-icon" href="/assets/cam-icon.png">
+    <link rel="icon" type="image/png" href="/assets/cam-icon-192.png">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        :root {
+            --reel-gold: #f59e0b;
+            --reel-gold-glow: rgba(245, 158, 11, 0.4);
+            --reel-bg: #0b0717;
+            --reel-card-bg: rgba(22, 14, 42, 0.85);
+            --reel-border: rgba(245, 158, 11, 0.25);
+        }
+
+        body {
+            background-color: var(--reel-bg);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(245, 158, 11, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(124, 58, 237, 0.08) 0%, transparent 40%);
+            min-height: 100vh;
+            color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .reels-header {
+            background: rgba(14, 9, 28, 0.95);
+            border-bottom: 1px solid var(--reel-border);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(12px);
+        }
+
+        .reels-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .reels-logo {
+            font-size: 24px;
+            filter: drop-shadow(0 0 8px var(--reel-gold-glow));
+        }
+
+        .reels-title {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            background: linear-gradient(90deg, #ffffff, var(--reel-gold));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .reels-subtitle {
+            font-size: 11px;
+            color: #94a3b8;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .reels-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #10b981;
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.85); }
+        }
+
+        .reels-main {
+            flex: 1;
+            max-width: 680px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 16px 14px 60px;
+            box-sizing: border-box;
+        }
+
+        .dispatch-banner {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(124, 58, 237, 0.12));
+            border: 1px dashed rgba(245, 158, 11, 0.4);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dispatch-banner-icon {
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .dispatch-banner-text h4 {
+            margin: 0 0 3px 0;
+            font-size: 13px;
+            color: var(--reel-gold);
+            font-weight: 700;
+        }
+
+        .dispatch-banner-text p {
+            margin: 0;
+            font-size: 11px;
+            color: #cbd5e1;
+            line-height: 1.4;
+        }
+
+        .clips-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .clip-card {
+            background: var(--reel-card-bg);
+            border: 1px solid var(--reel-border);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            backdrop-filter: blur(10px);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .clip-card:hover {
+            border-color: rgba(245, 158, 11, 0.6);
+        }
+
+        .clip-video-wrapper {
+            position: relative;
+            background: #000;
+            width: 100%;
+            max-height: 480px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clip-video-wrapper video {
+            width: 100%;
+            max-height: 480px;
+            display: block;
+            object-fit: contain;
+        }
+
+        .clip-details {
+            padding: 14px 16px;
+        }
+
+        .clip-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .clip-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #fff;
+            margin: 0;
+        }
+
+        .clip-time-badge {
+            font-size: 10px;
+            font-weight: 700;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.15);
+            padding: 3px 8px;
+            border-radius: 12px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .clip-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 11px;
+            color: #94a3b8;
+            margin-bottom: 14px;
+        }
+
+        .clip-actions-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-reel-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            border: none;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        .btn-share {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #0b0717;
+            box-shadow: 0 4px 14px var(--reel-gold-glow);
+        }
+
+        .btn-share:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .btn-download {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #f8fafc;
+        }
+
+        .btn-download:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            background: var(--reel-card-bg);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            color: #94a3b8;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            display: inline-block;
+            animation: pulse-icon 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-icon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .empty-state h3 {
+            margin: 0 0 6px 0;
+            font-size: 16px;
+            color: #f8fafc;
+        }
+
+        .empty-state p {
+            margin: 0;
+            font-size: 12px;
+            line-height: 1.5;
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        /* Toast Alert */
+        #toast-reel {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        #toast-reel.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="reels-header">
+        <div class="reels-brand">
+            <span class="reels-logo">👑</span>
+            <div>
+                <h1 class="reels-title">Victorious Reels Hub</h1>
+                <p class="reels-subtitle">Live Church Social Media Dispatch</p>
+            </div>
+        </div>
+        <div class="reels-status-pill">
+            <span class="status-dot"></span>
+            <span id="lbl-socket-status">Live Connected</span>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="reels-main">
+        <!-- Dispatch Banner -->
+        <div class="dispatch-banner">
+            <div class="dispatch-banner-icon">✂️</div>
+            <div class="dispatch-banner-text">
+                <h4>Instant Sermon Highlights</h4>
+                <p>When the Director taps "Save Highlight", video clips automatically appear here in seconds. Tap <strong>Share</strong> to post immediately to Instagram Reels, TikTok, or WhatsApp!</p>
+            </div>
+        </div>
+
+        <!-- Video Clips Container -->
+        <div class="clips-container" id="clips-list">
+            <!-- Loading State -->
+            <div class="empty-state" id="loading-state">
+                <div class="empty-state-icon">⏳</div>
+                <h3>Checking Church Highlights...</h3>
+                <p>Connecting to broadcast studio and loading today's clips.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast-reel">
+        <span>🎉</span>
+        <span id="toast-text">New Highlight Ready!</span>
+    </div>
+
+    <script>
+        let ws = null;
+        let clips = [];
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast-reel');
+            const txt = document.getElementById('toast-text');
+            if (!toast || !txt) return;
+            txt.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // Initialize WebSocket to receive real-time highlight triggers
+        function initWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}`;
+            
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                document.getElementById('lbl-socket-status').innerText = 'Live Syncing';
+                ws.send(JSON.stringify({ type: 'register', role: 'social_media_receiver' }));
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'reel_saved' && data.clip) {
+                        showToast('🎉 New Sermon Highlight Available!');
+                        // Play gentle alert chime if allowed
+                        try {
+                            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                            const osc = ctx.createOscillator();
+                            const gain = ctx.createGain();
+                            osc.connect(gain);
+                            gain.connect(ctx.destination);
+                            osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+                            osc.frequency.setValueAtTime(880.00, ctx.currentTime + 0.1); // A5
+                            gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+                            osc.start();
+                            osc.stop(ctx.currentTime + 0.35);
+                        } catch(e) {}
+                        loadClips();
+                    } else if (data.type === 'clip_deleted') {
+                        loadClips();
+                    }
+                } catch(e) {}
+            };
+
+            ws.onclose = () => {
+                document.getElementById('lbl-socket-status').innerText = 'Reconnecting...';
+                setTimeout(initWebSocket, 3000);
+            };
+        }
+
+        // Fetch all saved clips from the laptop
+        async function loadClips() {
+            try {
+                const res = await fetch('/api/clips');
+                clips = await res.json();
+                renderClips();
+            } catch(e) {
+                console.warn('Failed to load clips:', e.message);
+            }
+        }
+
+        function renderClips() {
+            const container = document.getElementById('clips-list');
+            if (!container) return;
+
+            if (!clips || clips.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎬</div>
+                        <h3>No Highlights Saved Yet</h3>
+                        <p>During the sermon or praise & worship, the Director clicks <strong>Save 30s Highlight</strong> on their laptop. The clip will pop up here instantly ready to publish!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = clips.map((clip, index) => {
+                const d = new Date(clip.time || Date.now());
+                const timeFormatted = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const dateFormatted = d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+
+                return `
+                    <div class="clip-card" id="card-${clip.id}">
+                        <div class="clip-video-wrapper">
+                            <video controls playsinline preload="metadata" src="${clip.url}">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                        <div class="clip-details">
+                            <div class="clip-header-row">
+                                <h3 class="clip-title">${clip.title || 'Sermon Highlight #' + (clips.length - index)}</h3>
+                                <span class="clip-time-badge">🕒 ${timeFormatted}</span>
+                            </div>
+                            <div class="clip-meta-row">
+                                <span>📅 ${dateFormatted}</span>
+                                <span>•</span>
+                                <span>📦 ${clip.sizeFormatted || 'MP4 Video'}</span>
+                                <span>•</span>
+                                <span style="color: #10b981;">💻 Saved on Laptop</span>
+                            </div>
+                            <div class="clip-actions-row">
+                                <button class="btn-reel-action btn-share" onclick="shareReel('${clip.url}', '${clip.filename}')">
+                                    <span>📱</span> <span>Share to Reel</span>
+                                </button>
+                                <a href="${clip.url}" download="${clip.filename}" class="btn-reel-action btn-download">
+                                    <span>⬇️</span> <span>Download</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Mobile Web Share API: Native 1-Tap Share to Instagram Reels, TikTok, WhatsApp
+        async function shareReel(url, filename) {
+            if (navigator.share) {
+                try {
+                    showToast('⏳ Preparing Reel for Sharing...');
+                    const res = await fetch(url);
+                    const blob = await res.blob();
+                    const file = new File([blob], filename, { type: 'video/mp4' });
+
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            title: 'Sunday Sermon Highlight - Victorious Streaming Hub',
+                            text: 'Powerful Word from our Church Service today! 🙏✨ #SundayService #ChurchOnline #SermonReel #Gospel',
+                            files: [file]
+                        });
+                        showToast('✅ Shared Successfully!');
+                        return;
+                    }
+                } catch(err) {
+                    if (err.name !== 'AbortError') {
+                        console.warn('Native file share failed, falling back to link share:', err.message);
+                    }
+                }
+            }
+
+            // Fallback: Open clip directly or trigger download
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('⬇️ Downloading reel to device...');
+        }
+
+        // Start
+        window.addEventListener('DOMContentLoaded', () => {
+            initWebSocket();
+            loadClips();
+            // Polling backup every 10s
+            setInterval(loadClips, 10000);
+        });
+    </script>
+</body>
+</html>

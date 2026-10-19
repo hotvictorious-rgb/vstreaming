@@ -126,6 +126,17 @@ const photosDir = path.join(__dirname, 'photos');
 if (!fs.existsSync(photosDir)) fs.mkdirSync(photosDir, { recursive: true });
 app.use('/photos', express.static(photosDir));
 
+// High-Definition Church Sermon Highlights & Reels Storage (Saved locally on Laptop & Streamed to Mobile)
+const HIGHLIGHTS_DIR = path.join(process.env.USERPROFILE || 'C:\\Users\\USER', 'Videos', 'Sermon_Highlights');
+if (!fs.existsSync(HIGHLIGHTS_DIR)) fs.mkdirSync(HIGHLIGHTS_DIR, { recursive: true });
+
+const PUBLIC_CLIPS_DIR = path.join(__dirname, 'public', 'clips');
+if (!fs.existsSync(PUBLIC_CLIPS_DIR)) fs.mkdirSync(PUBLIC_CLIPS_DIR, { recursive: true });
+app.use('/clips', express.static(PUBLIC_CLIPS_DIR));
+
+let isReplayBufferActive = false;
+let isObsRecording = false;
+
 const photoStorage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, photosDir),
     filename: (req, file, cb) => {
@@ -453,6 +464,156 @@ app.delete('/api/photos/:filename', (req, res) => {
     } catch (e) {
         return res.status(500).json({ error: e.message });
     }
+});
+
+// =====================================================================
+// SERMON REEL & HIGHLIGHT CLIPPER SYSTEM (SAVED DIRECTLY ON LAPTOP)
+// =====================================================================
+
+function handleReplaySaved(originalPath) {
+    try {
+        if (!originalPath || !fs.existsSync(originalPath)) {
+            console.warn('[Replay Buffer] Original file not found:', originalPath);
+            return null;
+        }
+        const timestamp = Date.now();
+        const d = new Date(timestamp);
+        const dateStr = d.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        const ext = path.extname(originalPath).toLowerCase() || '.mp4';
+        const newFilename = `Sermon_Highlight_${dateStr}${ext}`;
+
+        const destLaptopPath = path.join(HIGHLIGHTS_DIR, newFilename);
+        const destPublicPath = path.join(PUBLIC_CLIPS_DIR, newFilename);
+
+        fs.copyFileSync(originalPath, destLaptopPath);
+        fs.copyFileSync(originalPath, destPublicPath);
+
+        const stat = fs.statSync(destLaptopPath);
+        const clipData = {
+            id: 'clip_' + timestamp,
+            filename: newFilename,
+            url: `/clips/${newFilename}`,
+            localPath: destLaptopPath,
+            time: timestamp,
+            createdAt: stat.birthtime || stat.mtime,
+            size: stat.size,
+            sizeFormatted: (stat.size / 1024 / 1024).toFixed(2) + ' MB',
+            title: `Sermon Highlight (${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`
+        };
+
+        console.log(`[Reel Saved to Laptop Hard Drive!] File: ${destLaptopPath} (${clipData.sizeFormatted})`);
+
+        broadcastToAll({
+            type: 'reel_saved',
+            clip: clipData,
+            message: `🎉 New Sermon Highlight Saved to Laptop!`
+        });
+        return clipData;
+    } catch (err) {
+        console.error('[Reel Process Error]:', err.message);
+        return null;
+    }
+}
+
+// API: Save Instant Sermon Highlight (30s / custom duration)
+app.post('/api/clips/save', express.json(), async (req, res) => {
+    const { duration = 30 } = req.body || {};
+    if (obsClient && isObsConnected) {
+        try {
+            await obsClient.call('SaveReplayBuffer');
+            console.log(`[Reel Station] SaveReplayBuffer requested from Director (${duration}s highlight)`);
+            return res.json({ success: true, message: 'Saving highlight from OBS Replay Buffer directly to your laptop...' });
+        } catch (e) {
+            console.warn('[Replay Buffer Call Error]:', e.message);
+            try {
+                await obsClient.call('StartReplayBuffer');
+                isReplayBufferActive = true;
+                broadcastToDirectors({ type: 'replay_buffer_status', active: true });
+                return res.json({
+                    success: false,
+                    needsBuffer: true,
+                    message: 'OBS Replay Buffer was just started! Let 15-30s of sermon play, then click Save Highlight again.'
+                });
+            } catch (startErr) {
+                return res.json({
+                    success: false,
+                    needsConfig: true,
+                    message: 'To enable Replay Buffer in OBS: Go to Settings -> Output -> check "Enable Replay Buffer".'
+                });
+            }
+        }
+    } else {
+        return res.status(503).json({
+            error: 'OBS Studio is not connected via WebSocket (Port 4455). Please ensure OBS Studio is running.'
+        });
+    }
+});
+
+// API: List All Saved Sermon Highlights on Laptop
+app.get('/api/clips', (req, res) => {
+    try {
+        const clips = [];
+        if (fs.existsSync(PUBLIC_CLIPS_DIR)) {
+            const files = fs.readdirSync(PUBLIC_CLIPS_DIR);
+            files.filter(f => f.match(/\.(mp4|mkv|mov|webm)$/i)).forEach(f => {
+                const fullPath = path.join(PUBLIC_CLIPS_DIR, f);
+                const stat = fs.statSync(fullPath);
+                clips.push({
+                    id: f,
+                    filename: f,
+                    url: `/clips/${f}`,
+                    localPath: path.join(HIGHLIGHTS_DIR, f),
+                    time: stat.mtimeMs,
+                    createdAt: stat.birthtime || stat.mtime,
+                    size: stat.size,
+                    sizeFormatted: (stat.size / 1024 / 1024).toFixed(2) + ' MB',
+                    title: f.replace(/\.[^/.]+$/, '').replace(/_/g, ' ')
+                });
+            });
+        }
+        clips.sort((a, b) => b.time - a.time);
+        res.json(clips);
+    } catch (e) {
+        res.json([]);
+    }
+});
+
+// API: Open Windows File Explorer to Laptop's Sermon Highlights Folder
+app.post('/api/clips/open-folder', (req, res) => {
+    try {
+        const { exec } = require('child_process');
+        exec(`explorer.exe "${HIGHLIGHTS_DIR}"`);
+        console.log(`[Reel Station] Opened Highlights Folder on Laptop: ${HIGHLIGHTS_DIR}`);
+        res.json({ success: true, path: HIGHLIGHTS_DIR });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// API: Delete a Sermon Highlight
+app.delete('/api/clips/:filename', (req, res) => {
+    try {
+        const filename = path.basename(req.params.filename);
+        const p1 = path.join(PUBLIC_CLIPS_DIR, filename);
+        const p2 = path.join(HIGHLIGHTS_DIR, filename);
+        if (fs.existsSync(p1)) fs.unlinkSync(p1);
+        if (fs.existsSync(p2)) fs.unlinkSync(p2);
+        console.log(`[Reel Deleted] Removed from laptop: ${filename}`);
+        broadcastToAll({ type: 'clip_deleted', filename });
+        res.json({ success: true, filename });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// API: Check Replay Buffer & Recording Status
+app.get('/api/clips/status', (req, res) => {
+    res.json({
+        isObsConnected: !!isObsConnected,
+        isReplayBufferActive: !!isReplayBufferActive,
+        isObsRecording: !!isObsRecording,
+        highlightsFolder: HIGHLIGHTS_DIR
+    });
 });
 
 // API: Set Tally Manually
@@ -970,6 +1131,43 @@ function setupWebSocket(wss) {
                     return;
                 }
 
+                // Sermon Reel & Instant Highlight Commands (OBS Replay Buffer)
+                if (data.type === 'trigger_highlight') {
+                    const duration = data.duration || 30;
+                    if (obsClient && isObsConnected) {
+                        try {
+                            await obsClient.call('SaveReplayBuffer');
+                            console.log(`[Reel Station] WebSocket triggered SaveReplayBuffer (${duration}s)`);
+                            broadcastToDirectors({
+                                type: 'highlight_triggered',
+                                duration,
+                                message: `⏳ Extracting last ${duration}s sermon highlight to laptop...`
+                            });
+                        } catch (e) {
+                            try {
+                                await obsClient.call('StartReplayBuffer');
+                                isReplayBufferActive = true;
+                                broadcastToDirectors({
+                                    type: 'replay_buffer_status',
+                                    active: true,
+                                    message: 'OBS Replay Buffer started! Let 15-30s play, then click Save Highlight again.'
+                                });
+                            } catch (err2) {
+                                broadcastToDirectors({
+                                    type: 'highlight_error',
+                                    message: 'Please enable Replay Buffer in OBS Studio (Settings -> Output -> Enable Replay Buffer).'
+                                });
+                            }
+                        }
+                    } else {
+                        broadcastToDirectors({
+                            type: 'highlight_error',
+                            message: 'OBS Studio is not connected. Please ensure OBS is running.'
+                        });
+                    }
+                    return;
+                }
+
                 // Intercom Talkback: Director speaking to all or specific camera phone
                 if (data.type === 'intercom_active') {
                     [wssHttp, wssHttps].forEach(wss => {
@@ -1252,6 +1450,24 @@ try {
             obsClient.on('CurrentProgramSceneChanged', (event) => {
                 const sceneName = (event.sceneName || '');
                 console.log(`[OBS Scene Sync] Active scene in OBS Studio: "${sceneName}" (Director Command Center remains SSOT for tallies)`);
+            });
+
+            // Listen for OBS Native Replay Buffer Saves
+            obsClient.on('ReplayBufferSaved', (event) => {
+                const originalPath = event.savedReplayPath;
+                console.log(`[OBS Replay Buffer Saved] High-definition highlight written: ${originalPath}`);
+                handleReplaySaved(originalPath);
+            });
+
+            obsClient.on('ReplayBufferStateChanged', (event) => {
+                isReplayBufferActive = !!event.outputActive;
+                console.log(`[OBS Replay Buffer] State changed: active = ${isReplayBufferActive}`);
+                broadcastToDirectors({ type: 'replay_buffer_status', active: isReplayBufferActive });
+            });
+
+            obsClient.on('RecordStateChanged', (event) => {
+                isObsRecording = !!event.outputActive;
+                broadcastToDirectors({ type: 'obs_record_status', active: isObsRecording });
             });
 
             obsClient.on('ConnectionClosed', () => {
