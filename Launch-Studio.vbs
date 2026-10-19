@@ -9,7 +9,11 @@ WshShell.CurrentDirectory = appDir
 WshShell.Run "cmd /c for /f ""tokens=5"" %a in ('netstat -aon 2^>nul ^| findstr "":3000"" ^| findstr ""LISTENING""') do taskkill /F /PID %a >nul 2>&1", 0, True
 
 ' 2. Launch Node server completely hidden (0 = SW_HIDE)
-WshShell.Run "node server.js", 0, False
+nodeExe = "node"
+If FSO.FileExists(appDir & "\runtime\node\node.exe") Then
+    nodeExe = """" & appDir & "\runtime\node\node.exe"""
+End If
+WshShell.Run nodeExe & " server.js", 0, False
 
 ' 3. Wait 1.2 seconds for server to initialize
 WScript.Sleep 1200
