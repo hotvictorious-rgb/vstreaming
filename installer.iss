@@ -26,7 +26,7 @@ OutputDir=dist
 OutputBaseFilename=Victorious-Streaming-Hub-Setup
 SetupIconFile=app-icon.ico
 UninstallDisplayIcon={app}\app-icon.ico
-Compression=lzma2/max
+Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
 DisableDirPage=no
@@ -45,6 +45,7 @@ Source: "server.js"; DestDir: "{app}"; Flags: ignoreversion
 Source: "main.js"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Launch-Studio.vbs"; DestDir: "{app}"; Flags: ignoreversion
 Source: "package.json"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Stop-Sunday-Studio.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "app-icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Web Application & Frontend Assets
@@ -58,8 +59,10 @@ Source: "node_modules\*"; DestDir: "{app}\node_modules"; Flags: ignoreversion re
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\app-icon.ico"
+Name: "{group}\Stop {#MyAppName}"; Filename: "{app}\Stop-Sunday-Studio.bat"
 Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\app-icon.ico"; Tasks: desktopicon
+Name: "{autodesktop}\Stop {#MyAppName}"; Filename: "{app}\Stop-Sunday-Studio.bat"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent

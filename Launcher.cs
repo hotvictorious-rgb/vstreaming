@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
-using System.Windows.Forms;
 
 namespace VictoriousStreamingHub
 {
@@ -15,76 +14,34 @@ namespace VictoriousStreamingHub
             string appDir = AppDomain.CurrentDomain.BaseDirectory;
             Directory.SetCurrentDirectory(appDir);
 
-            // 1. Locate Node runtime (embedded or system fallback)
-            string nodePath = Path.Combine(appDir, "runtime", "node", "node.exe");
-            if (!File.Exists(nodePath))
+            // 1. If server is not already active on port 3000, start it
+            if (!IsPortOpen("127.0.0.1", 3000, 300))
             {
-                nodePath = "node.exe";
-            }
+                string nodePath = Path.Combine(appDir, "runtime", "node", "node.exe");
+                if (!File.Exists(nodePath)) nodePath = "node.exe";
 
-            string serverScript = Path.Combine(appDir, "server.js");
-            if (!File.Exists(serverScript))
-            {
-                MessageBox.Show("Could not find server.js in:\n" + appDir, "Victorious Streaming Hub Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                string serverScript = Path.Combine(appDir, "server.js");
 
-            // 2. Kill any stale process using port 3000
-            try
-            {
-                ProcessStartInfo killPsi = new ProcessStartInfo("cmd.exe", "/c for /f \"tokens=5\" %a in ('netstat -aon ^| findstr \":3000\" ^| findstr \"LISTENING\"') do taskkill /F /PID %a")
+                // Start node completely detached in background with WindowStyle Hidden
+                ProcessStartInfo serverPsi = new ProcessStartInfo
                 {
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
+                    FileName = nodePath,
+                    Arguments = "\"" + serverScript + "\"",
+                    WorkingDirectory = appDir,
+                    UseShellExecute = true,
                     WindowStyle = ProcessWindowStyle.Hidden
                 };
-                Process killProc = Process.Start(killPsi);
-                killProc.WaitForExit(2000);
-            }
-            catch { }
+                try { Process.Start(serverPsi); } catch { }
 
-            // 3. Start Node.js server silently in background
-            ProcessStartInfo serverPsi = new ProcessStartInfo(nodePath, "\"" + serverScript + "\"")
-            {
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                WorkingDirectory = appDir
-            };
-
-            Process serverProc = null;
-            try
-            {
-                serverProc = Process.Start(serverPsi);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Failed to launch streaming engine:\n" + ex.Message, "Victorious Streaming Hub", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            // 4. Wait for server to bind port 3000 (up to 15 seconds)
-            bool serverReady = false;
-            for (int i = 0; i < 30; i++)
-            {
-                try
+                // Wait up to 10 seconds for port 3000 to bind
+                for (int i = 0; i < 20; i++)
                 {
-                    using (TcpClient tcp = new TcpClient())
-                    {
-                        IAsyncResult res = tcp.BeginConnect("127.0.0.1", 3000, null, null);
-                        bool success = res.AsyncWaitHandle.WaitOne(500);
-                        if (success && tcp.Connected)
-                        {
-                            serverReady = true;
-                            break;
-                        }
-                    }
+                    if (IsPortOpen("127.0.0.1", 3000, 500)) break;
+                    Thread.Sleep(300);
                 }
-                catch { }
-                Thread.Sleep(300);
             }
 
-            // 5. Find Microsoft Edge or Google Chrome for Standalone App Window
+            // 2. Launch frameless desktop app window via Edge or Chrome
             string browserPath = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
             if (!File.Exists(browserPath))
                 browserPath = @"C:\Program Files\Microsoft\Edge\Application\msedge.exe";
@@ -93,39 +50,30 @@ namespace VictoriousStreamingHub
             if (!File.Exists(browserPath))
                 browserPath = @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe";
 
-            string profileDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VictoriousStreamingHub", "profile");
-            try { Directory.CreateDirectory(profileDir); } catch { }
+            string args = "--app=http://localhost:3000/ --app-id=VictoriousStreamingHub --window-size=1366,850 --autoplay-policy=no-user-gesture-required --disable-features=WebRtcHideLocalIpsWithMdns --allow-insecure-localhost --no-first-run --no-default-browser-check";
 
-            string args = string.Format("--app=http://localhost:3000/ --user-data-dir=\"{0}\" --window-size=1366,850 --app-id=VictoriousStreamingHub --autoplay-policy=no-user-gesture-required --disable-features=WebRtcHideLocalIpsWithMdns --allow-insecure-localhost --no-first-run --no-default-browser-check", profileDir);
-
-            Process browserProc = null;
             if (File.Exists(browserPath))
             {
-                ProcessStartInfo browserPsi = new ProcessStartInfo(browserPath, args)
-                {
-                    UseShellExecute = true
-                };
-                browserProc = Process.Start(browserPsi);
+                Process.Start(new ProcessStartInfo(browserPath, args) { UseShellExecute = true });
             }
             else
             {
-                // Fallback to default browser
                 Process.Start("http://localhost:3000/");
             }
+        }
 
-            // If we launched Edge/Chrome in app mode, wait for it to exit, then cleanly terminate Node
-            if (browserProc != null)
+        static bool IsPortOpen(string host, int port, int timeoutMs)
+        {
+            try
             {
-                browserProc.WaitForExit();
-                try
+                using (TcpClient tcp = new TcpClient())
                 {
-                    if (serverProc != null && !serverProc.HasExited)
-                    {
-                        serverProc.Kill();
-                    }
+                    IAsyncResult res = tcp.BeginConnect(host, port, null, null);
+                    bool success = res.AsyncWaitHandle.WaitOne(timeoutMs);
+                    return success && tcp.Connected;
                 }
-                catch { }
             }
+            catch { return false; }
         }
     }
 }
