@@ -51,8 +51,7 @@ For the smoothest broadcast performance in sanctuary lighting conditions:
 
 ### 1. First-Time Setup
 Double-click Setup-First-Time.bat as Administrator. This will:
-- Install all required Node.js dependencies (
-pm install).
+- Install all required Node.js dependencies (`npm install`).
 - Configure Windows Firewall rules for Ports 3000 (HTTP), 3443 (HTTPS), and 4455 (OBS WebSocket).
 - Automatically generate desktop shortcuts.
 
