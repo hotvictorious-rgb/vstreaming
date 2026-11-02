@@ -112,3 +112,21 @@ Double-click the desktop shortcut **Victorious Streaming Hub** (or run Launch-St
 Designed, architected, and brought to life under the leadership of **Victory Saviour Edet**, CEO of **VICTORIOUS MARKET**.
 
 Dedicated to excellence in church live broadcasting, media ministry, and high-performance real-time video engineering.
+
+---
+
+## 🤝 Commercial Turnkey Setups & Support
+
+**Victorious Streaming Hub** was built to empower churches, ministries, and live events with broadcast-grade production without multi-million-naira equipment barriers.
+
+### 💼 Turnkey Church Setups & Inquiries
+To hire our team for complete on-site church installations, Wi-Fi router tuning, and volunteer media training:
+* **Lead Architect:** Victory Saviour Edet, CEO of **VICTORIOUS MARKET**
+* **Direct Line / WhatsApp:** `+234 913 418 2795`
+
+### ☕ Support & Partner with the Project
+If this platform has blessed your church or event and you wish to partner or support ongoing research, engineering, and free updates:
+* **Bank:** PalmPay
+* **Account Number:** `9134182795`
+* **Account Name:** Victory Saviour Edet (VICTORIOUS MARKET)
+
