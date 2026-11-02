@@ -1,6 +1,6 @@
 {
   "name": "victorious-streaming-hub",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Professional Church Multi-Camera Broadcast Studio Hub for OBS Studio",
   "main": "main.js",
   "scripts": {
